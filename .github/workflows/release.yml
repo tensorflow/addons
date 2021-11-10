@@ -96,15 +96,6 @@ jobs:
         py-version: ['3.7', '3.8', '3.9']
         tf-version: ['2.7.0']
         cpu: ['x86']
-        include:
-          - os: 'macOS'
-            cpu: 'arm64'
-            tf-version: '2.6.0'
-            py-version: '3.8'
-          - os: 'macOS'
-            cpu: 'arm64'
-            tf-version: '2.6.0'
-            py-version: '3.9'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
