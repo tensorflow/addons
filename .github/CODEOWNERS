@@ -94,6 +94,8 @@
 /tensorflow_addons/layers/tests/noisy_dense_test.py @markub3327
 /tensorflow_addons/layers/max_unpooling_2d.py @thaink
 /tensorflow_addons/layers/tests/max_unpooling_2d_test.py @thaink
+/tensorflow_addons/layers/max_unpooling_2d_v2.py @midsterx
+/tensorflow_addons/layers/tests/max_unpooling_2d_v2_test.py @midsterx
 /tensorflow_addons/layers/embedding_bag.py @rocketknight1
 /tensorflow_addons/layers/tests/embedding_bag_test.py @rocketknight1
 

@@ -53,18 +53,25 @@ def _max_unpooling_2d_v2(updates, mask, output_size):
 class MaxUnpooling2DV2(tf.keras.layers.Layer):
     """Unpool the outputs of a maximum pooling operation.
 
+    This differs from MaxUnpooling2D in that it uses output_size rather than strides and padding
+    to calculate the unpooled tensor. This is because MaxPoolingWithArgMax can map several input
+    sizes to the same output size, and specifying the output size avoids ambiguity in the
+    inversion process.
+
     This function currently does not support outputs of MaxPoolingWithArgMax in following cases:
     - include_batch_in_index equals true.
     - The max pooling operation results in duplicate values in updates and mask.
 
     Args:
-      updates: The pooling result from max pooling.
-      mask: the argmax result corresponds to above max values.
-      output_size: The targeted output size.
-    Input shape:
-      4D tensor with shape: `(batch_size, height, width, channel)`.
+      output_size: A tuple/list of 4 integers specifying (batch_size, height, width, channel).
+        The targeted output size.
+    Call Args:
+      updates: A 4D tensor of shape `(batch_size, height, width, channel)`.
+        The pooling result from max pooling.
+      mask: A 4D tensor of shape `(batch_size, height, width, channel)`.
+        The indices of the maximal values.
     Output shape:
-      4D tensor with the same shape as `output_size`.
+        4D tensor with the same shape as output_size.
     """
 
     @typechecked
