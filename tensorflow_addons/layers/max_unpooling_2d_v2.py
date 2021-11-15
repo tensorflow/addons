@@ -71,7 +71,7 @@ class MaxUnpooling2DV2(tf.keras.layers.Layer):
       mask: A 4D tensor of shape `(batch_size, height, width, channel)`.
         The indices of the maximal values.
     Output shape:
-        4D tensor with the same shape as output_size.
+      4D tensor with the same shape as output_size.
     """
 
     @typechecked
