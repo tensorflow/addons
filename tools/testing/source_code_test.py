@@ -149,7 +149,6 @@ def test_no_experimental_api():
     allowlist = [
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
         "tensorflow_addons/layers/max_unpooling_2d.py",
-        "tensorflow_addons/layers/max_unpooling_2d_v2.py",
         "tensorflow_addons/image/dense_image_warp.py",
     ]
     for file_path, line_idx, line in get_lines_of_source_code(allowlist):
