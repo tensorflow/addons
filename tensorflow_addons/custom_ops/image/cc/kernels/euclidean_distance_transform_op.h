@@ -49,7 +49,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(const T* f, T* d, int* v,
       // compute horizontal position of intersection between the parabola from
       // q and the current lowest parabola
       s = (f[q] - f[v[k]]) / static_cast<T>(2 * (q - v[k])) +
-          static_cast<T>((q + v[k]) / 2);
+          static_cast<T>((q + v[k]) / 2.0);
     } while (s <= z[k]);
     k++;
     v[k] = q;
@@ -97,6 +97,9 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     Distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
       int index = GET_INDEX(i, j, k, c);
+      if (Eigen::numext::isinf(d[j])) {
+        d[j] = Eigen::NumTraits<T>::highest();
+      }
       output[index] = d[j];
     }
   }
@@ -108,6 +111,9 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     Distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
       int index = GET_INDEX(i, j, k, c);
+      if (Eigen::numext::isinf(d[i])) {
+        d[i] = Eigen::NumTraits<T>::highest();
+      }
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }

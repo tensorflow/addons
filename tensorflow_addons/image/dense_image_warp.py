@@ -46,33 +46,54 @@ def interpolate_bilinear(
       ValueError: if the indexing mode is invalid, or if the shape of the
         inputs invalid.
     """
+    return _interpolate_bilinear_with_checks(grid, query_points, indexing, name)
+
+
+def _interpolate_bilinear_with_checks(
+    grid: types.TensorLike,
+    query_points: types.TensorLike,
+    indexing: str,
+    name: Optional[str],
+) -> tf.Tensor:
+    """Perform checks on inputs without tf.function decorator to avoid flakiness."""
     if indexing != "ij" and indexing != "xy":
         raise ValueError("Indexing mode must be 'ij' or 'xy'")
 
+    grid = tf.convert_to_tensor(grid)
+    query_points = tf.convert_to_tensor(query_points)
+    grid_shape = tf.shape(grid)
+    query_shape = tf.shape(query_points)
+
+    with tf.control_dependencies(
+        [
+            tf.debugging.assert_equal(tf.rank(grid), 4, "Grid must be 4D Tensor"),
+            tf.debugging.assert_greater_equal(
+                grid_shape[1], 2, "Grid height must be at least 2."
+            ),
+            tf.debugging.assert_greater_equal(
+                grid_shape[2], 2, "Grid width must be at least 2."
+            ),
+            tf.debugging.assert_equal(
+                tf.rank(query_points), 3, "Query points must be 3 dimensional."
+            ),
+            tf.debugging.assert_equal(
+                query_shape[2], 2, "Query points last dimension must be 2."
+            ),
+        ]
+    ):
+        return _interpolate_bilinear_impl(grid, query_points, indexing, name)
+
+
+def _interpolate_bilinear_impl(
+    grid: types.TensorLike,
+    query_points: types.TensorLike,
+    indexing: str,
+    name: Optional[str],
+) -> tf.Tensor:
+    """tf.function implementation of interpolate_bilinear."""
     with tf.name_scope(name or "interpolate_bilinear"):
-        grid = tf.convert_to_tensor(grid)
-        query_points = tf.convert_to_tensor(query_points)
-
-        # grid shape checks
-        grid_static_shape = grid.shape
         grid_shape = tf.shape(grid)
-        if grid_static_shape.dims is not None:
-            if len(grid_static_shape) != 4:
-                raise ValueError("Grid must be 4D Tensor")
-            if grid_static_shape[1] is not None and grid_static_shape[1] < 2:
-                raise ValueError("Grid height must be at least 2.")
-            if grid_static_shape[2] is not None and grid_static_shape[2] < 2:
-                raise ValueError("Grid width must be at least 2.")
-
-        # query_points shape checks
-        query_static_shape = query_points.shape
         query_shape = tf.shape(query_points)
-        if query_static_shape.dims is not None:
-            if len(query_static_shape) != 3:
-                raise ValueError("Query points must be 3 dimensional.")
-            query_hw = query_static_shape[2]
-            if query_hw is not None and query_hw != 2:
-                raise ValueError("Query points last dimension must be 2.")
 
         batch_size, height, width, channels = (
             grid_shape[0],

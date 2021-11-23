@@ -166,8 +166,8 @@ def InvokeNvcc(argv, log=False):
   undefines = GetOptionValue(argv, 'U')
   undefines = ''.join([' -U' + define for define in undefines])
   std_options = GetOptionValue(argv, 'std')
-  # currently only c++11 is supported by Cuda 7.0 std argument
-  nvcc_allowed_std_options = ["c++11"]
+  # Supported -std flags as of CUDA 9.0. Only keep last to mimic gcc/clang.
+  nvcc_allowed_std_options = ["c++03", "c++11", "c++14"]
   std_options = ''.join([' -std=' + define
       for define in std_options if define in nvcc_allowed_std_options])
 

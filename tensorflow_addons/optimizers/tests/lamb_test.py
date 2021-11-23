@@ -138,7 +138,7 @@ def test_basic_with_learning_rate_decay():
             beta_1=beta_1,
             beta_2=beta_2,
             epsilon=epsilon,
-            weight_decay_rate=lamb_wd,
+            weight_decay=lamb_wd,
             decay=decay,
         )
 
@@ -280,7 +280,7 @@ def test_minimize_mean_square_loss_with_weight_decay():
     def loss():
         return tf.reduce_mean(tf.square(x - w))
 
-    opt = lamb.LAMB(0.02, weight_decay_rate=0.01)
+    opt = lamb.LAMB(0.02, weight_decay=0.01)
 
     # Run 200 steps
     for _ in range(200):
@@ -334,7 +334,7 @@ def test_get_config():
 
 
 def test_exclude_weight_decay():
-    opt = lamb.LAMB(0.01, weight_decay_rate=0.01, exclude_from_weight_decay=["var1"])
+    opt = lamb.LAMB(0.01, weight_decay=0.01, exclude_from_weight_decay=["var1"])
     assert opt._do_use_weight_decay("var0")
     assert not opt._do_use_weight_decay("var1")
     assert not opt._do_use_weight_decay("var1_weight")
@@ -352,3 +352,10 @@ def test_serialization():
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
+
+
+def test_weight_decay_rate_deprecation():
+    with pytest.deprecated_call():
+        opt = lamb.LAMB(0.01, weight_decay_rate=0.01)
+        config = opt.get_config()
+        assert config["weight_decay"] == 0.01

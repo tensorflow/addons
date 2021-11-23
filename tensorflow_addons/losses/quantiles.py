@@ -29,7 +29,7 @@ def pinball_loss(
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
 
-    In the context of regression this, loss yields an estimator of the tau
+    In the context of regression this loss yields an estimator of the tau
     conditional quantile.
 
     See: https://en.wikipedia.org/wiki/Quantile_regression

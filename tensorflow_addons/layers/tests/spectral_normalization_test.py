@@ -109,6 +109,7 @@ def test_model_build(base_layer_fn, input_shape):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_normalization():
     inputs = tf.keras.layers.Input(shape=[2, 2, 1])
 

@@ -82,13 +82,13 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         assert isinstance(optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
-            optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.trainable_weights)
             return super()._save_model(*args, **kwargs)
         else:
             # Note: `model.get_weights()` gives us the weights (non-ref)
             # whereas `model.variables` returns references to the variables.
             non_avg_weights = self.model.get_weights()
-            optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.trainable_weights)
             # result is currently None, since `super._save_model` doesn't
             # return anything, but this may change in the future.
             result = super()._save_model(*args, **kwargs)

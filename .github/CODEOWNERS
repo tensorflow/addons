@@ -55,6 +55,8 @@
 /tensorflow_addons/image/tests/translate_ops_test.py @sayoojbk
 
 /tensorflow_addons/layers/adaptive_pooling.py @Susmit-A
+/tensorflow_addons/layers/crf.py @howl-anderson
+/tensorflow_addons/layers/tests/crf_test.py @howl-anderson
 /tensorflow_addons/layers/tests/adaptive_pooling_test.py @Susmit-A
 /tensorflow_addons/layers/gelu.py @aakashkumarnain
 /tensorflow_addons/layers/tests/gelu_test.py @aakashkumarnain
@@ -88,10 +90,12 @@
 /tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
 /tensorflow_addons/layers/stochastic_depth.py @mhstadler @windqaq
 /tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
-/tensorflow_addons/layers/noisy_dense.py @leonshams @markub3327
-/tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams @markub3327
+/tensorflow_addons/layers/noisy_dense.py @markub3327
+/tensorflow_addons/layers/tests/noisy_dense_test.py @markub3327
 /tensorflow_addons/layers/max_unpooling_2d.py @thaink
 /tensorflow_addons/layers/tests/max_unpooling_2d_test.py @thaink
+/tensorflow_addons/layers/max_unpooling_2d_v2.py @midsterx
+/tensorflow_addons/layers/tests/max_unpooling_2d_v2_test.py @midsterx
 /tensorflow_addons/layers/embedding_bag.py @rocketknight1
 /tensorflow_addons/layers/tests/embedding_bag_test.py @rocketknight1
 
@@ -147,14 +151,14 @@
 /tensorflow_addons/optimizers/tests/lookahead_test.py @cyberzhg
 /tensorflow_addons/optimizers/moving_average.py @squadrick
 /tensorflow_addons/optimizers/tests/moving_average_test.py @squadrick
-/tensorflow_addons/optimizers/novograd.py @shreyashpatodia
-/tensorflow_addons/optimizers/tests/novograd_test.py @shreyashpatodia
+/tensorflow_addons/optimizers/novograd.py @szutenberg
+/tensorflow_addons/optimizers/tests/novograd_test.py @szutenberg
 /tensorflow_addons/optimizers/proximal_adagrad.py @WindQAQ
 /tensorflow_addons/optimizers/tests/proximal_adagrad_test.py @WindQAQ
-/tensorflow_addons/optimizers/rectified_adam.py @cyberzhg
-/tensorflow_addons/optimizers/tests/rectified_adam_test.py @cyberzhg
-/tensorflow_addons/optimizers/stochastic_weight_averaging.py @shreyashpatodia
-/tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py @shreyashpatodia
+/tensorflow_addons/optimizers/rectified_adam.py @szutenberg
+/tensorflow_addons/optimizers/tests/rectified_adam_test.py @szutenberg
+/tensorflow_addons/optimizers/stochastic_weight_averaging.py @szutenberg
+/tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py @szutenberg
 /tensorflow_addons/optimizers/weight_decay_optimizers.py @philjd
 /tensorflow_addons/optimizers/tests/weight_decay_optimizers_test.py @philjd
 /tensorflow_addons/optimizers/yogi.py @manzilz
@@ -177,8 +181,10 @@
 
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 
-/tensorflow_addons/text/crf.py @squadrick
-/tensorflow_addons/text/tests/crf_test.py @squadrick
+/tensorflow_addons/text/crf.py @howl-anderson
+/tensorflow_addons/text/tests/crf_test.py @howl-anderson
+/tensorflow_addons/text/crf_wrapper.py @howl-anderson
+/tensorflow_addons/text/tests/crf_wrapper_test.py @howl-anderson
 /tensorflow_addons/text/parse_time_op.py @helinwang
 /tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
 /tensorflow_addons/text/skip_gram_ops.py @rahulunair
