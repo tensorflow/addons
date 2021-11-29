@@ -33,7 +33,7 @@ typedef Eigen::GpuDevice GPUDevice;
   (k * height * width * channels + i * width * channels + j * channels + c)
 
 template <typename T>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(const T* f, T* d, int* v,
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(T* f, T* d, int* v,
                                                     T* z, int n) {
   // index of rightmost parabola in lower envelope
   int k = 0;
@@ -94,7 +94,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
       int index = GET_INDEX(i, j, k, c);
       f[j] = output[index];
     }
-    Distance<T>(&f, &d, &vw, &zw, width);
+    Distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
       int index = GET_INDEX(i, j, k, c);
       if (Eigen::numext::isinf(d[j])) {
@@ -108,7 +108,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
       int index = GET_INDEX(i, j, k, c);
       f[i] = output[index];
     }
-    Distance<T>(&f, &d, &vh, &zh, height);
+    Distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
       int index = GET_INDEX(i, j, k, c);
       if (Eigen::numext::isinf(d[i])) {
