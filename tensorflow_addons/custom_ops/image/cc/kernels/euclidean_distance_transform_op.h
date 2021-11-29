@@ -81,20 +81,20 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     }
   }
   int max = Eigen::numext::maxi(height, width);
-  T* f[max];
-  T* d[max];
+  T f[max];
+  T d[max];
   // locations of parabolas in lower envelope
-  int* vw[width];
-  int* vh[height];
+  int vw[width];
+  int vh[height];
   // locations of boundaries between parabolas
-  T* zw[width + 1];
-  T* zh[height + 1];
+  T zw[width + 1];
+  T zh[height + 1];
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       int index = GET_INDEX(i, j, k, c);
       f[j] = output[index];
     }
-    Distance<T>(f, d, vw, zw, width);
+    Distance<T>(&f, &d, &vw, &zw, width);
     for (int j = 0; j < width; j++) {
       int index = GET_INDEX(i, j, k, c);
       if (Eigen::numext::isinf(d[j])) {
@@ -108,7 +108,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
       int index = GET_INDEX(i, j, k, c);
       f[i] = output[index];
     }
-    Distance<T>(f, d, vh, zh, height);
+    Distance<T>(&f, &d, &vh, &zh, height);
     for (int i = 0; i < height; i++) {
       int index = GET_INDEX(i, j, k, c);
       if (Eigen::numext::isinf(d[i])) {
