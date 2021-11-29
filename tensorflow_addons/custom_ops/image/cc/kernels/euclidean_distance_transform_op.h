@@ -81,14 +81,14 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     }
   }
   int max = Eigen::numext::maxi(height, width);
-  T* f = new T[max];
-  T* d = new T[max];
+  T* f[max];
+  T* d[max];
   // locations of parabolas in lower envelope
-  int* vw = new int[width];
-  int* vh = new int[height];
+  int* vw[width];
+  int* vh[height];
   // locations of boundaries between parabolas
-  T* zw = new T[width + 1];
-  T* zh = new T[height + 1];
+  T* zw[width + 1];
+  T* zh[height + 1];
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       int index = GET_INDEX(i, j, k, c);
@@ -117,12 +117,6 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }
-  delete f;
-  delete d;
-  delete vh;
-  delete vw;
-  delete zh;
-  delete zw;
 }
 
 namespace functor {
