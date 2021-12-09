@@ -239,7 +239,9 @@ def test_interpolation():
 def test_size_exception():
     """Make sure it throws an exception for images that are too small."""
     shape = [1, 2, 1, 1]
-    with pytest.raises(ValueError, match="Grid width must be at least 2."):
+    with pytest.raises(
+        tf.errors.InvalidArgumentError, match="Grid width must be at least 2."
+    ):
         _check_interpolation_correctness(shape, "float32", "float32")
 
 
@@ -250,11 +252,3 @@ def test_unknown_shapes():
     shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
     for shape in shapes_to_try:
         _check_interpolation_correctness(shape, "float32", "float32", True)
-
-
-@pytest.mark.usefixtures("only_run_functions_eagerly")
-def test_symbolic_tensor_shape():
-    image = tf.keras.layers.Input(shape=(7, 7, 192))
-    flow = tf.ones((1, 7, 7, 2))
-    interp = dense_image_warp(image, flow)
-    np.testing.assert_array_equal(interp.shape.as_list(), [None, 7, 7, 192])
