@@ -5,7 +5,7 @@ ARG TF_VERSION=2.7.0
 RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+COPY tools/install_deps/install_bazelisk.sh .bazeliskrc ./
 RUN bash install_bazelisk.sh
 
 COPY requirements.txt ./
