@@ -235,6 +235,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
                 "beta_1": self._serialize_hyperparameter("beta_1"),
                 "beta_2": self._serialize_hyperparameter("beta_2"),
                 "epsilon": self.epsilon,
+                "exclude_from_weight_decay": self.exclude_from_weight_decay,
+                "exclude_from_layer_adaptation": self.exclude_from_layer_adaptation,
             }
         )
         return config
