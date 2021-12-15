@@ -14,11 +14,12 @@
 # ==============================================================================
 """Base class to make optimizers weight decay ready."""
 
+import re
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typeguard import typechecked
-from typing import Union, Callable, Type
+from typing import Union, Callable, Type, Optional, List
 
 
 class DecoupledWeightDecayExtension:
@@ -71,7 +72,12 @@ class DecoupledWeightDecayExtension:
     """
 
     @typechecked
-    def __init__(self, weight_decay: Union[FloatTensorLike, Callable], **kwargs):
+    def __init__(
+        self,
+        weight_decay: Union[FloatTensorLike, Callable],
+        exclude_from_weight_decay: Optional[List[str]] = None,
+        **kwargs,
+    ):
         """Extension class that adds weight decay to an optimizer.
 
         Args:
@@ -85,10 +91,16 @@ class DecoupledWeightDecayExtension:
         super().__init__(**kwargs)
         self._decay_var_list = None  # is set in minimize or apply_gradients
         self._set_hyper("weight_decay", wd)
+        self.exclude_from_weight_decay = exclude_from_weight_decay
 
     def get_config(self):
         config = super().get_config()
-        config.update({"weight_decay": self._serialize_hyperparameter("weight_decay")})
+        config.update(
+            {
+                "weight_decay": self._serialize_hyperparameter("weight_decay"),
+                "exclude_from_weight_decay": self.exclude_from_weight_decay,
+            }
+        )
         return config
 
     @classmethod
@@ -173,7 +185,7 @@ class DecoupledWeightDecayExtension:
         return super().apply_gradients(grads_and_vars, name=name, **kwargs)
 
     def _decay_weights_op(self, var, apply_state=None):
-        if not self._decay_var_list or var.ref() in self._decay_var_list:
+        if self._do_use_weight_decay(var):
             var_device, var_dtype = var.device, var.dtype.base_dtype
             coefficients = (apply_state or {}).get(
                 (var_device, var_dtype)
@@ -183,7 +195,7 @@ class DecoupledWeightDecayExtension:
         return tf.no_op()
 
     def _decay_weights_sparse_op(self, var, indices, apply_state=None):
-        if not self._decay_var_list or var.ref() in self._decay_var_list:
+        if self._do_use_weight_decay(var):
             var_device, var_dtype = var.device, var.dtype.base_dtype
             coefficients = (apply_state or {}).get(
                 (var_device, var_dtype)
@@ -225,6 +237,25 @@ class DecoupledWeightDecayExtension:
             return super()._resource_apply_sparse(
                 grad, var, indices, apply_state=apply_state
             )
+
+    def _do_use_weight_decay(self, var):
+        """Whether to use L2 weight decay for `var`."""
+        if not self._decay_var_list or var.ref() in self._decay_var_list:
+            if self.exclude_from_weight_decay:
+                var_name = self._get_variable_name(var.name)
+                for r in self.exclude_from_weight_decay:
+                    if re.search(r, var_name) is not None:
+                        # print("Filtered:", var_name)
+                        return False
+            return True
+        return False
+
+    def _get_variable_name(self, param_name):
+        """Get the variable name from the tensor name."""
+        m = re.match("^(.*):\\d+$", param_name)
+        if m is not None:
+            param_name = m.group(1)
+        return param_name
 
 
 @typechecked
