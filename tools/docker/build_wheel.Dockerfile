@@ -42,8 +42,11 @@ ARG NIGHTLY_TIME
 
 RUN python configure.py
 
-RUN bash tools/testing/build_and_run_tests.sh && \
-    bazel build \
+# Test Before Building
+RUN bash tools/testing/build_and_run_tests.sh
+
+# Build
+RUN bazel build \
         --noshow_progress \
         --noshow_loading_progress \
         --verbose_failures \
