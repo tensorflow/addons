@@ -38,7 +38,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['macos-11', 'windows-latest', 'ubuntu-18.04']
+        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.7', '3.8', '3.9']
         tf-version: ['2.5.1', '2.7.0']
         cpu: ['x86']
