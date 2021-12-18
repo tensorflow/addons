@@ -65,7 +65,7 @@ def get_variable_name(variable) -> str:
 
 
 def is_variable_excluded_by_regexes(variable, exclude_regexes: List[str]) -> bool:
-    """Whether to use L2 weight decay for `param_name`."""
+    """Whether variable is excluded in exclude_regexes by its name."""
     if exclude_regexes:
         # var_name = get_variable_name(variable)
         var_name = variable.name
