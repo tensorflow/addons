@@ -335,20 +335,22 @@ def test_get_config():
 
 def test_exclude_weight_decay():
     opt = lamb.LAMB(0.01, weight_decay=0.01, exclude_from_weight_decay=["var1"])
-    assert opt._do_use_weight_decay("var0")
-    assert not opt._do_use_weight_decay("var1")
-    assert not opt._do_use_weight_decay("var1_weight")
+    assert opt._do_use_weight_decay(tf.Variable([], name="var0"))
+    assert not opt._do_use_weight_decay(tf.Variable([], name="var1"))
+    assert not opt._do_use_weight_decay(tf.Variable([], name="var1_weight"))
 
 
 def test_exclude_layer_adaptation():
     opt = lamb.LAMB(0.01, exclude_from_layer_adaptation=["var1"])
-    assert opt._do_layer_adaptation("var0")
-    assert not opt._do_layer_adaptation("var1")
-    assert not opt._do_layer_adaptation("var1_weight")
+    assert opt._do_layer_adaptation(tf.Variable([], name="var0"))
+    assert not opt._do_layer_adaptation(tf.Variable([], name="var1"))
+    assert not opt._do_layer_adaptation(tf.Variable([], name="var1_weight"))
 
 
 def test_serialization():
-    optimizer = lamb.LAMB(1e-4)
+    optimizer = lamb.LAMB(
+        1e-4, weight_decay_rate=0.01, exclude_from_weight_decay=["var1"]
+    )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()

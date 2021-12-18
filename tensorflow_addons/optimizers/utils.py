@@ -14,7 +14,9 @@
 # ==============================================================================
 """Additional Utilities used for tfa.optimizers."""
 
+import re
 import tensorflow as tf
+from typing import List
 
 
 def fit_bn(model, *args, **kwargs):
@@ -51,3 +53,22 @@ def fit_bn(model, *args, **kwargs):
 
     model.trainable = _trainable
     model._metrics = _metrics
+
+
+def get_variable_name(variable) -> str:
+    """Get the variable name from the variable tensor."""
+    param_name = variable.name
+    m = re.match("^(.*):\\d+$", param_name)
+    if m is not None:
+        param_name = m.group(1)
+    return param_name
+
+
+def is_variable_excluded_by_regexes(variable, exclude_regexes: List[str]) -> bool:
+    """Whether to use L2 weight decay for `param_name`."""
+    if exclude_regexes:
+        var_name = get_variable_name(variable)
+        for r in exclude_regexes:
+            if re.search(r, var_name):
+                return True
+    return False

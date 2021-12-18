@@ -14,9 +14,9 @@
 # ==============================================================================
 """Base class to make optimizers weight decay ready."""
 
-import re
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.optimizers.utils import is_variable_excluded_by_regexes
 
 from typeguard import typechecked
 from typing import Union, Callable, Type, Optional, List
@@ -84,6 +84,9 @@ class DecoupledWeightDecayExtension:
             weight_decay: A `Tensor`, a floating point value, or a schedule
                 that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
                 to decay the variable by, in the update step.
+            exclude_from_weight_decay: List of regex patterns of
+              variables excluded from weight decay. Variables whose name
+              contain a substring matching the pattern will be excluded.
             **kwargs: Optional list or tuple or set of `Variable` objects to
                 decay.
         """
@@ -240,22 +243,9 @@ class DecoupledWeightDecayExtension:
 
     def _do_use_weight_decay(self, var):
         """Whether to use L2 weight decay for `var`."""
-        if not self._decay_var_list or var.ref() in self._decay_var_list:
-            if self.exclude_from_weight_decay:
-                var_name = self._get_variable_name(var.name)
-                for r in self.exclude_from_weight_decay:
-                    if re.search(r, var_name) is not None:
-                        # print("Filtered:", var_name)
-                        return False
+        if self._decay_var_list and var.ref() in self._decay_var_list:
             return True
-        return False
-
-    def _get_variable_name(self, param_name):
-        """Get the variable name from the tensor name."""
-        m = re.match("^(.*):\\d+$", param_name)
-        if m is not None:
-            param_name = m.group(1)
-        return param_name
+        return not is_variable_excluded_by_regexes(var, self.exclude_from_weight_decay)
 
 
 @typechecked

@@ -18,7 +18,6 @@ See paper [Large Batch Optimization for Deep Learning: Training BERT in
 76 minutes](https://arxiv.org/abs/1904.00962).
 """
 
-import re
 import warnings
 
 from typing import Optional, Union, Callable, List
@@ -26,6 +25,7 @@ from typeguard import typechecked
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.optimizers.utils import is_variable_excluded_by_regexes
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -163,12 +163,11 @@ class LAMB(tf.keras.optimizers.Optimizer):
         v_sqrt = tf.sqrt(v_t_hat)
         update = m_t_hat / (v_sqrt + coefficients["epsilon"])
 
-        var_name = self._get_variable_name(var.name)
-        if self._do_use_weight_decay(var_name):
+        if self._do_use_weight_decay(var):
             update += coefficients["weight_decay"] * var
 
         ratio = 1.0
-        if self._do_layer_adaptation(var_name):
+        if self._do_layer_adaptation(var):
             w_norm = tf.norm(var, ord=2)
             g_norm = tf.norm(update, ord=2)
             ratio = tf.where(
@@ -206,12 +205,11 @@ class LAMB(tf.keras.optimizers.Optimizer):
         v_sqrt = tf.sqrt(v_t_hat)
         update = m_t_hat / (v_sqrt + coefficients["epsilon"])
 
-        var_name = self._get_variable_name(var.name)
-        if self._do_use_weight_decay(var_name):
+        if self._do_use_weight_decay(var):
             update += coefficients["weight_decay"] * var
 
         ratio = 1.0
-        if self._do_layer_adaptation(var_name):
+        if self._do_layer_adaptation(var):
             w_norm = tf.norm(var, ord=2)
             g_norm = tf.norm(update, ord=2)
             ratio = tf.where(
@@ -241,26 +239,15 @@ class LAMB(tf.keras.optimizers.Optimizer):
         )
         return config
 
-    def _do_use_weight_decay(self, param_name):
+    def _do_use_weight_decay(self, variable):
         """Whether to use L2 weight decay for `param_name`."""
-        if self.exclude_from_weight_decay:
-            for r in self.exclude_from_weight_decay:
-                if re.search(r, param_name) is not None:
-                    return False
-        return True
+        return not is_variable_excluded_by_regexes(
+            variable, self.exclude_from_weight_decay
+        )
 
-    def _do_layer_adaptation(self, param_name):
+    def _do_layer_adaptation(self, variable):
         """Whether to do layer-wise learning rate adaptation for
         `param_name`."""
-        if self.exclude_from_layer_adaptation:
-            for r in self.exclude_from_layer_adaptation:
-                if re.search(r, param_name) is not None:
-                    return False
-        return True
-
-    def _get_variable_name(self, param_name):
-        """Get the variable name from the tensor name."""
-        m = re.match("^(.*):\\d+$", param_name)
-        if m is not None:
-            param_name = m.group(1)
-        return param_name
+        return not is_variable_excluded_by_regexes(
+            variable, self.exclude_from_layer_adaptation
+        )
