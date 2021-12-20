@@ -25,7 +25,7 @@ from typeguard import typechecked
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
-from tensorflow_addons.optimizers.utils import is_variable_excluded_by_regexes
+from tensorflow_addons.optimizers.utils import is_variable_matched_by_regexes
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -241,13 +241,13 @@ class LAMB(tf.keras.optimizers.Optimizer):
 
     def _do_use_weight_decay(self, variable):
         """Whether to use L2 weight decay for `param_name`."""
-        return not is_variable_excluded_by_regexes(
+        return not is_variable_matched_by_regexes(
             variable, self.exclude_from_weight_decay
         )
 
     def _do_layer_adaptation(self, variable):
         """Whether to do layer-wise learning rate adaptation for
         `param_name`."""
-        return not is_variable_excluded_by_regexes(
+        return not is_variable_matched_by_regexes(
             variable, self.exclude_from_layer_adaptation
         )

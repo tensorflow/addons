@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
-from tensorflow_addons.optimizers.utils import is_variable_excluded_by_regexes
+from tensorflow_addons.optimizers.utils import is_variable_matched_by_regexes
 
 from typeguard import typechecked
 from typing import Union, Callable, Type, Optional, List
@@ -87,6 +87,8 @@ class DecoupledWeightDecayExtension:
             exclude_from_weight_decay: List of regex patterns of
               variables excluded from weight decay. Variables whose name
               contain a substring matching the pattern will be excluded.
+              Note `decay_var_list` in `minimize` or `apply_gradients` takes
+              priority over `exclude_from_weight_decay` if specified.
             **kwargs: Optional list or tuple or set of `Variable` objects to
                 decay.
         """
@@ -145,7 +147,8 @@ class DecoupledWeightDecayExtension:
             grad_loss: Optional. A `Tensor` holding the gradient computed for
                 `loss`.
             decay_var_list: Optional list of variables to be decayed. Defaults
-                to all variables in var_list.
+                to all variables in var_list. Note `decay_var_list` takes
+                priority over `exclude_from_weight_decay` if specified.
             name: Optional name for the returned operation.
             tape: (Optional) `tf.GradientTape`. If `loss` is provided as a
                 `Tensor`, the tape that computed the `loss` must be provided.
@@ -169,10 +172,11 @@ class DecoupledWeightDecayExtension:
 
         Args:
             grads_and_vars: List of (gradient, variable) pairs.
-            name: Optional name for the returned operation.  Default to the
+            name: Optional name for the returned operation. Default to the
                 name passed to the `Optimizer` constructor.
             decay_var_list: Optional list of variables to be decayed. Defaults
-                to all variables in var_list.
+                to all variables in var_list. Note `decay_var_list` takes
+                priority over `exclude_from_weight_decay` if specified.
             **kwargs: Additional arguments to pass to the base optimizer's
                 apply_gradient method, e.g., TF2.2 added an argument
                 `experimental_aggregate_gradients`.
@@ -245,7 +249,7 @@ class DecoupledWeightDecayExtension:
         """Whether to use L2 weight decay for `var`."""
         if self._decay_var_list and var.ref() in self._decay_var_list:
             return True
-        return not is_variable_excluded_by_regexes(var, self.exclude_from_weight_decay)
+        return not is_variable_matched_by_regexes(var, self.exclude_from_weight_decay)
 
 
 @typechecked
@@ -264,9 +268,13 @@ def extend_with_decoupled_weight_decay(
     The API of the new optimizer class slightly differs from the API of the
     base optimizer:
     - The first argument to the constructor is the weight decay rate.
+    - Optional keyword argument `exclude_from_weight_decay` accepts list of
+      regex patterns of variables excluded from weight decay. Variables whose
+      name contain a substring matching the pattern will be excluded.
     - `minimize` and `apply_gradients` accept the optional keyword argument
       `decay_var_list`, which specifies the variables that should be decayed.
-      If `None`, all variables that are optimized are decayed.
+      Note this takes priority over `exclude_from_weight_decay` if specified.
+      If both `None`, all variables that are optimized are decayed.
 
     Usage example:
     ```python
@@ -397,12 +405,14 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
             nesterov: boolean. Whether to apply Nesterov momentum.
             name: Optional name prefix for the operations created when applying
                 gradients.  Defaults to 'SGD'.
-            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
-                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
-                norm; `clipvalue` is clip gradients by value, `decay` is
-                included for backward compatibility to allow time inverse decay
-                of learning rate. `lr` is included for backward compatibility,
-                recommended to use `learning_rate` instead.
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
+                `lr`, `decay`, `exclude_from_weight_decay`}. `clipnorm` is clip
+                gradients by norm; `clipvalue` is clip gradients by value.
+                `decay` is included for backward compatibility to allow time
+                inverse decay of learning rate. `lr` is included for backward
+                compatibility, recommended to use `learning_rate` instead.
+                `exclude_from_weight_decay` accepts list of regex patterns of
+                variables excluded from weight decay.
         """
         super().__init__(
             weight_decay,
@@ -487,12 +497,14 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
                 beyond".
             name: Optional name for the operations created when applying
                 gradients. Defaults to "AdamW".
-            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
-                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
-                norm; `clipvalue` is clip gradients by value, `decay` is
-                included for backward compatibility to allow time inverse decay
-                of learning rate. `lr` is included for backward compatibility,
-                recommended to use `learning_rate` instead.
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
+                `lr`, `decay`, `exclude_from_weight_decay`}. `clipnorm` is clip
+                gradients by norm; `clipvalue` is clip gradients by value.
+                `decay` is included for backward compatibility to allow time
+                inverse decay of learning rate. `lr` is included for backward
+                compatibility, recommended to use `learning_rate` instead.
+                `exclude_from_weight_decay` accepts list of regex patterns of
+                variables excluded from weight decay.
         """
         super().__init__(
             weight_decay,
