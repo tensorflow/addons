@@ -64,12 +64,12 @@ def get_variable_name(variable) -> str:
     return param_name
 
 
-def is_variable_matched_by_regexes(variable, exclude_regexes: List[str]) -> bool:
-    """Whether variable is excluded in exclude_regexes by its name."""
-    if exclude_regexes:
+def is_variable_matched_by_regexes(variable, regexes: List[str]) -> bool:
+    """Whether variable is matched in regexes list by its name."""
+    if regexes:
         # var_name = get_variable_name(variable)
         var_name = variable.name
-        for r in exclude_regexes:
+        for r in regexes:
             if re.search(r, var_name):
                 return True
     return False
