@@ -189,3 +189,5 @@
 /tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
 /tensorflow_addons/text/skip_gram_ops.py @rahulunair
 /tensorflow_addons/text/tests/skip_gram_ops_test.py @rahulunair
+
+/tools/ @vulkomilev
