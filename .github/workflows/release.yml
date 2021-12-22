@@ -16,7 +16,7 @@ on:
 
 env:
   MIN_PY_VERSION: '3.7'
-  MAX_PY_VERSION: '3.9'
+  MAX_PY_VERSION: '3.10'
 
 jobs:
   test-with-bazel:
@@ -39,8 +39,8 @@ jobs:
     strategy:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
-        py-version: ['3.7', '3.8', '3.9']
-        tf-version: ['2.5.1', '2.7.0']
+        py-version: ['3.7', '3.8', '3.9', '3.10']
+        tf-version: ['2.5.1', '2.8.0rc0']
         cpu: ['x86']
         include:
           - os: 'macos-11'
@@ -93,8 +93,8 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.7', '3.8', '3.9']
-        tf-version: ['2.7.0']
+        py-version: ['3.7', '3.8', '3.9', '3.10']
+        tf-version: ['2.8.0rc0']
         cpu: ['x86']
         include:
           - os: 'macOS'
