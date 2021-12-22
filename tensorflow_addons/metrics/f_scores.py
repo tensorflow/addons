@@ -203,9 +203,15 @@ class FBetaScore(tf.keras.metrics.Metric):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def reset_states(self):
+    def reset_state(self):
         reset_value = tf.zeros(self.init_shape, dtype=self.dtype)
         K.batch_set_value([(v, reset_value) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

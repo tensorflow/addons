@@ -75,5 +75,11 @@ class GeometricMean(Metric):
         ret = tf.math.exp(self.total / self.count)
         return tf.cast(ret, dtype=self.dtype)
 
-    def reset_states(self) -> None:
+    def reset_state(self) -> None:
         K.batch_set_value([(v, 0) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()

@@ -113,7 +113,12 @@ def test_dynamic_decode_tflite_conversion():
     concrete_function = _decode.get_concrete_function(
         tf.TensorSpec([1], dtype=tf.int32), tf.TensorSpec([], dtype=tf.int32)
     )
-    converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_function])
+    if tf.__version__[:3] >= "2.7":
+        converter = tf.lite.TFLiteConverter.from_concrete_functions(
+            [concrete_function], _decode
+        )
+    else:
+        converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_function])
     converter.target_spec.supported_ops = [
         tf.lite.OpsSet.TFLITE_BUILTINS,
         tf.lite.OpsSet.SELECT_TF_OPS,

@@ -178,6 +178,7 @@ def test_no_tf_control_dependencies():
     allowlist = [
         "tensorflow_addons/layers/wrappers.py",
         "tensorflow_addons/image/utils.py",
+        "tensorflow_addons/image/dense_image_warp.py",
         "tensorflow_addons/optimizers/average_wrapper.py",
         "tensorflow_addons/optimizers/yogi.py",
         "tensorflow_addons/optimizers/lookahead.py",

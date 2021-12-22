@@ -14,11 +14,9 @@
 # ==============================================================================
 
 import tensorflow as tf
-import math
 import warnings
 
 from tensorflow_addons.utils.types import TensorLike
-from distutils.version import LooseVersion
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -48,8 +46,8 @@ def gelu(x: TensorLike, approximate: bool = True) -> tf.Tensor:
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
 
-    Note that `approximate` will default to `False` from TensorFlow version 2.4 onwards.
     Consider using `tf.nn.gelu` instead.
+    Note that the default of `approximate` changed to `False` in `tf.nn.gelu`.
 
     Usage:
 
@@ -68,28 +66,9 @@ def gelu(x: TensorLike, approximate: bool = True) -> tf.Tensor:
     """
     warnings.warn(
         "gelu activation has been migrated to core TensorFlow, "
-        "and will be deprecated in Addons 0.13.",
+        "and will be deprecated in Addons 0.13. "
+        "Note that the default of `approximate` changed to `False` in `tf.nn.gelu`.",
         DeprecationWarning,
     )
 
-    x = tf.convert_to_tensor(x)
-
-    if LooseVersion(tf.__version__) >= "2.4":
-        gelu_op = tf.nn.gelu
-        warnings.warn(
-            "Default value of `approximate` is changed from `True` to `False`"
-        )
-    else:
-        gelu_op = _gelu_py
-
-    return gelu_op(x, approximate)
-
-
-def _gelu_py(x: TensorLike, approximate: bool = True) -> tf.Tensor:
-    x = tf.convert_to_tensor(x)
-    if approximate:
-        pi = tf.cast(math.pi, x.dtype)
-        coeff = tf.cast(0.044715, x.dtype)
-        return 0.5 * x * (1.0 + tf.tanh(tf.sqrt(2.0 / pi) * (x + coeff * tf.pow(x, 3))))
-    else:
-        return 0.5 * x * (1.0 + tf.math.erf(x / tf.cast(tf.sqrt(2.0), x.dtype)))
+    return tf.nn.gelu(x, approximate)

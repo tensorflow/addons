@@ -63,9 +63,8 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
 
     def _get_optimizer(self):
         optimizer = self.model.optimizer
-        # TODO(fsx950223): change _optimizer to inner_optimizer after tf2.3 is not support
         if type(optimizer).__name__ in ["LossScaleOptimizer", "LossScaleOptimizerV1"]:
-            optimizer = optimizer._optimizer
+            optimizer = optimizer.inner_optimizer
 
         return optimizer
 
@@ -78,20 +77,20 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
                 "with MovingAverage or StochasticAverage"
             )
 
-    def _save_model(self, epoch, logs):
+    def _save_model(self, *args, **kwargs):
         optimizer = self._get_optimizer()
         assert isinstance(optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
-            optimizer.assign_average_vars(self.model.variables)
-            return super()._save_model(epoch, logs)
+            optimizer.assign_average_vars(self.model.trainable_weights)
+            return super()._save_model(*args, **kwargs)
         else:
             # Note: `model.get_weights()` gives us the weights (non-ref)
             # whereas `model.variables` returns references to the variables.
             non_avg_weights = self.model.get_weights()
-            optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.trainable_weights)
             # result is currently None, since `super._save_model` doesn't
             # return anything, but this may change in the future.
-            result = super()._save_model(epoch, logs)
+            result = super()._save_model(*args, **kwargs)
             self.model.set_weights(non_avg_weights)
             return result

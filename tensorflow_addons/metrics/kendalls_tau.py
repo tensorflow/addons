@@ -76,7 +76,7 @@ class KendallsTau(Metric):
         self.preds_max = preds_max
         self.actual_cutpoints = actual_cutpoints
         self.preds_cutpoints = preds_cutpoints
-        self.reset_states()
+        self.reset_state()
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates ranks.
@@ -177,7 +177,7 @@ class KendallsTau(Metric):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def reset_states(self):
+    def reset_state(self):
         """Resets all of the metric state variables."""
         self.actual_cuts = tf.linspace(
             tf.cast(self.actual_min, tf.float32),
@@ -201,3 +201,9 @@ class KendallsTau(Metric):
             tf.zeros((0, 1), dtype=tf.int64), [], [self.preds_cutpoints]
         )
         self.n = 0
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()

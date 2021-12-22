@@ -27,7 +27,7 @@ COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
-RUN rm /addons/.bazelversion
+RUN rm /addons/.bazeliskrc
 WORKDIR /addons
 
 # -------------------------------------------------------------------

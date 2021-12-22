@@ -49,7 +49,7 @@ def is_linux():
 
 
 def is_raspi_arm():
-    return os.uname()[4] == "armv7l"
+    return os.uname()[4] == "armv7l" or os.uname()[4] == "aarch64"
 
 
 def is_linux_ppc64le():

@@ -19,6 +19,8 @@ See paper [Large Batch Optimization for Deep Learning: Training BERT in
 """
 
 import re
+import warnings
+
 from typing import Optional, Union, Callable, List
 from typeguard import typechecked
 
@@ -41,7 +43,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
         beta_1: FloatTensorLike = 0.9,
         beta_2: FloatTensorLike = 0.999,
         epsilon: FloatTensorLike = 1e-6,
-        weight_decay_rate: FloatTensorLike = 0.0,
+        weight_decay: FloatTensorLike = 0.0,
         exclude_from_weight_decay: Optional[List[str]] = None,
         exclude_from_layer_adaptation: Optional[List[str]] = None,
         name: str = "LAMB",
@@ -58,7 +60,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
             beta_2: A `float` value or a constant `float` tensor.
               The exponential decay rate for the 2nd moment estimates.
             epsilon: A small constant for numerical stability.
-            weight_decay_rate: weight decay rate.
+            weight_decay: weight decay.
             exclude_from_weight_decay: List of regex patterns of
               variables excluded from weight decay. Variables whose name
               contain a substring matching the pattern will be excluded.
@@ -74,6 +76,16 @@ class LAMB(tf.keras.optimizers.Optimizer):
               decay of learning rate. `lr` is included for backward
               compatibility, recommended to use `learning_rate` instead.
         """
+
+        if "weight_decay_rate" in kwargs:
+            warnings.warn(
+                "weight_decay_rate has been renamed to weight_decay,"
+                "and will be deprecated in Addons 0.18.",
+                DeprecationWarning,
+            )
+            weight_decay = kwargs["weight_decay_rate"]
+            del kwargs["weight_decay_rate"]
+
         super().__init__(name, **kwargs)
 
         # Just adding the square of the weights to the loss function is *not*
@@ -82,7 +94,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
         #
         # Instead we want to decay the weights in a manner that doesn't interact
         # with the m/v parameters.
-        self._set_hyper("weight_decay_rate", weight_decay_rate)
+        self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
 
         # This is learning rate decay for using keras learning rate schedule.
@@ -112,12 +124,12 @@ class LAMB(tf.keras.optimizers.Optimizer):
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper("beta_1", var_dtype))
         beta_2_t = tf.identity(self._get_hyper("beta_2", var_dtype))
-        weight_decay_rate = tf.identity(self._get_hyper("weight_decay_rate", var_dtype))
+        weight_decay = tf.identity(self._get_hyper("weight_decay", var_dtype))
         beta_1_power = tf.pow(beta_1_t, local_step)
         beta_2_power = tf.pow(beta_2_t, local_step)
         apply_state[(var_device, var_dtype)].update(
             dict(
-                weight_decay_rate=weight_decay_rate,
+                weight_decay=weight_decay,
                 epsilon=tf.convert_to_tensor(self.epsilon, var_dtype),
                 beta_1_t=beta_1_t,
                 beta_1_power=beta_1_power,
@@ -153,7 +165,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
 
         var_name = self._get_variable_name(var.name)
         if self._do_use_weight_decay(var_name):
-            update += coefficients["weight_decay_rate"] * var
+            update += coefficients["weight_decay"] * var
 
         ratio = 1.0
         if self._do_layer_adaptation(var_name):
@@ -196,7 +208,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
 
         var_name = self._get_variable_name(var.name)
         if self._do_use_weight_decay(var_name):
-            update += coefficients["weight_decay_rate"] * var
+            update += coefficients["weight_decay"] * var
 
         ratio = 1.0
         if self._do_layer_adaptation(var_name):
@@ -218,13 +230,13 @@ class LAMB(tf.keras.optimizers.Optimizer):
         config.update(
             {
                 "learning_rate": self._serialize_hyperparameter("learning_rate"),
-                "weight_decay_rate": self._serialize_hyperparameter(
-                    "weight_decay_rate"
-                ),
+                "weight_decay": self._serialize_hyperparameter("weight_decay"),
                 "decay": self._serialize_hyperparameter("decay"),
                 "beta_1": self._serialize_hyperparameter("beta_1"),
                 "beta_2": self._serialize_hyperparameter("beta_2"),
                 "epsilon": self.epsilon,
+                "exclude_from_weight_decay": self.exclude_from_weight_decay,
+                "exclude_from_layer_adaptation": self.exclude_from_layer_adaptation,
             }
         )
         return config

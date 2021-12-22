@@ -54,8 +54,8 @@ def update_obj_states(obj, actuals, preds, sample_weight=None):
 
 
 @tf.function
-def reset_obj_states(obj):
-    obj.reset_states()
+def reset_obj_state(obj):
+    obj.reset_state()
 
 
 def check_results(obj, value):
@@ -120,7 +120,7 @@ def test_r2_random_score():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_r2_reset_states():
+def test_r2_reset_state():
     actuals = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
     preds = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
     actuals = tf.cast(actuals, dtype=tf.float32)
@@ -130,7 +130,7 @@ def test_r2_reset_states():
     # Update
     update_obj_states(r2_obj, actuals, preds)
     # Reset
-    reset_obj_states(r2_obj)
+    reset_obj_state(r2_obj)
     # Check variables
     check_variables(r2_obj, 0.0)
 

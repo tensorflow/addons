@@ -15,7 +15,7 @@ must:
 Any PR which adds a new metric must ensure that:
 
 1. It inherits from the `tf.keras.metrics.Metric` class.
-2. Overrides the `update_state()`, `result()`, and `reset_states()` methods.
+2. Overrides the `update_state()`, `result()`, and `reset_state()` methods.
 3. Implements a `get_config()` method.
 
 The implementation must also ensure that the following cases are well tested and supported:

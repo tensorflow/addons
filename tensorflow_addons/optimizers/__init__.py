@@ -38,6 +38,7 @@ from tensorflow_addons.optimizers.proximal_adagrad import ProximalAdagrad
 from tensorflow_addons.optimizers.rectified_adam import RectifiedAdam
 from tensorflow_addons.optimizers.stochastic_weight_averaging import SWA
 from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
+from tensorflow_addons.optimizers.adabelief import AdaBelief
 from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
 from tensorflow_addons.optimizers.weight_decay_optimizers import (
     extend_with_decoupled_weight_decay,

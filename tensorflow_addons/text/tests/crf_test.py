@@ -498,13 +498,17 @@ def test_tf_function():
     crf_decode(potentials, transition_params, sequence_length)
 
 
+class CRFDecode(tf.keras.layers.Layer):
+    def __init__(self):
+        super().__init__()
+
+    def call(self, potentials, transition_params, sequence_length):
+        return text.crf_decode(potentials, transition_params, sequence_length)
+
+
 @pytest.mark.skipif(
     tf.__version__[:3] == "2.4",
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
-)
-@pytest.mark.skipif(
-    tf.__version__[:3] == "2.5",
-    reason="CRF decoding models have serialization issues in TF >=2.5 . Please see isse #2476",
 )
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
@@ -513,7 +517,7 @@ def test_crf_decode_save_load(tmpdir):
     transition = tf.constant([[1, 1, 0], [0, 1, 1], [1, 0, 1]], dtype=tf.float32)
 
     output = tf.multiply(input_tensor, tf.constant(1.0))
-    decoded, _ = text.crf_decode(input_tensor, transition, seq_len)
+    decoded, _ = CRFDecode()(input_tensor, transition, seq_len)
 
     model = tf.keras.Model(
         inputs=[input_tensor, seq_len], outputs=[output, decoded], name="example_model"
@@ -541,7 +545,7 @@ def test_crf_decode_save_load(tmpdir):
     )
 
     temp_dir = str(tmpdir.mkdir("model"))
-    tf.saved_model.save(model, temp_dir)
+    model.save(temp_dir)
 
     tf.keras.backend.clear_session()
     model = tf.keras.models.load_model(

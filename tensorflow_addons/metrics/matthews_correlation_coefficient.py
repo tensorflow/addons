@@ -122,7 +122,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def reset_states(self):
+    def reset_state(self):
         """Resets all of the metric state variables."""
 
         for v in self.variables:
@@ -130,3 +130,9 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
                 v,
                 np.zeros((self.num_classes, self.num_classes), v.dtype.as_numpy_dtype),
             )
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()
