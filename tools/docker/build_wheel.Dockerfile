@@ -9,14 +9,7 @@ ENV TF_NEED_CUDA="1"
 # https://github.com/pypa/setuptools/issues/2352
 ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 
-# Fix presented in
-# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
-RUN echo "#! /usr/bin/python$PY_VERSION" >> /usr/bin/lsb_release2
-RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
-RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
-
 ARG PY_VERSION
-
 ARG TF_VERSION
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
