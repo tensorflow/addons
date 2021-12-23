@@ -1,10 +1,8 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-FROM gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010-multipython as dev_container_cpu
+ARG PY_VERSION
+FROM tensorflow/build:latest-python$PY_VERSION as dev_container_cpu
 ARG TF_PACKAGE
 ARG TF_VERSION
-
-RUN ln -sf /usr/local/bin/python3.9 /usr/bin/python
-RUN ln -sf /usr/local/bin/pip3.9 /usr/local/bin/pip
 
 RUN pip install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
 

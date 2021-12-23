@@ -124,6 +124,8 @@ jobs:
     name: Upload dev container to DockerHub
     needs: [release-wheel, test-with-bazel]
     runs-on: ubuntu-18.04
+    env:
+      PY_VERSION: ${{ env.MAX_PY_VERSION }}
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v2
