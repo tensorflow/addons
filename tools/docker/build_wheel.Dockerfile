@@ -1,14 +1,8 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-ARG TF_VERSION
 ARG PY_VERSION
 FROM tensorflow/build:latest-python$PY_VERSION as base_install
+
 ENV TF_NEED_CUDA="1"
-
-# Required for setuptools v50.0.0
-# https://setuptools.readthedocs.io/en/latest/history.html#v50-0-0
-# https://github.com/pypa/setuptools/issues/2352
-ENV SETUPTOOLS_USE_DISTUTILS=stdlib
-
 ARG PY_VERSION
 ARG TF_VERSION
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
@@ -20,10 +14,9 @@ COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
-RUN rm /addons/.bazeliskrc
 WORKDIR /addons
 
-# -------------------------------------------------------------------
+# -------------------------------------------------------------------K
 FROM base_install as tfa_gpu_tests
 CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 
