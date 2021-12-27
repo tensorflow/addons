@@ -38,18 +38,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
+        os: ['macos-10.15', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.7', '3.8', '3.9']
         tf-version: ['2.5.1', '2.7.0']
         cpu: ['x86']
         include:
           - os: 'macos-11'
             cpu: 'arm64'
-            tf-version: '2.6.0'
+            tf-version: '2.7.0'
             py-version: '3.8'
           - os: 'macos-11'
             cpu: 'arm64'
-            tf-version: '2.6.0'
+            tf-version: '2.7.0'
             py-version: '3.9'
       fail-fast: false
     steps:
@@ -99,11 +99,11 @@ jobs:
         include:
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.6.0'
+            tf-version: '2.7.0'
             py-version: '3.8'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.6.0'
+            tf-version: '2.7.0'
             py-version: '3.9'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
