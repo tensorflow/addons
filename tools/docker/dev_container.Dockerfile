@@ -1,6 +1,10 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG PY_VERSION
-FROM tensorflow/build:latest-python$PY_VERSION as dev_container_cpu
+ARG IMAGE_TYPE
+
+# Currenly all of our dev images are GPU capable but at a cost of being quite large.
+# See https://github.com/tensorflow/build/pull/47
+FROM tensorflow/build:latest-python$PY_VERSION as dev_container
 ARG TF_PACKAGE
 ARG TF_VERSION
 
