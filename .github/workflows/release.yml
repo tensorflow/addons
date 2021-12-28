@@ -124,6 +124,8 @@ jobs:
     name: Upload dev container to DockerHub
     needs: [release-wheel, test-with-bazel]
     runs-on: ubuntu-18.04
+    env:
+      PY_VERSION: '3.9'
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v2
@@ -131,4 +133,4 @@ jobs:
           set -e -x
           echo ${{ secrets.DOCKER_PW }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
           bash .github/workflows/github_build_dev_container.sh
-          docker push tfaddons/dev_container:latest-cpu
+          docker push tfaddons/dev_container:latest-gpu
