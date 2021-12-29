@@ -23,4 +23,3 @@ jobs:
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=auto \
               --no-dry-run \
-              https://raw.githubusercontent.com/tensorflow/addons/master/.github/CODEOWNERS

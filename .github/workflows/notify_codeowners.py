@@ -24,7 +24,6 @@ WRITE_ACCESS_LIST = [
 
 
 def get_github_client():
-    print(f"{dict(os.environ)}")
     return github.Github(os.environ["BOT_TOKEN"])
 
 
