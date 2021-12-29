@@ -94,4 +94,6 @@ jobs:
           python-version: 3.7
       - run: pip install pygithub click
       - name: Check that the CODEOWNERS is valid
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS

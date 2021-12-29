@@ -23,11 +23,6 @@ WRITE_ACCESS_LIST = [
 ]
 
 
-def xor_strings(a, b):
-    result = int(a, 16) ^ int(b, 16)
-    return "{:x}".format(result)
-
-
 def get_github_client():
     print(f"{dict(os.environ)}")
     return github.Github(os.environ["BOT_TOKEN"])
