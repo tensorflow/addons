@@ -158,7 +158,7 @@ def get_pull_request_id_from_gh_actions():
 @click.option("--pull-request-id")
 @click.option("--no-dry-run", is_flag=True)
 def notify_codeowners(pull_request_id, no_dry_run):
-    text = (Path(__file__).parents[1]/"CODEOWNERS").read_text()
+    text = (Path(__file__).parents[1] / "CODEOWNERS").read_text()
     codeowners = parse_codeowners(text)
 
     if pull_request_id is not None:
