@@ -5,10 +5,15 @@ on:
     branches:
       - master
       - r*
-  pull_request_target:
-    branches:
-      - master
-      - r*
+
+#  pull_request_target:
+#    branches:
+#      - master
+#      - r*
+# Enable pull_request_target when notify_codeowners.py can validate the codeowners file
+# of the commit that triggered the workflow, not the commit the workflow is runnng on.
+# Otherwise, it's useless, it just check the codeowners file from the latest commit in master
+
 
 jobs:
   validate-codeowners:
