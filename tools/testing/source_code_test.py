@@ -45,7 +45,7 @@ def test_api_typed():
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
     )
     ensure_api_is_typed(
-        modules_list, exception_list, init_only=True, additional_message=help_message,
+        modules_list, exception_list, init_only=True, additional_message=help_message
     )
 
 
@@ -93,6 +93,7 @@ def test_no_private_tf_api():
         "tensorflow_addons/utils/test_utils.py",
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/attention_wrapper.py",
+        "tensorflow_addons/utils/types.py",
     ]
 
     for file_path, line_idx, line in get_lines_of_source_code(allowlist):
@@ -147,6 +148,8 @@ def test_no_experimental_api():
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
+        "tensorflow_addons/layers/max_unpooling_2d.py",
+        "tensorflow_addons/image/dense_image_warp.py",
     ]
     for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 

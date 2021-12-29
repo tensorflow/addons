@@ -31,15 +31,18 @@ class GeometricMean(Metric):
     that uses the sum of values, it uses the product of the values to
     represent typical values in a set of numbers.
 
-    Note: `tfa.metrics.GeometricMean` can be used the same as `tf.keras.metrics.Mean`
+    Note: `tfa.metrics.GeometricMean` can be used the same as `tf.keras.metrics.Mean`.
+
+    Args:
+        name: (Optional) String name of the metric instance.
+        dtype: (Optional) Data type of the metric result.
 
     Usage:
 
-    >>> m = tfa.metrics.GeometricMean()
-    >>> m.update_state([1, 3, 5, 7, 9])
-    >>> m.result().numpy()
+    >>> metric = tfa.metrics.GeometricMean()
+    >>> metric.update_state([1, 3, 5, 7, 9])
+    >>> metric.result().numpy()
     3.9362833
-
     """
 
     @typechecked
@@ -72,5 +75,11 @@ class GeometricMean(Metric):
         ret = tf.math.exp(self.total / self.count)
         return tf.cast(ret, dtype=self.dtype)
 
-    def reset_states(self) -> None:
+    def reset_state(self) -> None:
         K.batch_set_value([(v, 0) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()

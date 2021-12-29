@@ -333,7 +333,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
         margin: FloatTensorLike = 1.0,
         distance_metric: Union[str, Callable] = "L2",
         name: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             triplet_semihard_loss,
@@ -372,7 +372,7 @@ class TripletHardLoss(LossFunctionWrapper):
         soft: bool = False,
         distance_metric: Union[str, Callable] = "L2",
         name: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             triplet_hard_loss,

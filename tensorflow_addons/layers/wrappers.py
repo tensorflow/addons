@@ -30,23 +30,23 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
     See [Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks](https://arxiv.org/abs/1602.07868).
 
-    ```python
-    net = WeightNormalization(
-        tf.keras.layers.Conv2D(2, 2, activation='relu'),
-        input_shape=(32, 32, 3),
-        data_init=True)(x)
-    net = WeightNormalization(
-        tf.keras.layers.Conv2D(16, 5, activation='relu'),
-        data_init=True)(net)
-    net = WeightNormalization(
-        tf.keras.layers.Dense(120, activation='relu'),
-        data_init=True)(net)
-    net = WeightNormalization(
-        tf.keras.layers.Dense(n_classes),
-        data_init=True)(net)
-    ```
+    Wrap `tf.keras.layers.Conv2D`:
 
-    Arguments:
+    >>> x = np.random.rand(1, 10, 10, 1)
+    >>> conv2d = WeightNormalization(tf.keras.layers.Conv2D(2, 2), data_init=False)
+    >>> y = conv2d(x)
+    >>> y.shape
+    TensorShape([1, 9, 9, 2])
+
+    Wrap `tf.keras.layers.Dense`:
+
+    >>> x = np.random.rand(1, 10, 10, 1)
+    >>> dense = WeightNormalization(tf.keras.layers.Dense(10), data_init=False)
+    >>> y = dense(x)
+    >>> y.shape
+    TensorShape([1, 10, 10, 10])
+
+    Args:
       layer: A `tf.keras.layers.Layer` instance.
       data_init: If `True` use data dependent variable initialization.
     Raises:

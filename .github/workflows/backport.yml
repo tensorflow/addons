@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Backport Bot
         if: github.event.pull_request.merged && ( ( github.event.action == 'closed' && contains( join( github.event.pull_request.labels.*.name ), 'backport') ) || contains( github.event.label.name, 'backport' ) )
-        uses: Gaurav0/backport@d69fd1d # Version 1.0.24
+        uses: Gaurav0/backport@d69fd1d2469762a7b4007f671857e4f94deed0af # Version 1.0.24
         with:
           bot_username: bot-of-gabrieldemarmiesse
           bot_token: 1353d990cdb8b8ceb1b73d301dce83cc0da3db29

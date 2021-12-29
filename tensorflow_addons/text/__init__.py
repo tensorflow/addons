@@ -15,10 +15,14 @@
 """Additional text-processing ops."""
 
 # Conditional Random Field
+from tensorflow_addons.text import crf
+from tensorflow_addons.text.crf import CrfDecodeForwardRnnCell
 from tensorflow_addons.text.crf import crf_binary_score
+from tensorflow_addons.text.crf import crf_constrained_decode
 from tensorflow_addons.text.crf import crf_decode
 from tensorflow_addons.text.crf import crf_decode_backward
 from tensorflow_addons.text.crf import crf_decode_forward
+from tensorflow_addons.text.crf import crf_filtered_inputs
 from tensorflow_addons.text.crf import crf_forward
 from tensorflow_addons.text.crf import crf_log_likelihood
 from tensorflow_addons.text.crf import crf_log_norm
@@ -26,6 +30,7 @@ from tensorflow_addons.text.crf import crf_multitag_sequence_score
 from tensorflow_addons.text.crf import crf_sequence_score
 from tensorflow_addons.text.crf import crf_unary_score
 from tensorflow_addons.text.crf import viterbi_decode
+from tensorflow_addons.text.crf_wrapper import CRFModelWrapper
 from tensorflow_addons.text.parse_time_op import parse_time
 
 # Skip Gram Sampling

@@ -18,8 +18,6 @@
 
 set -x -e
 
-export CC_OPT_FLAGS='-mavx'
-
 python -m pip install -r tools/install_deps/pytest.txt -e ./
 python ./configure.py
 bash tools/install_so_files.sh
@@ -34,5 +32,5 @@ if ! [ -x "$(command -v nvidia-smi)" ]; then
   EXTRA_ARGS="-n auto"
 fi
 
-
+bazel clean
 python -m pytest -v --functions-durations=20 --modules-durations=5 $EXTRA_ARGS ./tensorflow_addons

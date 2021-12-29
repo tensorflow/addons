@@ -25,6 +25,13 @@ All submissions, including submissions by project members, require
 review.
 
 ## Requirements for New Contributions to the Repository
+
+**All new components/features to Addons need to first be submitted as a feature 
+request issue. This will allow the team to check with our counterparts in the TF
+ecosystem and ensure it is not roadmapped internally for Keras or TF core. These 
+feature requests will be labeled with `ecosystem-review` while we determine if it 
+should be included in Addons.**
+
 The tensorflow/addons repository contains additional functionality
 fitting the following criteria:
 
@@ -35,6 +42,12 @@ fitting the following criteria:
  in widely cited paper)
  * Lastly, the functionality conforms to the contribution guidelines of
  its subpackage.
+
+Suggested guidelines for new feature requests:
+
+* The feature contains an official reference implementation.
+* Should be able to reproduce the same results in a published paper.
+* The academic paper exceeds 50 citations.
 
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
@@ -160,8 +173,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```bash
-pip install tensorflow==2.3.0
-# you can use "pip install tensorflow-cpu==2.3.0" too if you're not testing on gpu.
+pip install tensorflow==2.7
+# you can use "pip install tensorflow-cpu==2.7.0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -249,7 +262,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.3.0 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.7 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -267,17 +280,17 @@ to install any additional tools.
 
 CPU Docker: 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-cpu
 ```
 
 GPU Docker: 
 ```bash
-docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010-multipython
 ```
 
 Configure:
 ```bash
-python3 -m pip install tensorflow==2.3.0
+python3 -m pip install tensorflow==2.7
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -289,6 +302,7 @@ python3 -m pip install -r tools/install_deps/pytest.txt
 
 Compile the custom ops
 ```bash
+export TF_NEED_CUDA=1 # If GPU is to be used
 bash tools/install_so_files.sh
 ```
 
@@ -315,7 +329,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```bash
-python3 -m pip install tensorflow==2.3.0
+python3 -m pip install tensorflow==2.7
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -324,6 +338,24 @@ bazel test -c opt -k \
 --run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
 //tensorflow_addons/...
 ```
+
+#### Testing docstrings
+
+We use [DocTest](https://docs.python.org/3/library/doctest.html) to test code snippets
+in Python docstrings. The snippet must be executable Python code.
+To enable testing, prepend the line with `>>>` (three left-angle brackets).
+Available namespace include `np` for numpy, `tf` for TensorFlow, and `tfa` for TensorFlow Addons.
+See [docs_ref](https://www.tensorflow.org/community/contribute/docs_ref) for more details.
+
+To test docstrings locally, run either
+```bash
+bash tools/run_cpu_tests.sh
+```
+on all files, or
+```bash
+pytest -v -n auto --durations=25 --doctest-modules /path/to/pyfile
+```
+on specific files.
 
 ## About type hints
 
@@ -400,7 +432,7 @@ your tests as well as helper functions. Those can be found in
 #### maybe_run_functions_eagerly
 
 Will run your test function twice, once normally and once with 
-`tf.config.experimental_run_functions_eagerly(True)`. To use it:
+`tf.config.run_functions_eagerly(True)`. To use it:
 
 ```python
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

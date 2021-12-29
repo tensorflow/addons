@@ -126,7 +126,7 @@ def unwrap(image, replace):
 
     Returns:
         image: A 3D image `Tensor` with 3 channels.
-  """
+    """
     image_shape = tf.shape(image)
     # Flatten the spatial dimensions.
     flattened_image = tf.reshape(image, [-1, image_shape[2]])
@@ -134,11 +134,11 @@ def unwrap(image, replace):
     # Find all pixels where the last channel is zero.
     alpha_channel = flattened_image[:, 3]
 
-    replace = tf.constant(replace, tf.uint8)
+    replace = tf.cast(replace, image.dtype)
     if tf.rank(replace) == 0:
         replace = tf.expand_dims(replace, 0)
         replace = tf.concat([replace, replace, replace], 0)
-    replace = tf.concat([replace, tf.ones([1], dtype=image.dtype)], 0)
+    replace = tf.concat([replace, tf.ones([1], dtype=replace.dtype)], 0)
 
     # Where they are zero, fill them in with 'replace'.
     cond = tf.equal(alpha_channel, 1)

@@ -52,6 +52,15 @@ run the following:
 ```
 pip install tensorflow-addons
 ```
+
+To ensure you have a version of TensorFlow that is compatible with TensorFlow Addons, 
+you can specify the `tensorflow` extra requirement during install:
+
+```
+pip install tensorflow-addons[tensorflow]
+```
+
+Similar extras exist for the `tensorflow-gpu` and `tensorflow-cpu` packages.
  
 
 To use TensorFlow Addons:
@@ -71,8 +80,12 @@ what it was tested against.
 #### Python Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.2, 2.3 | 3.5, 3.6, 3.7, 3.8 | 
-| tensorflow-addons-0.11.1 | 2.2, 2.3 |3.5, 3.6, 3.7, 3.8 |
+| tfa-nightly | 2.5, 2.6, 2.7 | 3.7, 3.8, 3.9 | 
+| tensorflow-addons-0.15.0 | 2.5, 2.6, 2.7 |3.7, 3.8, 3.9 |
+| tensorflow-addons-0.14.0 | 2.4, 2.5, 2.6 |3.6, 3.7, 3.8, 3.9 |
+| tensorflow-addons-0.13.0 | 2.3, 2.4, 2.5 |3.6, 3.7, 3.8, 3.9 |
+| tensorflow-addons-0.12.1 | 2.3, 2.4 |3.6, 3.7, 3.8 |
+| tensorflow-addons-0.11.2 | 2.2, 2.3 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.10.0 | 2.2 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.9.1 | 2.1, 2.2 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
@@ -97,8 +110,12 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 #### C++ Custom Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
-| tfa-nightly | 2.3 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.11.1 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
+| tfa-nightly | 2.7 | GCC 7.3.1 | 8.1 | 11.2 |
+| tensorflow-addons-0.15.0 | 2.7  | GCC 7.3.1 | 8.1 | 11.2 |
+| tensorflow-addons-0.14.0 | 2.6  | GCC 7.3.1 | 8.1 | 11.2 |
+| tensorflow-addons-0.13.0 | 2.5  | GCC 7.3.1 | 8.1 | 11.2 |
+| tensorflow-addons-0.12.1 | 2.4  | GCC 7.3.1 | 8.0 | 11.0 |
+| tensorflow-addons-0.11.2 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.10.0 | 2.2  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
@@ -130,7 +147,7 @@ cd addons
 # This script links project with TensorFlow dependency
 python3 ./configure.py
 
-bazel build --enable_runfiles build_pip_pkg
+bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
@@ -144,15 +161,15 @@ cd addons
 export TF_NEED_CUDA="1"
 
 # Set these if the below defaults are different on your system
-export TF_CUDA_VERSION="10.1"
-export TF_CUDNN_VERSION="7"
+export TF_CUDA_VERSION="11"
+export TF_CUDNN_VERSION="8"
 export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 # This script links project with TensorFlow dependency
 python3 ./configure.py
 
-bazel build --enable_runfiles build_pip_pkg
+bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
@@ -183,9 +200,9 @@ The order of priority on Linux is:
 2) C++ implementation
 3) Pure TensorFlow + Python implementation (works on CPU and GPU)
 
-If you want to change the default priority, "C++ and CUDA" VS "pure TensorFlow Python", 
-you can set the variable `TF_ADDONS_PY_OPS` either from the command line or in 
-your code.
+If you want to change the default priority, "C++ and CUDA" VS "pure TensorFlow Python",
+you can set the environment variable `TF_ADDONS_PY_OPS=1` from the command line or
+run `tfa.options.disable_custom_kernel()` in your code.
 
 For example, if you are on Linux and you have compatibility problems with the compiled ops,
 you can give priority to the Python implementations:
@@ -199,17 +216,18 @@ or in your code:
 
 ```python
 import tensorflow_addons as tfa
-tfa.options.TF_ADDONS_PY_OPS = True
+tfa.options.disable_custom_kernel()
 ```
 
 This variable defaults to `True` on Windows and macOS, and `False` on Linux.
 
 #### Proxy Maintainership
-TensorFlow Addons has been designed to compartmentalize subpackages and submodules so 
-that they can be maintained by users who have expertise and a vested interest 
-in that component. 
+TensorFlow Addons has been designed to compartmentalize submodules so 
+that they can be maintained by community users who have expertise, and a vested 
+interest in that component. We heavily encourage users to submit sign up to maintain a 
+submodule by submitting your username to the [CODEOWNERS](.github/CODEOWNERS) file.
 
-Subpackage maintainership will only be granted after substantial contribution 
+Full write access will only be granted after substantial contribution 
 has been made in order to limit the number of users with write permission. 
 Contributions can come in the form of issue closings, bug fixes, documentation, 
 new code, or optimizing existing code. Submodule maintainership can be granted 
@@ -220,7 +238,7 @@ For more information see [the RFC](https://github.com/tensorflow/community/blob/
 on this topic.
 
 #### Periodic Evaluation of Subpackages
-Given the nature of this repository, subpackages and submodules may become less 
+Given the nature of this repository, submodules may become less 
 and less useful to the community as time goes on. In order to keep the 
 repository sustainable, we'll be performing bi-annual reviews of our code to 
 ensure everything still belongs within the repo. Contributing factors to this 
@@ -277,7 +295,7 @@ Do you want to contribute but are not sure of what? Here are a few suggestions:
   you can imagine how hard it is to review. It takes very long to read the paper,
   understand it and check the math in the pull request. If you're specialized, look at 
   the [list of pull requests](https://github.com/tensorflow/addons/pulls). 
-  If there is something from a paper you now, please comment on the pull request to
+  If there is something from a paper you know, please comment on the pull request to
   check the math is ok. If you see that everything is good, say it! It will help 
   the maintainers to sleep better at night knowing that he/she wasn't the only
   person to approve the pull request.

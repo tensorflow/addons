@@ -44,6 +44,34 @@ def is_windows():
     return platform.system() == "Windows"
 
 
+def is_linux():
+    return platform.system() == "Linux"
+
+
+def is_raspi_arm():
+    return os.uname()[4] == "armv7l" or os.uname()[4] == "aarch64"
+
+
+def is_linux_ppc64le():
+    return is_linux() and platform.machine() == "ppc64le"
+
+
+def is_linux_x86_64():
+    return is_linux() and platform.machine() == "x86_64"
+
+
+def is_linux_arm():
+    return is_linux() and platform.machine() == "arm"
+
+
+def is_linux_aarch64():
+    return is_linux() and platform.machine() == "aarch64"
+
+
+def is_linux_s390x():
+    return is_linux() and platform.machine() == "s390x"
+
+
 def get_tf_header_dir():
     import tensorflow as tf
 
@@ -60,6 +88,8 @@ def get_tf_shared_lib_dir():
     if is_windows():
         tf_shared_lib_dir = tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
         return tf_shared_lib_dir.replace("\\", "/")
+    elif is_raspi_arm():
+        return tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
     else:
         return tf.sysconfig.get_link_flags()[0][2:]
 
@@ -75,6 +105,9 @@ def get_shared_lib_name():
     elif is_windows():
         # Windows
         return "_pywrap_tensorflow_internal.lib"
+    elif is_raspi_arm():
+        # The below command for linux would return an empty list
+        return "_pywrap_tensorflow_internal.so"
     else:
         # Linux
         return namespec[1][3:]
@@ -98,6 +131,21 @@ def create_build_configuration():
     write("build --strategy=Genrule=standalone")
     write("build -c opt")
 
+    if is_windows():
+        write("build --config=windows")
+        write("build:windows --enable_runfiles")
+        write("build:windows --copt=/experimental:preprocessor")
+        write("build:windows --host_copt=/experimental:preprocessor")
+        write("build:windows --copt=/arch=AVX")
+        write("build:windows --cxxopt=/std:c++14")
+        write("build:windows --host_cxxopt=/std:c++14")
+
+    if is_macos() or is_linux():
+        if not is_linux_ppc64le() and not is_linux_arm() and not is_linux_aarch64():
+            write("build --copt=-mavx")
+        write("build --cxxopt=-std=c++14")
+        write("build --host_cxxopt=-std=c++14")
+
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
         configure_cuda()
@@ -118,8 +166,8 @@ def configure_cuda():
         "CUDNN_INSTALL_PATH",
         os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
     )
-    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
-    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
+    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "11.2"))
+    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "8"))
 
     write("test --config=cuda")
     write("build --config=cuda")

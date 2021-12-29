@@ -74,27 +74,42 @@ def translations_to_projective_transforms(
 def translate(
     images: TensorLike,
     translations: TensorLike,
-    interpolation: str = "NEAREST",
+    interpolation: str = "nearest",
+    fill_mode: str = "constant",
     name: Optional[str] = None,
+    fill_value: TensorLike = 0.0,
 ) -> tf.Tensor:
     """Translate image(s) by the passed vectors(s).
 
     Args:
       images: A tensor of shape
-          `(num_images, num_rows, num_columns, num_channels)` (NHWC),
-          `(num_rows, num_columns, num_channels)` (HWC), or
-          `(num_rows, num_columns)` (HW). The rank must be statically known (the
-          shape is not `TensorShape(None)`).
+        `(num_images, num_rows, num_columns, num_channels)` (NHWC),
+        `(num_rows, num_columns, num_channels)` (HWC), or
+        `(num_rows, num_columns)` (HW). The rank must be statically known (the
+        shape is not `TensorShape(None)`).
       translations: A vector representing `[dx, dy]` or (if `images` has rank 4)
-          a matrix of length num_images, with a `[dx, dy]` vector for each image
-          in the batch.
-      interpolation: Interpolation mode. Supported values: "NEAREST",
-          "BILINEAR".
+        a matrix of length num_images, with a `[dx, dy]` vector for each image
+        in the batch.
+      interpolation: Interpolation mode. Supported values: "nearest",
+        "bilinear".
+      fill_mode: Points outside the boundaries of the input are filled according
+        to the given mode (one of `{'constant', 'reflect', 'wrap', 'nearest'}`).
+        - *reflect*: `(d c b a | a b c d | d c b a)`
+          The input is extended by reflecting about the edge of the last pixel.
+        - *constant*: `(k k k k | a b c d | k k k k)`
+          The input is extended by filling all values beyond the edge with the
+          same constant value k = 0.
+        - *wrap*: `(a b c d | a b c d | a b c d)`
+          The input is extended by wrapping around to the opposite edge.
+        - *nearest*: `(a a a a | a b c d | d d d d)`
+          The input is extended by the nearest pixel.
+      fill_value: a float represents the value to be filled outside the
+        boundaries when `fill_mode` is "constant".
       name: The name of the op.
     Returns:
       Image(s) with the same type and shape as `images`, translated by the
-      given vector(s). Empty space due to the translation will be filled with
-      zeros.
+        given vector(s). Empty space due to the translation will be filled with
+        zeros.
     Raises:
       TypeError: If `images` is an invalid type.
     """
@@ -103,17 +118,19 @@ def translate(
             images,
             translations_to_projective_transforms(translations),
             interpolation=interpolation,
+            fill_mode=fill_mode,
+            fill_value=fill_value,
         )
 
 
 def translate_xy(
-    image: TensorLike, translate_to: TensorLike, replace: int
+    image: TensorLike, translate_to: TensorLike, replace: TensorLike
 ) -> TensorLike:
     """Translates image in X or Y dimension.
 
     Args:
         image: A 3D image `Tensor`.
-        translate_to: A 1D `Tensor` to translate [x, y]
+        translate_to: A 1D `Tensor` to translate `[x, y]`.
         replace: A one or three value 1D `Tensor` to fill empty pixels.
     Returns:
         Translated image along X or Y axis, with space outside image

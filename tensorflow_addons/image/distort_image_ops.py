@@ -14,11 +14,14 @@
 # ==============================================================================
 """Python layer for distort_image_ops."""
 
+from typing import Optional
+import warnings
+
 import tensorflow as tf
+
+from tensorflow_addons import options
 from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import Number, TensorLike
-
-from typing import Optional
 
 _distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
@@ -99,6 +102,43 @@ def random_hsv_in_yiq(
         )
 
 
+def _adjust_hsv_in_yiq(
+    image,
+    delta_hue,
+    scale_saturation,
+    scale_value,
+):
+    if image.shape.rank is not None and image.shape.rank < 3:
+        raise ValueError("input must be at least 3-D.")
+    if image.shape[-1] is not None and image.shape[-1] != 3:
+        raise ValueError(
+            "input must have 3 channels but instead has {}.".format(image.shape[-1])
+        )
+    # Construct hsv linear transformation matrix in YIQ space.
+    # https://beesbuzz.biz/code/hsv_color_transforms.php
+    yiq = tf.constant(
+        [[0.299, 0.596, 0.211], [0.587, -0.274, -0.523], [0.114, -0.322, 0.312]],
+        dtype=image.dtype,
+    )
+    yiq_inverse = tf.constant(
+        [
+            [1.0, 1.0, 1.0],
+            [0.95617069, -0.2726886, -1.103744],
+            [0.62143257, -0.64681324, 1.70062309],
+        ],
+        dtype=image.dtype,
+    )
+    vsu = scale_value * scale_saturation * tf.math.cos(delta_hue)
+    vsw = scale_value * scale_saturation * tf.math.sin(delta_hue)
+    hsv_transform = tf.convert_to_tensor(
+        [[scale_value, 0, 0], [0, vsu, vsw], [0, -vsw, vsu]], dtype=image.dtype
+    )
+    transform_matrix = yiq @ hsv_transform @ yiq_inverse
+
+    image = image @ transform_matrix
+    return image
+
+
 def adjust_hsv_in_yiq(
     image: TensorLike,
     delta_hue: Number = 0,
@@ -132,13 +172,32 @@ def adjust_hsv_in_yiq(
     """
     with tf.name_scope(name or "adjust_hsv_in_yiq"):
         image = tf.convert_to_tensor(image, name="image")
-
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype
-        flt_image = tf.image.convert_image_dtype(image, tf.dtypes.float32)
+        if not image.dtype.is_floating:
+            image = tf.image.convert_image_dtype(image, tf.float32)
 
-        rgb_altered = _distort_image_so.ops.addons_adjust_hsv_in_yiq(
-            flt_image, delta_hue, scale_saturation, scale_value
+        delta_hue = tf.cast(delta_hue, dtype=image.dtype, name="delta_hue")
+        scale_saturation = tf.cast(
+            scale_saturation, dtype=image.dtype, name="scale_saturation"
         )
+        scale_value = tf.cast(scale_value, dtype=image.dtype, name="scale_value")
 
-        return tf.image.convert_image_dtype(rgb_altered, orig_dtype)
+        if not options.is_custom_kernel_disabled():
+            warnings.warn(
+                "C++/CUDA kernel of `adjust_hsv_in_yiq` will be removed in Addons `0.13`.",
+                DeprecationWarning,
+            )
+            try:
+                image = _distort_image_so.ops.addons_adjust_hsv_in_yiq(
+                    image, delta_hue, scale_saturation, scale_value
+                )
+            except tf.errors.NotFoundError:
+                options.warn_fallback("adjust_hsv_in_yiq")
+                image = _adjust_hsv_in_yiq(
+                    image, delta_hue, scale_saturation, scale_value
+                )
+        else:
+            image = _adjust_hsv_in_yiq(image, delta_hue, scale_saturation, scale_value)
+
+        return tf.image.convert_image_dtype(image, orig_dtype)

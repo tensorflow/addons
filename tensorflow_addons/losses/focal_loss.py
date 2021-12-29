@@ -16,10 +16,10 @@
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
+from typeguard import typechecked
 
 from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
-from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -30,29 +30,24 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
     (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
     classification when you have highly imbalanced classes. It down-weights
     well-classified examples and focuses on hard examples. The loss value is
-    much high for a sample which is misclassified by the classifier as compared
+    much higher for a sample which is misclassified by the classifier as compared
     to the loss value corresponding to a well-classified example. One of the
     best use-cases of focal loss is its usage in object detection where the
     imbalance between the background class and other classes is extremely high.
 
     Usage:
 
-    ```python
-    fl = tfa.losses.SigmoidFocalCrossEntropy()
-    loss = fl(
-      y_true = [[1.0], [1.0], [0.0]],
-      y_pred = [[0.97], [0.91], [0.03]])
-    print('Loss: ', loss.numpy())  # Loss: [6.8532745e-06,
-                                            1.9097870e-04,
-                                            2.0559824e-05]
-    ```
+    >>> fl = tfa.losses.SigmoidFocalCrossEntropy()
+    >>> loss = fl(
+    ...     y_true = [[1.0], [1.0], [0.0]],y_pred = [[0.97], [0.91], [0.03]])
+    >>> loss
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([6.8532745e-06, 1.9097870e-04, 2.0559824e-05],
+    dtype=float32)>
 
     Usage with `tf.keras` API:
 
-    ```python
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
-    ```
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
 
     Args:
       alpha: balancing factor, default value is 0.25.
@@ -101,7 +96,7 @@ def sigmoid_focal_crossentropy(
     (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
     classification when you have highly imbalanced classes. It down-weights
     well-classified examples and focuses on hard examples. The loss value is
-    much high for a sample which is misclassified by the classifier as compared
+    much higher for a sample which is misclassified by the classifier as compared
     to the loss value corresponding to a well-classified example. One of the
     best use-cases of focal loss is its usage in object detection where the
     imbalance between the background class and other classes is extremely high.
@@ -117,10 +112,10 @@ def sigmoid_focal_crossentropy(
         same shape as `y_true`; otherwise, it is scalar.
     """
     if gamma and gamma < 0:
-        raise ValueError("Value of gamma should be greater than or equal to zero")
+        raise ValueError("Value of gamma should be greater than or equal to zero.")
 
     y_pred = tf.convert_to_tensor(y_pred)
-    y_true = tf.convert_to_tensor(y_true, dtype=y_pred.dtype)
+    y_true = tf.cast(y_true, dtype=y_pred.dtype)
 
     # Get the cross_entropy for each entry
     ce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
@@ -136,11 +131,11 @@ def sigmoid_focal_crossentropy(
     modulating_factor = 1.0
 
     if alpha:
-        alpha = tf.convert_to_tensor(alpha, dtype=K.floatx())
+        alpha = tf.cast(alpha, dtype=y_true.dtype)
         alpha_factor = y_true * alpha + (1 - y_true) * (1 - alpha)
 
     if gamma:
-        gamma = tf.convert_to_tensor(gamma, dtype=K.floatx())
+        gamma = tf.cast(gamma, dtype=y_true.dtype)
         modulating_factor = tf.pow((1.0 - p_t), gamma)
 
     # compute the final loss and return

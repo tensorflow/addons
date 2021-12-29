@@ -26,19 +26,23 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
     See [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).
 
-    ```python
-    net = SpectralNormalization(
-        tf.keras.layers.Conv2D(2, 2, activation="relu"),
-        input_shape=(32, 32, 3))(x)
-    net = SpectralNormalization(
-        tf.keras.layers.Conv2D(16, 5, activation="relu"))(net)
-    net = SpectralNormalization(
-        tf.keras.layers.Dense(120, activation="relu"))(net)
-    net = SpectralNormalization(
-        tf.keras.layers.Dense(n_classes))(net)
-    ```
+    Wrap `tf.keras.layers.Conv2D`:
 
-    Arguments:
+    >>> x = np.random.rand(1, 10, 10, 1)
+    >>> conv2d = SpectralNormalization(tf.keras.layers.Conv2D(2, 2))
+    >>> y = conv2d(x)
+    >>> y.shape
+    TensorShape([1, 9, 9, 2])
+
+    Wrap `tf.keras.layers.Dense`:
+
+    >>> x = np.random.rand(1, 10, 10, 1)
+    >>> dense = SpectralNormalization(tf.keras.layers.Dense(10))
+    >>> y = dense(x)
+    >>> y.shape
+    TensorShape([1, 10, 10, 10])
+
+    Args:
       layer: A `tf.keras.layers.Layer` instance that
         has either `kernel` or `embeddings` attribute.
       power_iterations: `int`, the number of iterations during normalization.
@@ -99,7 +103,6 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(self.layer.compute_output_shape(input_shape).as_list())
 
-    @tf.function
     def normalize_weights(self):
         """Generate spectral normalized weights.
 
@@ -114,11 +117,13 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
             for _ in range(self.power_iterations):
                 v = tf.math.l2_normalize(tf.matmul(u, w, transpose_b=True))
                 u = tf.math.l2_normalize(tf.matmul(v, w))
-
+            u = tf.stop_gradient(u)
+            v = tf.stop_gradient(v)
             sigma = tf.matmul(tf.matmul(v, w), u, transpose_b=True)
-
-            self.w.assign(self.w / sigma)
-            self.u.assign(u)
+            self.u.assign(tf.cast(u, self.u.dtype))
+            self.w.assign(
+                tf.cast(tf.reshape(self.w / sigma, self.w_shape), self.w.dtype)
+            )
 
     def get_config(self):
         config = {"power_iterations": self.power_iterations}

@@ -26,6 +26,9 @@ from tensorflow_addons.optimizers.cyclical_learning_rate import (
 from tensorflow_addons.optimizers.cyclical_learning_rate import (
     ExponentialCyclicalLearningRate,
 )
+from tensorflow_addons.optimizers.discriminative_layer_training import (
+    MultiOptimizer,
+)
 from tensorflow_addons.optimizers.lamb import LAMB
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
@@ -35,8 +38,13 @@ from tensorflow_addons.optimizers.proximal_adagrad import ProximalAdagrad
 from tensorflow_addons.optimizers.rectified_adam import RectifiedAdam
 from tensorflow_addons.optimizers.stochastic_weight_averaging import SWA
 from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
+from tensorflow_addons.optimizers.adabelief import AdaBelief
 from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
 from tensorflow_addons.optimizers.weight_decay_optimizers import (
     extend_with_decoupled_weight_decay,
 )
+from tensorflow_addons.optimizers.weight_decay_optimizers import (
+    DecoupledWeightDecayExtension,
+)
 from tensorflow_addons.optimizers.yogi import Yogi
+from tensorflow_addons.optimizers.cocob import COCOB

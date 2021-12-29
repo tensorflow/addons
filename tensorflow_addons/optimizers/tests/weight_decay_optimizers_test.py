@@ -30,7 +30,7 @@ def do_test(
     update_fn,
     do_sparse=False,
     do_decay_var_list=False,
-    **optimizer_kwargs
+    **optimizer_kwargs,
 ):
     """The major test function.
 
@@ -68,11 +68,11 @@ def do_test(
     if do_sparse:
         grads0_np_indices = np.array([0, 1], dtype=np.int32)
         grads0 = tf.IndexedSlices(
-            tf.constant(grads0_np), tf.constant(grads0_np_indices), tf.constant([2]),
+            tf.constant(grads0_np), tf.constant(grads0_np_indices), tf.constant([2])
         )
         grads1_np_indices = np.array([0, 1], dtype=np.int32)
         grads1 = tf.IndexedSlices(
-            tf.constant(grads1_np), tf.constant(grads1_np_indices), tf.constant([2]),
+            tf.constant(grads1_np), tf.constant(grads1_np_indices), tf.constant([2])
         )
     else:
         grads0 = tf.constant(grads0_np)
@@ -83,7 +83,7 @@ def do_test(
     for _ in range(3):
         if do_decay_var_list:
             opt.apply_gradients(
-                zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1],
+                zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1]
             )
         else:
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -374,7 +374,7 @@ def test_optimizer_basic(dtype, optimizer):
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_optimizer_sparse(dtype, optimizer):
     do_test_sparse_repeated_indices(
-        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY,
+        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY
     )
 
 

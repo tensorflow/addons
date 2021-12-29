@@ -46,6 +46,19 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     "Recurrent Dropout without Memory Loss"
     Stanislau Semeniuta, Aliaksei Severyn, Erhardt Barth.
+
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> lnLSTMCell = tfa.rnn.LayerNormLSTMCell(4)
+    >>> rnn = tf.keras.layers.RNN(lnLSTMCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state, carry_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+    >>> carry_state.shape
+    TensorShape([30, 4])
     """
 
     @typechecked
@@ -70,7 +83,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         norm_gamma_initializer: Initializer = "ones",
         norm_beta_initializer: Initializer = "zeros",
         norm_epsilon: FloatTensorLike = 1e-3,
-        **kwargs
+        **kwargs,
     ):
         """Initializes the LSTM cell.
 
@@ -141,9 +154,16 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     def build(self, input_shape):
         super().build(input_shape)
-        self.kernel_norm.build([input_shape[0], self.units * 4])
-        self.recurrent_norm.build([input_shape[0], self.units * 4])
-        self.state_norm.build([input_shape[0], self.units])
+
+        def maybe_build_sublayer(sublayer, build_shape):
+            if not sublayer.built:
+                with tf.keras.backend.name_scope(sublayer.name):
+                    sublayer.build(build_shape)
+                    sublayer.built = True
+
+        maybe_build_sublayer(self.kernel_norm, [input_shape[0], self.units * 4])
+        maybe_build_sublayer(self.recurrent_norm, [input_shape[0], self.units * 4])
+        maybe_build_sublayer(self.state_norm, [input_shape[0], self.units])
 
     def call(self, inputs, states, training=None):
         h_tm1 = states[0]  # previous memory state

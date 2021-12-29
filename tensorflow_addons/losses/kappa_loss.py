@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implements Weighted kappa loss."""
 
-import warnings
 from typing import Optional
 
 import tensorflow as tf
@@ -37,24 +36,24 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
 
     Usage:
 
-    ```python
-    kappa_loss = WeightedKappaLoss(num_classes=4)
-    y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
-                          [1, 0, 0, 0], [0, 0, 0, 1]])
-    y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
-                          [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
-    loss = kappa_loss(y_true, y_pred)
-    print('Loss: ', loss.numpy())  # Loss: -1.1611923
-    ```
+    >>> kappa_loss = tfa.losses.WeightedKappaLoss(num_classes=4)
+    >>> y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
+    ...                  [1, 0, 0, 0], [0, 0, 0, 1]])
+    >>> y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
+    ...                  [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
+    >>> loss = kappa_loss(y_true, y_pred)
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=-1.1611925>
 
     Usage with `tf.keras` API:
-    ```python
-    # outputs should be softmax results
-    # if you want to weight the samples, just multiply the outputs
-    # by the sample weight.
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
-    ```
+
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.WeightedKappaLoss(num_classes=4))
+
+    <... outputs should be softmax results
+    if you want to weight the samples, just multiply the outputs
+    by the sample weight ...>
+
     """
 
     @typechecked
@@ -64,7 +63,6 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         weightage: Optional[str] = "quadratic",
         name: Optional[str] = "cohen_kappa_loss",
         epsilon: Optional[Number] = 1e-6,
-        dtype: Optional[tf.DType] = tf.float32,
         reduction: str = tf.keras.losses.Reduction.NONE,
     ):
         r"""Creates a `WeightedKappaLoss` instance.
@@ -78,21 +76,12 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
           epsilon: (Optional) increment to avoid log zero,
             so the loss will be $ \log(1 - k + \epsilon) $, where $ k $ lies
             in $ [-1, 1] $. Defaults to 1e-6.
-          dtype: (Optional) Data type of the metric result.
-            Defaults to `tf.float32`.
         Raises:
           ValueError: If the value passed for `weightage` is invalid
             i.e. not any one of ['linear', 'quadratic']
         """
 
         super().__init__(name=name, reduction=reduction)
-
-        warnings.warn(
-            "The data type for `WeightedKappaLoss` defaults to "
-            "`tf.keras.backend.floatx()`."
-            "The argument `dtype` will be removed in Addons `0.12`.",
-            DeprecationWarning,
-        )
 
         if weightage not in ("linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")

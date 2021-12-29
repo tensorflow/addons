@@ -140,12 +140,8 @@ def do_test_sparse(beta1=0.0, l1reg=0.0, l2reg=0.0):
             )
 
             # Validate updated params.
-            test_utils.assert_allclose_according_to_type(
-                var0_np, var0.numpy(),
-            )
-            test_utils.assert_allclose_according_to_type(
-                var1_np, var1.numpy(),
-            )
+            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy())
+            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy())
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -186,7 +182,8 @@ def test_sparse_repeated_indices():
         opt2 = yogi.Yogi()
 
         np.testing.assert_allclose(
-            aggregated_update_var.numpy(), repeated_index_update_var.numpy(),
+            aggregated_update_var.numpy(),
+            repeated_index_update_var.numpy(),
         )
 
         for _ in range(3):
@@ -194,7 +191,8 @@ def test_sparse_repeated_indices():
             opt2.apply_gradients([(grad_aggregated, aggregated_update_var)])
 
         np.testing.assert_allclose(
-            aggregated_update_var.numpy(), repeated_index_update_var.numpy(),
+            aggregated_update_var.numpy(),
+            repeated_index_update_var.numpy(),
         )
 
 

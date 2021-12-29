@@ -15,6 +15,7 @@
 """Implements R^2 scores."""
 from typing import Tuple
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
@@ -24,14 +25,13 @@ from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes
 
 
-VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
+_VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
 
 
 def _reduce_average(
     input_tensor: tf.Tensor, axis=None, keepdims=False, weights=None
 ) -> tf.Tensor:
-    """Computes the (weighted) mean of elements across dimensions of a tensor.
-  """
+    """Computes the (weighted) mean of elements across dimensions of a tensor."""
     if weights is None:
         return tf.reduce_mean(input_tensor, axis=axis, keepdims=keepdims)
 
@@ -45,29 +45,40 @@ def _reduce_average(
 class RSquare(Metric):
     """Compute R^2 score.
 
-     This is also called the [coefficient of determination
-     ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
-     It tells how close are data to the fitted regression line.
+    This is also called the [coefficient of determination
+    ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
+    It tells how close are data to the fitted regression line.
 
-     - Highest score can be 1.0 and it indicates that the predictors
-       perfectly accounts for variation in the target.
-     - Score 0.0 indicates that the predictors do not
-       account for variation in the target.
-     - It can also be negative if the model is worse.
+    - Highest score can be 1.0 and it indicates that the predictors
+        perfectly accounts for variation in the target.
+    - Score 0.0 indicates that the predictors do not
+        account for variation in the target.
+    - It can also be negative if the model is worse.
 
-     The sample weighting for this metric implementation mimics the
-     behaviour of the [scikit-learn implementation
-     ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
-     of the same metric.
+    The sample weighting for this metric implementation mimics the
+    behaviour of the [scikit-learn implementation
+    ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
+    of the same metric.
 
-     Usage:
-     ```python
-     actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-     preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     result = tf.keras.metrics.RSquare()
-     result.update_state(actuals, preds)
-     print('R^2 score is: ', r1.result().numpy()) # 0.57142866
-    ```
+    Can also calculate the Adjusted R2 Score.
+
+    Args:
+        multioutput: `string`, the reduce method for scores.
+            Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
+        name: (Optional) string name of the metric instance.
+        dtype: (Optional) data type of the metric result.
+        num_regressors: (Optional) Number of indepedent regressors used (Adjusted R2).
+            Defaults to zero(standard R2 score).
+
+    Usage:
+
+    >>> y_true = np.array([1, 4, 3], dtype=np.float32)
+    >>> y_pred = np.array([2, 4, 4], dtype=np.float32)
+    >>> metric = tfa.metrics.r_square.RSquare()
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()
+    0.57142854
     """
 
     @typechecked
@@ -77,18 +88,20 @@ class RSquare(Metric):
         dtype: AcceptableDTypes = None,
         y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
-        **kwargs
+        num_regressors: tf.int32 = 0,
+        **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
         self.y_shape = y_shape
 
-        if multioutput not in VALID_MULTIOUTPUT:
+        if multioutput not in _VALID_MULTIOUTPUT:
             raise ValueError(
                 "The multioutput argument must be one of {}, but was: {}".format(
-                    VALID_MULTIOUTPUT, multioutput
+                    _VALID_MULTIOUTPUT, multioutput
                 )
             )
         self.multioutput = multioutput
+        self.num_regressors = num_regressors
         self.squared_sum = self.add_weight(
             name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
         )
@@ -101,6 +114,7 @@ class RSquare(Metric):
         self.count = self.add_weight(
             name="count", shape=y_shape, initializer="zeros", dtype=dtype
         )
+        self.num_samples = self.add_weight(name="num_samples", dtype=tf.int32)
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
         y_true = tf.cast(y_true, dtype=self._dtype)
@@ -116,27 +130,69 @@ class RSquare(Metric):
         self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
         self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
         self.res.assign_add(
-            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0,)
+            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
+        self.num_samples.assign_add(tf.size(y_true))
 
     def result(self) -> tf.Tensor:
         mean = self.sum / self.count
         total = self.squared_sum - self.sum * mean
         raw_scores = 1 - (self.res / total)
+        raw_scores = tf.where(tf.math.is_inf(raw_scores), 0.0, raw_scores)
 
         if self.multioutput == "raw_values":
-            return raw_scores
-        if self.multioutput == "uniform_average":
-            return tf.reduce_mean(raw_scores)
-        if self.multioutput == "variance_weighted":
-            return _reduce_average(raw_scores, weights=total)
-        raise RuntimeError(
-            "The multioutput attribute must be one of {}, but was: {}".format(
-                VALID_MULTIOUTPUT, self.multioutput
+            r2_score = raw_scores
+        elif self.multioutput == "uniform_average":
+            r2_score = tf.reduce_mean(raw_scores)
+        elif self.multioutput == "variance_weighted":
+            r2_score = _reduce_average(raw_scores, weights=total)
+        else:
+            raise RuntimeError(
+                "The multioutput attribute must be one of {}, but was: {}".format(
+                    _VALID_MULTIOUTPUT, self.multioutput
+                )
             )
-        )
 
-    def reset_states(self) -> None:
+        if self.num_regressors < 0:
+            raise ValueError(
+                "num_regressors parameter should be greater than or equal to zero"
+            )
+
+        if self.num_regressors != 0:
+            if self.num_regressors > self.num_samples - 1:
+                UserWarning(
+                    "More independent predictors than datapoints in adjusted r2 score. Falls back to standard r2 "
+                    "score."
+                )
+            elif self.num_regressors == self.num_samples - 1:
+                UserWarning(
+                    "Division by zero in adjusted r2 score. Falls back to standard r2 score."
+                )
+            else:
+                n = tf.cast(self.num_samples, dtype=tf.float32)
+                p = tf.cast(self.num_regressors, dtype=tf.float32)
+
+                num = tf.multiply(tf.subtract(1.0, r2_score), tf.subtract(n, 1.0))
+                den = tf.subtract(tf.subtract(n, p), 1.0)
+                r2_score = tf.subtract(1.0, tf.divide(num, den))
+
+        return r2_score
+
+    def reset_state(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        K.batch_set_value([(v, tf.zeros_like(v)) for v in self.variables])
+        K.batch_set_value([(v, np.zeros(v.shape)) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()
+
+    def get_config(self):
+        config = {
+            "y_shape": self.y_shape,
+            "multioutput": self.multioutput,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}

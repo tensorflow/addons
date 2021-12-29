@@ -37,7 +37,18 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         "Layer Normalization." ArXiv:1607.06450 [Cs, Stat],
         July 21, 2016. http://arxiv.org/abs/1607.06450
 
-    Arguments:
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> lnsRNNCell = tfa.rnn.LayerNormSimpleRNNCell(4)
+    >>> rnn = tf.keras.layers.RNN(lnsRNNCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+
+    Args:
       units: Positive integer, dimensionality of the output space.
       activation: Activation function to use.
         Default: hyperbolic tangent (`tanh`).
@@ -89,25 +100,19 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
     Examples:
 
-    ```python
-    import numpy as np
-    import tensorflow.keras as keras
-    import tensorflow_addons as tfa
+    >>> inputs = np.random.random([32, 10, 8]).astype(np.float32)
+    >>> rnn = tf.keras.layers.RNN(tfa.rnn.LayerNormSimpleRNNCell(4))
+    >>> output = rnn(inputs)  # The output has shape `[32, 4]`.
+    >>> rnn = tf.keras.layers.RNN(
+    ... tfa.rnn.LayerNormSimpleRNNCell(4),
+    ... return_sequences=True,
+    ... return_state=True)
+    >>> whole_sequence_output, final_state = rnn(inputs)
+    >>> whole_sequence_output
+    <tf.Tensor: shape=(32, 10, 4), dtype=float32, numpy=...>
+    >>> final_state
+    <tf.Tensor: shape=(32, 4), dtype=float32, numpy=...>
 
-    inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    rnn = keras.layers.RNN(tfa.rnn.LayerNormSimpleRNNCell(4))
-
-    output = rnn(inputs)  # The output has shape `[32, 4]`.
-
-    rnn = keras.layers.RNN(
-        tfa.rnn.LayerNormSimpleRNNCell(4),
-        return_sequences=True,
-        return_state=True)
-
-    # whole_sequence_output has shape `[32, 10, 4]`.
-    # final_state has shape `[32, 4]`.
-    whole_sequence_output, final_state = rnn(inputs)
-    ```
     """
 
     @typechecked
@@ -131,7 +136,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         gamma_constraint: Constraint = None,
         dropout: FloatTensorLike = 0.0,
         recurrent_dropout: FloatTensorLike = 0.0,
-        **kwargs
+        **kwargs,
     ):
         super(LayerNormSimpleRNNCell, self).__init__(
             units,

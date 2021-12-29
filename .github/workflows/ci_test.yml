@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.5
+          python-version: 3.7
       - uses: actions/checkout@v2
       - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
@@ -97,3 +97,32 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS
+  nbfmt:
+    name: Notebook format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Install tensorflow-docs
+      run: python3 -m pip install -U git+https://github.com/tensorflow/docs
+    - name: Check notebook formatting
+      run: |
+        # Run on all notebooks to prevent upstream change.
+        echo "Check formatting with nbfmt:"
+        python3 -m tensorflow_docs.tools.nbfmt --test \
+            $(find docs/tutorials/ -type f -name *.ipynb)
+  nblint:
+    name: Notebook lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Install tensorflow-docs
+      run: python3 -m pip install -U git+https://github.com/tensorflow/docs
+    - name: Lint notebooks
+      run: |
+        # Run on all notebooks to prevent upstream change.
+        echo "Lint check with nblint:"
+        python3 -m tensorflow_docs.tools.nblint \
+            --arg=repo:tensorflow/addons \
+            $(find docs/tutorials/ -type f -name *.ipynb ! -path "docs/tutorials/_template.ipynb")

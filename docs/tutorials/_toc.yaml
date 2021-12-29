@@ -14,6 +14,8 @@ toc:
   path: /addons/tutorials/optimizers_lazyadam
 - title: ConditionalGradient Optimizer
   path: /addons/tutorials/optimizers_conditionalgradient
+- title: CyclicalLearningRate Schedule
+  path: /addons/tutorials/optimizers_cyclicallearningrate
 - title: TQDM Progress Bar
   path: /addons/tutorials/tqdm_progress_bar
 - title: Seq2Seq for Translation

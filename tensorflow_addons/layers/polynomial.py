@@ -40,17 +40,14 @@ class PolynomialCrossing(tf.keras.layers.Layer):
 
     Example:
 
-    ```python
-    # after embedding layer in a functional model:
-    input = tf.keras.Input(shape=(None,), name='index', dtype=tf.int64)
-    x0 = tf.keras.layers.Embedding(input_dim=32, output_dim=6))
-    x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
-    x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
-    logits = tf.keras.layers.Dense(units=10)(x2)
-    model = tf.keras.Model(input, logits)
-    ```
+    >>> input = np.random.randint(10, size=(10, 5))
+    >>> x0 = tf.keras.layers.Embedding(input_dim=10, output_dim=3)(input)
+    >>> x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
+    >>> x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
+    >>> logits = tf.keras.layers.Dense(units=10)(x2)
+    >>> model = tf.keras.Model(logits)
 
-    Arguments:
+    Args:
         projection_dim: project dimension to reduce the computational cost.
           Default is `None` such that a full (`input_dim` by `input_dim`)
           matrix W is used. If enabled, a low-rank matrix W = U*V will be used,
@@ -84,7 +81,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         bias_initializer: types.Initializer = "zeros",
         kernel_regularizer: types.Regularizer = None,
         bias_regularizer: types.Regularizer = None,
-        **kwargs
+        **kwargs,
     ):
         super(PolynomialCrossing, self).__init__(**kwargs)
 

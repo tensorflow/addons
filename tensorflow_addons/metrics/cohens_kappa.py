@@ -28,7 +28,7 @@ from typing import Optional
 class CohenKappa(Metric):
     """Computes Kappa score between two raters.
 
-    The score lies in the range [-1, 1]. A score of -1 represents
+    The score lies in the range `[-1, 1]`. A score of -1 represents
     complete disagreement between two raters whereas a score of 1
     represents complete agreement between the two raters.
     A score of 0 means agreement by chance.
@@ -36,30 +36,61 @@ class CohenKappa(Metric):
     Note: As of now, this implementation considers all labels
     while calculating the Cohen's Kappa score.
 
+    Args:
+        num_classes: Number of unique classes in your dataset.
+        weightage: (optional) Weighting to be considered for calculating
+            kappa statistics. A valid value is one of
+            [None, 'linear', 'quadratic']. Defaults to `None`
+        sparse_labels: (bool) Valid only for multi-class scenario.
+            If True, ground truth labels are expected to be integers
+            and not one-hot encoded.
+        regression: (bool) If set, that means the problem is being treated
+            as a regression problem where you are regressing the predictions.
+            **Note:** If you are regressing for the values, the the output layer
+            should contain a single unit.
+        name: (optional) String name of the metric instance
+        dtype: (optional) Data type of the metric result. Defaults to `None`.
+
+    Raises:
+        ValueError: If the value passed for `weightage` is invalid
+        i.e. not any one of [None, 'linear', 'quadratic'].
+
     Usage:
 
-    ```python
-    actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
-    preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
-    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    >>> y_true = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
+    >>> y_pred = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
+    >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
+    >>> metric.update_state(y_true , y_pred)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[0., 0., 0., 0., 0.],
+            [0., 2., 0., 0., 0.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 1., 0.],
+            [0., 0., 1., 0., 3.]], dtype=float32)>
+    >>> result = metric.result()
+    >>> result.numpy()
+    0.61904764
+    >>> # To use this with weights, sample_weight argument can be used.
+    >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
+    >>> metric.update_state(y_true , y_pred , sample_weight=weights)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[ 0.,  0.,  0.,  0.,  0.],
+            [ 0.,  6.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0., 10.],
+            [ 0.,  0.,  0.,  2.,  0.],
+            [ 0.,  0.,  2.,  0.,  7.]], dtype=float32)>
+    >>> result = metric.result()
+    >>> result.numpy()
+     0.37209308
 
-    m = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
-    m.update_state(actuals, preds)
-    print('Final result: ', m.result().numpy()) # Result: 0.61904764
+    Usage with `tf.keras` API:
 
-    # To use this with weights, sample_weight argument can be used.
-    m = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
-    m.update_state(actuals, preds, sample_weight=weights)
-    print('Final result: ', m.result().numpy()) # Result: 0.37209308
-    ```
-
-    Usage with tf.keras API:
-
-    ```python
-    model = tf.keras.models.Model(inputs, outputs)
-    model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
-    model.compile('sgd', loss='mse')
-    ```
+    >>> inputs = tf.keras.Input(shape=(10,))
+    >>> x = tf.keras.layers.Dense(10)(inputs)
+    >>> outputs = tf.keras.layers.Dense(1)(x)
+    >>> model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+    >>> model.compile('sgd', loss='mse', metrics=[tfa.metrics.CohenKappa(num_classes=3, sparse_labels=True)])
     """
 
     @typechecked
@@ -72,27 +103,7 @@ class CohenKappa(Metric):
         regression: bool = False,
         dtype: AcceptableDTypes = None,
     ):
-        """Creates a `CohenKappa` instance.
-
-        Args:
-          num_classes: Number of unique classes in your dataset.
-          weightage: (optional) Weighting to be considered for calculating
-            kappa statistics. A valid value is one of
-            [None, 'linear', 'quadratic']. Defaults to `None`
-          sparse_labels: (bool) Valid only for multi-class scenario.
-            If True, ground truth labels are expected tp be integers
-            and not one-hot encoded
-          regression: (bool) If set, that means the problem is being treated
-            as a regression problem where you are regressing the predictions.
-            **Note:** If you are regressing for the values, the the output layer
-            should contain a single unit.
-          name: (optional) String name of the metric instance
-          dtype: (optional) Data type of the metric result. Defaults to `None`
-
-        Raises:
-          ValueError: If the value passed for `weightage` is invalid
-            i.e. not any one of [None, 'linear', 'quadratic']
-        """
+        """Creates a `CohenKappa` instance."""
         super().__init__(name=name, dtype=dtype)
 
         if weightage not in (None, "linear", "quadratic"):
@@ -243,7 +254,7 @@ class CohenKappa(Metric):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def reset_states(self):
+    def reset_state(self):
         """Resets all of the metric state variables."""
 
         for v in self.variables:
@@ -251,3 +262,9 @@ class CohenKappa(Metric):
                 v,
                 np.zeros((self.num_classes, self.num_classes), v.dtype.as_numpy_dtype),
             )
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()

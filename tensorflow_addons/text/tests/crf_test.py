@@ -15,6 +15,7 @@
 """Tests for CRF."""
 
 import itertools
+from distutils.version import LooseVersion
 
 import pytest
 import numpy as np
@@ -33,6 +34,82 @@ def calculate_sequence_score(inputs, transition_params, tag_indices, sequence_le
         for i in range(sequence_lengths - 1)
     )
     return expected_unary_score + expected_binary_score
+
+
+def brute_force_decode(sequence_lengths, inputs, transition_params):
+    num_words = inputs.shape[0]
+    num_tags = inputs.shape[1]
+
+    all_sequence_scores = []
+    all_sequences = []
+
+    tag_indices_iterator = itertools.product(range(num_tags), repeat=sequence_lengths)
+    inputs = tf.expand_dims(inputs, 0)
+    sequence_lengths = tf.expand_dims(sequence_lengths, 0)
+    transition_params = tf.constant(transition_params)
+
+    # Compare the dynamic program with brute force computation.
+    for tag_indices in tag_indices_iterator:
+        tag_indices = list(tag_indices)
+        tag_indices.extend([0] * (num_words - sequence_lengths))
+        all_sequences.append(tag_indices)
+        sequence_score = text.crf_sequence_score(
+            inputs=inputs,
+            tag_indices=tf.expand_dims(tag_indices, 0),
+            sequence_lengths=sequence_lengths,
+            transition_params=transition_params,
+        )
+        sequence_score = tf.squeeze(sequence_score, [0])
+        all_sequence_scores.append(sequence_score)
+
+    expected_max_sequence_index = np.argmax(all_sequence_scores)
+    expected_max_sequence = all_sequences[expected_max_sequence_index]
+    expected_max_score = all_sequence_scores[expected_max_sequence_index]
+    return expected_max_sequence, expected_max_score
+
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_filtered_inputs(dtype):
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [np.array(3, dtype=np.int32), np.array(1, dtype=np.int32)]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
+        np.array([[4, 5, -3]], dtype=dtype),
+    ]
+    tag_bitmap_list = [
+        np.array(
+            [
+                [True, False, False],
+                [False, True, True],
+                [False, True, True],
+                [False, True, True],
+            ],
+            dtype=np.bool,
+        ),
+        np.array([[False, True, True]], dtype=np.bool),
+    ]
+    neg_inf = float("-inf")
+    expected_filtered_inputs_list = [
+        np.array(
+            [[4, neg_inf, neg_inf], [neg_inf, -1, 3], [neg_inf, 2, 1], [neg_inf, 0, 0]],
+            dtype=dtype,
+        ),
+        np.array([[neg_inf, 5, -3]], dtype=dtype),
+    ]
+    for sequence_lengths, inputs, tag_bitmap, expected_filtered_inputs in zip(
+        sequence_lengths_list,
+        inputs_list,
+        tag_bitmap_list,
+        expected_filtered_inputs_list,
+    ):
+        filtered_inputs = text.crf_filtered_inputs(
+            inputs=tf.expand_dims(inputs, 0), tag_bitmap=tf.expand_dims(tag_bitmap, 0)
+        )
+        filtered_inputs = tf.squeeze(filtered_inputs, [0])
+
+        test_utils.assert_allclose_according_to_type(
+            filtered_inputs, expected_filtered_inputs
+        )
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
@@ -309,29 +386,9 @@ def test_crf_decode(dtype):
     for sequence_lengths, inputs, tag_indices in zip(
         sequence_lengths_list, inputs_list, tag_indices_list
     ):
-        num_words = inputs.shape[0]
-        num_tags = inputs.shape[1]
-
-        all_sequence_scores = []
-        all_sequences = []
-
-        # Compare the dynamic program with brute force computation.
-        for tag_indices in itertools.product(range(num_tags), repeat=sequence_lengths):
-            tag_indices = list(tag_indices)
-            tag_indices.extend([0] * (num_words - sequence_lengths))
-            all_sequences.append(tag_indices)
-            sequence_score = text.crf_sequence_score(
-                inputs=tf.expand_dims(inputs, 0),
-                tag_indices=tf.expand_dims(tag_indices, 0),
-                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                transition_params=tf.constant(transition_params),
-            )
-            sequence_score = tf.squeeze(sequence_score, [0])
-            all_sequence_scores.append(sequence_score)
-
-        expected_max_sequence_index = np.argmax(all_sequence_scores)
-        expected_max_sequence = all_sequences[expected_max_sequence_index]
-        expected_max_score = all_sequence_scores[expected_max_sequence_index]
+        expected_max_sequence, expected_max_score = brute_force_decode(
+            sequence_lengths, inputs, transition_params
+        )
 
         actual_max_sequence, actual_max_score = text.crf_decode(
             tf.expand_dims(inputs, 0),
@@ -347,6 +404,61 @@ def test_crf_decode(dtype):
         assert (
             list(actual_max_sequence[:sequence_lengths])
             == expected_max_sequence[:sequence_lengths]
+        )
+
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_constrained_decode(dtype):
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [np.array(3, dtype=np.int32), np.array(1, dtype=np.int32)]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
+        np.array([[4, 5, -3]], dtype=dtype),
+    ]
+    tag_bitmap_list = [
+        np.array(
+            [
+                [True, False, False],
+                [False, True, True],
+                [False, True, True],
+                [False, True, True],
+            ],
+            dtype=np.bool,
+        ),
+        np.array([[False, True, True]], dtype=np.bool),
+    ]
+    for sequence_lengths, inputs, tag_bitmap in zip(
+        sequence_lengths_list, inputs_list, tag_bitmap_list
+    ):
+        filtered_inputs = text.crf_filtered_inputs(
+            inputs=tf.expand_dims(inputs, 0), tag_bitmap=tf.expand_dims(tag_bitmap, 0)
+        )
+
+        expected_max_sequence, expected_max_score = text.crf_decode(
+            filtered_inputs,
+            tf.constant(transition_params),
+            tf.expand_dims(sequence_lengths, 0),
+        )
+
+        expected_max_sequence = tf.squeeze(expected_max_sequence, [0])
+        expected_max_score = tf.squeeze(expected_max_score, [0])
+
+        actual_max_sequence, actual_max_score = text.crf_constrained_decode(
+            tf.expand_dims(inputs, 0),
+            tf.expand_dims(tag_bitmap, 0),
+            tf.constant(transition_params),
+            tf.expand_dims(sequence_lengths, 0),
+        )
+
+        actual_max_sequence = tf.squeeze(actual_max_sequence, [0])
+        actual_max_score = tf.squeeze(actual_max_score, [0])
+
+        test_utils.assert_allclose_according_to_type(
+            actual_max_score, expected_max_score, 1e-6, 1e-6
+        )
+        assert list(actual_max_sequence[:sequence_lengths]) == list(
+            expected_max_sequence[:sequence_lengths]
         )
 
 
@@ -386,6 +498,18 @@ def test_tf_function():
     crf_decode(potentials, transition_params, sequence_length)
 
 
+class CRFDecode(tf.keras.layers.Layer):
+    def __init__(self):
+        super().__init__()
+
+    def call(self, potentials, transition_params, sequence_length):
+        return text.crf_decode(potentials, transition_params, sequence_length)
+
+
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.4",
+    reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
+)
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
@@ -393,7 +517,7 @@ def test_crf_decode_save_load(tmpdir):
     transition = tf.constant([[1, 1, 0], [0, 1, 1], [1, 0, 1]], dtype=tf.float32)
 
     output = tf.multiply(input_tensor, tf.constant(1.0))
-    decoded, _ = text.crf_decode(input_tensor, transition, seq_len)
+    decoded, _ = CRFDecode()(input_tensor, transition, seq_len)
 
     model = tf.keras.Model(
         inputs=[input_tensor, seq_len], outputs=[output, decoded], name="example_model"
@@ -404,7 +528,13 @@ def test_crf_decode_save_load(tmpdir):
         "input_tensor": np.random.random_sample((5, 10, 3)).astype(dtype=np.float32),
         "seq_len": np.array([10] * 5, dtype=np.int32),
     }
-    y_data = {"tf_op_layer_Mul": np.random.randint(0, 3, (5, 10))}
+
+    tensor_name = (
+        "tf.math.multiply"
+        if LooseVersion(tf.__version__) >= "2.5.0"
+        else "tf_op_layer_Mul"
+    )
+    y_data = {tensor_name: np.random.randint(0, 3, (5, 10))}
 
     model.fit(x_data, y_data)
     model.predict(
@@ -415,7 +545,7 @@ def test_crf_decode_save_load(tmpdir):
     )
 
     temp_dir = str(tmpdir.mkdir("model"))
-    tf.saved_model.save(model, temp_dir)
+    model.save(temp_dir)
 
     tf.keras.backend.clear_session()
     model = tf.keras.models.load_model(

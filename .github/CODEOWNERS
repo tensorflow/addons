@@ -1,24 +1,5 @@
 # TensorFlow Addons Codeowners
 
-#####################################################################################
-# Subpackage Owners
-
-/tensorflow_addons/activations/ @facaiy @seanpmorgan
-/tensorflow_addons/callbacks/ @shun-lin
-/tensorflow_addons/image/ @windqaq @facaiy
-/tensorflow_addons/layers/ @seanpmorgan @facaiy
-/tensorflow_addons/losses/ @facaiy @windqaq
-/tensorflow_addons/metrics/ @marload
-/tensorflow_addons/optimizers/ @facaiy @windqaq
-/tensorflow_addons/rnn/ @qlzh727
-/tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
-/tensorflow_addons/text/ @seanpmorgan @facaiy
-
-/tensorflow_addons/custom_ops/image/ @windqaq @facaiy
-/tensorflow_addons/custom_ops/seq2seq/ @qlzh727
-/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy
-
-#####################################################################################
 # Submodule Owners
 # These will not always trigger a GitHub review because submodule owners do not
 # always have write access. However, a bot will notify them of the needed review.
@@ -74,6 +55,8 @@
 /tensorflow_addons/image/tests/translate_ops_test.py @sayoojbk
 
 /tensorflow_addons/layers/adaptive_pooling.py @Susmit-A
+/tensorflow_addons/layers/crf.py @howl-anderson
+/tensorflow_addons/layers/tests/crf_test.py @howl-anderson
 /tensorflow_addons/layers/tests/adaptive_pooling_test.py @Susmit-A
 /tensorflow_addons/layers/gelu.py @aakashkumarnain
 /tensorflow_addons/layers/tests/gelu_test.py @aakashkumarnain
@@ -105,6 +88,16 @@
 /tensorflow_addons/layers/tests/esn_test.py @pedrolarben
 /tensorflow_addons/layers/snake.py @failure-to-thrive
 /tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
+/tensorflow_addons/layers/stochastic_depth.py @mhstadler @windqaq
+/tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
+/tensorflow_addons/layers/noisy_dense.py @markub3327
+/tensorflow_addons/layers/tests/noisy_dense_test.py @markub3327
+/tensorflow_addons/layers/max_unpooling_2d.py @thaink
+/tensorflow_addons/layers/tests/max_unpooling_2d_test.py @thaink
+/tensorflow_addons/layers/max_unpooling_2d_v2.py @midsterx
+/tensorflow_addons/layers/tests/max_unpooling_2d_v2_test.py @midsterx
+/tensorflow_addons/layers/embedding_bag.py @rocketknight1
+/tensorflow_addons/layers/tests/embedding_bag_test.py @rocketknight1
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
@@ -140,12 +133,16 @@
 /tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi @marload
 /tensorflow_addons/metrics/geometric_mean.py @marload
 /tensorflow_addons/metrics/tests/geometric_mean_test.py @marload
+/tensorflow_addons/metrics/kendalls_tau.py @sorensenjs
+/tensorflow_addons/metrics/tests/kendalls_tau_test.py @sorensenjs
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/tests/conditional_gradient_test.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/cyclical_learning_rate.py @raphaelmeudec
 /tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py @raphaelmeudec
+/tensorflow_addons/optimizers/discriminative_layer_training.py @hyang0129
+/tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py @hyang0129
 /tensorflow_addons/optimizers/lamb.py @junjiek
 /tensorflow_addons/optimizers/tests/lamb_test.py @junjiek
 /tensorflow_addons/optimizers/lazy_adam.py @ssaishruthi
@@ -154,18 +151,22 @@
 /tensorflow_addons/optimizers/tests/lookahead_test.py @cyberzhg
 /tensorflow_addons/optimizers/moving_average.py @squadrick
 /tensorflow_addons/optimizers/tests/moving_average_test.py @squadrick
-/tensorflow_addons/optimizers/novograd.py @shreyashpatodia
-/tensorflow_addons/optimizers/tests/novograd_test.py @shreyashpatodia
+/tensorflow_addons/optimizers/novograd.py @szutenberg
+/tensorflow_addons/optimizers/tests/novograd_test.py @szutenberg
 /tensorflow_addons/optimizers/proximal_adagrad.py @WindQAQ
 /tensorflow_addons/optimizers/tests/proximal_adagrad_test.py @WindQAQ
-/tensorflow_addons/optimizers/rectified_adam.py @cyberzhg
-/tensorflow_addons/optimizers/tests/rectified_adam_test.py @cyberzhg
-/tensorflow_addons/optimizers/stochastic_weight_averaging.py @shreyashpatodia
-/tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py @shreyashpatodia
+/tensorflow_addons/optimizers/rectified_adam.py @szutenberg
+/tensorflow_addons/optimizers/tests/rectified_adam_test.py @szutenberg
+/tensorflow_addons/optimizers/stochastic_weight_averaging.py @szutenberg
+/tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py @szutenberg
 /tensorflow_addons/optimizers/weight_decay_optimizers.py @philjd
 /tensorflow_addons/optimizers/tests/weight_decay_optimizers_test.py @philjd
 /tensorflow_addons/optimizers/yogi.py @manzilz
 /tensorflow_addons/optimizers/tests/yogi_test.py @manzilz
+/tensorflow_addons/optimizers/cocob.py @rehanguha
+/tensorflow_addons/optimizers/tests/cocob_test.py @rehanguha
+/tensorflow_addons/optimizers/adabelief.py @juntang-zhuang
+/tensorflow_addons/optimizers/tests/adabelief_test.py @juntang-zhuang
 
 /tensorflow_addons/rnn/esn_cell.py @pedrolarben
 /tensorflow_addons/rnn/tests/esn_cell_test.py @pedrolarben
@@ -180,8 +181,10 @@
 
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 
-/tensorflow_addons/text/crf.py @squadrick
-/tensorflow_addons/text/tests/crf_test.py @squadrick
+/tensorflow_addons/text/crf.py @howl-anderson
+/tensorflow_addons/text/tests/crf_test.py @howl-anderson
+/tensorflow_addons/text/crf_wrapper.py @howl-anderson
+/tensorflow_addons/text/tests/crf_wrapper_test.py @howl-anderson
 /tensorflow_addons/text/parse_time_op.py @helinwang
 /tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
 /tensorflow_addons/text/skip_gram_ops.py @rahulunair

@@ -14,8 +14,12 @@
 # ==============================================================================
 """Tests for sparse_image_warp."""
 
+from collections import namedtuple
+
 import numpy as np
+import pytest
 import tensorflow as tf
+
 from tensorflow_addons.image import sparse_image_warp
 from tensorflow_addons.image.sparse_image_warp import _get_boundary_locations
 from tensorflow_addons.image.sparse_image_warp import _get_grid_locations
@@ -121,7 +125,7 @@ def assert_move_single_pixel(order, num_boundary_points, type_to_use):
     # Shift it one pixel to the right.
     control_point_displacements = [[0.0, 1.0]]
     control_point_displacements = tf.constant(
-        np.float32(np.expand_dims(control_point_displacements, 0)), dtype=type_to_use,
+        np.float32(np.expand_dims(control_point_displacements, 0)), dtype=type_to_use
     )
 
     (warped_image, flow) = sparse_image_warp(
@@ -243,3 +247,68 @@ def test_that_backprop_runs():
 
     gradients = t.gradient(warped_image, image).numpy()
     assert np.sum(np.abs(gradients)) != 0
+
+
+ShapeConfig = namedtuple(
+    "ShapeConfig",
+    [
+        "image",
+        "source_control_point_locations",
+        "dest_control_point_locations",
+        "input",
+    ],
+)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize(
+    "shape",
+    [
+        ShapeConfig(None, None, None, (1, 9, 12, 3)),
+        ShapeConfig(None, [1, 1, 2], [1, 1, 2], (9, 12)),
+        ShapeConfig(None, [1, 1, 2], [1, 1, 2], (9, 12, 3)),
+        ShapeConfig(None, [1, 1, 2], [1, 1, 2], (1, 9, 12, 3)),
+        ShapeConfig([None, 9, 12, 3], [None, 1, 2], [None, 1, 2], (1, 9, 12, 3)),
+        ShapeConfig([None, None, None, 3], [None, 1, 2], [None, 1, 2], (1, 9, 12, 3)),
+        ShapeConfig(
+            [None, None, None, None], [None, 1, 2], [None, 1, 2], (1, 9, 12, 3)
+        ),
+    ],
+)
+@pytest.mark.parametrize("interpolation_order", [1, 2, 3])
+@pytest.mark.parametrize("num_boundary_points", [1, 2, 3])
+def test_partially_or_fully_unknown_shape(
+    shape, interpolation_order, num_boundary_points
+):
+    control_point_locations = np.asarray([3.0, 3.0]).reshape(1, 1, 2).astype(np.float32)
+    control_point_displacements = (
+        np.asarray([0.25, -0.5]).reshape(1, 1, 2).astype(np.float32)
+    )
+    fn = tf.function(sparse_image_warp).get_concrete_function(
+        image=tf.TensorSpec(shape=shape.image, dtype=tf.float32),
+        source_control_point_locations=tf.TensorSpec(
+            shape=shape.source_control_point_locations, dtype=tf.float32
+        ),
+        dest_control_point_locations=tf.TensorSpec(
+            shape=shape.dest_control_point_locations, dtype=tf.float32
+        ),
+        interpolation_order=interpolation_order,
+        num_boundary_points=num_boundary_points,
+    )
+    image = tf.ones(shape=shape.input, dtype=tf.float32)
+    expected_output = sparse_image_warp(
+        image,
+        control_point_locations,
+        control_point_locations + control_point_displacements,
+        interpolation_order=interpolation_order,
+        num_boundary_points=num_boundary_points,
+    )
+    output = fn(
+        image,
+        control_point_locations,
+        control_point_locations + control_point_displacements,
+        interpolation_order=interpolation_order,
+        num_boundary_points=num_boundary_points,
+    )
+    np.testing.assert_equal(output[0].numpy(), expected_output[0].numpy())
+    np.testing.assert_equal(output[1].numpy(), expected_output[1].numpy())

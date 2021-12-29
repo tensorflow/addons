@@ -62,7 +62,7 @@ def setup_values(
     assert 3 <= len(image_shape) <= 4
     height, width = image_shape[-3], image_shape[-2]
     plane = tf.constant(
-        [x for x in range(1, height * width + 1)], shape=(height, width), dtype=dtype,
+        [x for x in range(1, height * width + 1)], shape=(height, width), dtype=dtype
     )
     image = tile_image(plane, image_shape=image_shape)
 
@@ -172,7 +172,13 @@ def test_reflect_padding_with_3x3_filter_mean(image_shape):
 
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_reflect_padding_with_4x4_filter_mean(image_shape):
-    expected_plane = tf.constant([[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0],])
+    expected_plane = tf.constant(
+        [
+            [5.0, 5.0, 5.0],
+            [5.0, 5.0, 5.0],
+            [5.0, 5.0, 5.0],
+        ]
+    )
 
     verify_values(
         mean_filter2d,

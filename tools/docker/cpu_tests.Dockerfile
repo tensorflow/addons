@@ -1,11 +1,11 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-FROM python:3.5 as build_wheel
+FROM python:3.7 as build_wheel
 
-ARG TF_VERSION=2.3.0
+ARG TF_VERSION=2.7.0
 RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+COPY tools/install_deps/install_bazelisk.sh .bazeliskrc ./
 RUN bash install_bazelisk.sh
 
 COPY requirements.txt ./
@@ -27,7 +27,7 @@ RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts
 
 
-FROM python:3.5
+FROM python:3.7
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt

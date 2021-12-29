@@ -32,7 +32,19 @@ class ESNCell(keras.layers.AbstractRNNCell):
         "The "echo state" approach to analysing and training recurrent neural networks".
         GMD Report148, German National Research Center for Information Technology, 2001.
         https://www.researchgate.net/publication/215385037
-    Arguments:
+
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> ESNCell = tfa.rnn.ESNCell(4)
+    >>> rnn = tf.keras.layers.RNN(ESNCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+
+    Args:
         units: Positive integer, dimensionality in the reservoir.
         connectivity: Float between 0 and 1.
             Connection probability between two reservoir units.
@@ -79,7 +91,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
         kernel_initializer: Initializer = "glorot_uniform",
         recurrent_initializer: Initializer = "glorot_uniform",
         bias_initializer: Initializer = "zeros",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.units = units
@@ -118,7 +130,8 @@ class ESNCell(keras.layers.AbstractRNNCell):
             )
 
             connectivity_mask = tf.cast(
-                tf.math.less_equal(tf.random.uniform(shape), self.connectivity,), dtype
+                tf.math.less_equal(tf.random.uniform(shape), self.connectivity),
+                dtype,
             )
             recurrent_weights = tf.math.multiply(recurrent_weights, connectivity_mask)
 

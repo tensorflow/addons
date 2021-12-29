@@ -27,8 +27,38 @@ from tensorflow_addons.utils import types
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
 
+    Inherits from: `tf.keras.layers.Layer`.
+
     References:
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
+
+    Example:
+
+    >>> layer = tfa.layers.CRF(4)
+    >>> inputs = np.random.rand(2, 4, 8).astype(np.float32)
+    >>> decoded_sequence, potentials, sequence_length, chain_kernel = layer(inputs)
+    >>> decoded_sequence.shape
+    TensorShape([2, 4])
+    >>> potentials.shape
+    TensorShape([2, 4, 4])
+    >>> sequence_length
+    <tf.Tensor: shape=(2,), dtype=int64, numpy=array([4, 4])>
+    >>> chain_kernel.shape
+    TensorShape([4, 4])
+
+    Args:
+        units: Positive integer, dimensionality of the reservoir.
+        chain_initializer: Orthogonal matrix. Default to `orthogonal`.
+        use_boundary: `Boolean`, whether the layer uses a boundary vector. Default to `True`.
+        boundary_initializer: Tensors initialized to 0. Default to `zeros`.
+        use_kernel: `Boolean`, whether the layer uses a kernel weights. Default to `True`.
+    Call Args:
+        inputs: Positive integer, dimensionality of the output space.
+        mask: A boolean `Tensor` of shape `[batch_size, sequence_length]`
+            or `None`. Default to `None`.
+    Raises:
+        ValueError: If input mask doesn't have dim 2 or None.
+        NotImplementedError: If left padding is provided.
     """
 
     @typechecked
@@ -39,7 +69,7 @@ class CRF(tf.keras.layers.Layer):
         use_boundary: bool = True,
         boundary_initializer: types.Initializer = "zeros",
         use_kernel: bool = True,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
 
@@ -77,7 +107,7 @@ class CRF(tf.keras.layers.Layer):
 
         if self.use_kernel:
             self._dense_layer = tf.keras.layers.Dense(
-                units=self.units, dtype=self.dtype,
+                units=self.units, dtype=self.dtype
             )
         else:
             self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)

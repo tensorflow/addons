@@ -13,18 +13,13 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
 import tensorflow as tf
 
-from tensorflow_addons.utils import types
-from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons import options
-
-_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
+from tensorflow_addons.utils.types import TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def tanhshrink(x: types.TensorLike) -> tf.Tensor:
+def tanhshrink(x: TensorLike) -> tf.Tensor:
     r"""Tanh shrink function.
 
     Applies the element-wise function:
@@ -41,37 +36,9 @@ def tanhshrink(x: types.TensorLike) -> tf.Tensor:
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-
-    if not options.TF_ADDONS_PY_OPS:
-        try:
-            return _tanhshrink_custom_op(x)
-        except tf.errors.NotFoundError:
-            options.warn_fallback("tanhshrink")
-
-    return _tanhshrink_py(x)
-
-
-def _tanhshrink_custom_op(x):
-    warnings.warn(
-        "The activations custom ops are deprecated and will be removed in "
-        "TensorFlow Addons v0.12.0. \nPlease use the pure python version of "
-        "tanhshrink instead by using the "
-        "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
-        "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
-        DeprecationWarning,
-    )
-    return _activation_so.ops.addons_tanhshrink(x)
-
-
-@tf.RegisterGradient("Addons>Tanhshrink")
-def _tanhshrink_grad(op, grad):
-    return _activation_so.ops.addons_tanhshrink_grad(grad, op.inputs[0])
-
-
-def _tanhshrink_py(x):
     return x - tf.math.tanh(x)

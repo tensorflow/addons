@@ -15,8 +15,8 @@ on:
       - r*
 
 env:
-  MIN_PY_VERSION: '3.5'
-  MAX_PY_VERSION: '3.8'
+  MIN_PY_VERSION: '3.7'
+  MAX_PY_VERSION: '3.9'
 
 jobs:
   test-with-bazel:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
@@ -32,15 +32,25 @@ jobs:
           pip install --default-timeout=1000 -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
           bash tools/install_deps/install_bazelisk.sh ./
           python configure.py
-          bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
+          bazel test -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
-    name: Build release wheels
+    name: Test and build release wheels
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
-        py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.3.0']
+        os: ['macos-10.15', 'windows-latest', 'ubuntu-18.04']
+        py-version: ['3.7', '3.8', '3.9']
+        tf-version: ['2.5.1', '2.7.0']
+        cpu: ['x86']
+        include:
+          - os: 'macos-11'
+            cpu: 'arm64'
+            tf-version: '2.7.0'
+            py-version: '3.8'
+          - os: 'macos-11'
+            cpu: 'arm64'
+            tf-version: '2.7.0'
+            py-version: '3.9'
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -51,26 +61,30 @@ jobs:
             const commit_details = await github.git.getCommit({owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha});
             return commit_details.data.author.date
       - if: github.event_name == 'push'
-        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+        shell: bash
+        run: echo "NIGHTLY_FLAG=--nightly" >> $GITHUB_ENV
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.py-version }}
-      - name: Setup Bazel
+      - if: matrix.os != 'ubuntu-18.04'
+        name: Setup Bazel
         # Ubuntu bazel is run inside of the docker image
-        if: matrix.os != 'ubuntu-18.04'
         run: bash tools/install_deps/install_bazelisk.sh ./
-      - name: Build wheels
+      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.4.2'
+        name: Build wheels
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
           TF_VERSION: ${{ matrix.tf-version }}
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
+          CPU: ${{ matrix.cpu }}
         shell: bash
-        run: bash .github/workflows/make_wheel_${OS}.sh
-      - uses: actions/upload-artifact@v1
+        run: bash .github/workflows/make_wheel_${OS}_${CPU}.sh
+      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.4.2'
+        uses: actions/upload-artifact@v1
         with:
-          name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
+          name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-${{ matrix.cpu }}-wheel
           path: wheelhouse
   upload-wheels:
     name: Publish wheels to PyPi
@@ -79,20 +93,44 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.3.0']
+        py-version: ['3.7', '3.8', '3.9']
+        tf-version: ['2.7.0']
+        cpu: ['x86']
+        include:
+          - os: 'macOS'
+            cpu: 'arm64'
+            tf-version: '2.7.0'
+            py-version: '3.8'
+          - os: 'macOS'
+            cpu: 'arm64'
+            tf-version: '2.7.0'
+            py-version: '3.9'
       fail-fast: false
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-${{ matrix.cpu }}-wheel
           path: ./dist
       - run: |
           set -e -x
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@v1.1.0
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
+  upload-dev-container:
+    name: Upload dev container to DockerHub
+    needs: [release-wheel, test-with-bazel]
+    runs-on: ubuntu-18.04
+    env:
+      PY_VERSION: '3.9'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          set -e -x
+          echo ${{ secrets.DOCKER_PW }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
+          bash .github/workflows/github_build_dev_container.sh
+          docker push tfaddons/dev_container:latest-gpu

@@ -38,6 +38,19 @@ class NASCell(keras.layers.AbstractRNNCell):
     "Neural Architecture Search with Reinforcement Learning" Proc. ICLR 2017.
 
     The class uses an optional projection layer.
+
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> NASCell = tfa.rnn.NASCell(4)
+    >>> rnn = tf.keras.layers.RNN(NASCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state, carry_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+    >>> carry_state.shape
+    TensorShape([30, 4])
     """
 
     # NAS cell's architecture base.
@@ -53,7 +66,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         recurrent_initializer: Initializer = "glorot_uniform",
         projection_initializer: Initializer = "glorot_uniform",
         bias_initializer: Initializer = "zeros",
-        **kwargs
+        **kwargs,
     ):
         """Initialize the parameters for a NAS cell.
 

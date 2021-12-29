@@ -32,7 +32,7 @@ def sparsemax_loss(
 
     Computes the generalized multi-label classification loss for the sparsemax
     function. The implementation is a reformulation of the original loss
-    function such that it uses the sparsemax properbility output instead of the
+    function such that it uses the sparsemax probability output instead of the
     internal $ \tau $ variable. However, the output is identical to the original
     loss function.
 
@@ -101,7 +101,7 @@ class SparsemaxLoss(tf.keras.losses.Loss):
     Computes the generalized multi-label classification loss for the sparsemax
     function.
 
-    Because the sparsemax loss function needs both the properbility output and
+    Because the sparsemax loss function needs both the probability output and
     the logits to compute the loss value, `from_logits` must be `True`.
 
     Because it computes the generalized multi-label loss, the shape of both

@@ -19,8 +19,6 @@ import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import Lookahead
-from tensorflow_addons.utils import test_utils
-from distutils.version import LooseVersion
 
 
 def run_dense_sample(iterations, optimizer, seed=0x2019):
@@ -55,10 +53,10 @@ def run_sparse_sample(iterations, optimizer, seed=0x2019):
     var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
     grad_0 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2]),
+        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2])
     )
     grad_1 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2]),
+        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2])
     )
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
@@ -122,9 +120,8 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 1e-3
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_fit_simple_linear_model_mixed_precision():
-    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
-        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     np.random.seed(0x2019)
     tf.random.set_seed(0x2019)
 
@@ -132,13 +129,9 @@ def test_fit_simple_linear_model_mixed_precision():
     w = np.random.standard_normal((3, 1))
     y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
 
-    try:
-        tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
-        model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        model.compile(Lookahead("sgd"), loss="mse")
-    finally:
-        tf.keras.mixed_precision.experimental.set_policy("float32")
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+    model.compile(Lookahead("sgd"), loss="mse")
     model.fit(x, y, epochs=3)
 
     x = np.random.standard_normal((100, 3))
@@ -147,7 +140,6 @@ def test_fit_simple_linear_model_mixed_precision():
 
     max_abs_diff = np.max(np.abs(predicted - y))
     assert max_abs_diff < 2.3e-3
-    assert max_abs_diff >= 1e-3
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

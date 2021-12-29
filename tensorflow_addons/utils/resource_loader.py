@@ -20,8 +20,8 @@ import warnings
 
 import tensorflow as tf
 
-MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.2.0"
-MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.3.0"
+INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.7.0"
+EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.8.0"
 abi_warning_already_raised = False
 SKIP_CUSTOM_OPS = False
 
@@ -31,7 +31,7 @@ def get_project_root():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_path_to_datafile(path):
+def get_path_to_datafile(path, is_so=False):
     """Get the path to the specified file in the data dependencies.
 
     The path is relative to tensorflow_addons/
@@ -42,6 +42,10 @@ def get_path_to_datafile(path):
       The path to the specified data file
     """
     root_dir = get_project_root()
+    if is_so:
+        bazel_bin_dir = os.path.join(os.path.dirname(root_dir), "bazel-bin")
+        if os.path.isdir(bazel_bin_dir):
+            root_dir = os.path.join(bazel_bin_dir, "tensorflow_addons")
     return os.path.join(root_dir, path.replace("/", os.sep))
 
 
@@ -61,7 +65,9 @@ class LazySO:
             )
         if self._ops is None:
             self.display_warning_if_incompatible()
-            self._ops = tf.load_op_library(get_path_to_datafile(self.relative_path))
+            self._ops = tf.load_op_library(
+                get_path_to_datafile(self.relative_path, is_so=True)
+            )
         return self._ops
 
     def display_warning_if_incompatible(self):
@@ -80,7 +86,8 @@ class LazySO:
             "on Github. This is a known limitation."
             "\n\n"
             "It might help you to fallback to pure Python "
-            "ops with TF_ADDONS_PY_OPS . To do that, see "
+            "ops by setting environment variable `TF_ADDONS_PY_OPS=1` or using `tfa.options.disable_custom_kernel()` in your code. "
+            "To do that, see "
             "https://github.com/tensorflow/addons#gpucpu-custom-ops "
             "\n\n"
             "You can also change the TensorFlow version installed on your system. "
@@ -96,9 +103,9 @@ class LazySO:
             "".format(
                 tf.__version__,
                 self.relative_path,
-                MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
-                MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
-                MAX_TF_VERSION_FOR_ABI_COMPATIBILITY,
+                INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
+                INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
+                EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY,
             ),
             UserWarning,
         )
@@ -110,6 +117,6 @@ def abi_is_compatible():
         # tf-nightly
         return False
 
-    min_version = LooseVersion(MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
-    max_version = LooseVersion(MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
+    min_version = LooseVersion(INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
+    max_version = LooseVersion(EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
     return min_version <= LooseVersion(tf.__version__) < max_version

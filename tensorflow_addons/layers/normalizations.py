@@ -26,6 +26,9 @@ from tensorflow_addons.utils import types
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
 
+    Source: "Group Normalization" (Yuxin Wu & Kaiming He, 2018)
+    https://arxiv.org/abs/1803.08494
+
     Group Normalization divides the channels into groups and computes
     within each group the mean and variance for normalization.
     Empirically, its accuracy is more stable than batch norm in a wide
@@ -42,10 +45,11 @@ class GroupNormalization(tf.keras.layers.Layer):
     to number of channels), then this operation becomes
     identical to Instance Normalization.
 
-    Arguments:
+    Args:
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
             The input dimension must be divisible by the number of groups.
+            Defaults to 32.
         axis: Integer, the axis that should be normalized.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
@@ -66,15 +70,12 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     Output shape:
         Same shape as input.
-
-    References:
-        - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
 
     @typechecked
     def __init__(
         self,
-        groups: int = 2,
+        groups: int = 32,
         axis: int = -1,
         epsilon: float = 1e-3,
         center: bool = True,
@@ -85,7 +86,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         gamma_regularizer: types.Regularizer = None,
         beta_constraint: types.Constraint = None,
         gamma_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.supports_masking = True
@@ -125,7 +126,11 @@ class GroupNormalization(tf.keras.layers.Layer):
 
         normalized_inputs = self._apply_normalization(reshaped_inputs, input_shape)
 
-        outputs = tf.reshape(normalized_inputs, tensor_input_shape)
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
+            outputs = tf.reshape(normalized_inputs, tensor_input_shape)
+        else:
+            outputs = normalized_inputs
 
         return outputs
 
@@ -156,17 +161,25 @@ class GroupNormalization(tf.keras.layers.Layer):
     def _reshape_into_groups(self, inputs, input_shape, tensor_input_shape):
 
         group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
-        group_shape[self.axis] = input_shape[self.axis] // self.groups
-        group_shape.insert(self.axis, self.groups)
-        group_shape = tf.stack(group_shape)
-        reshaped_inputs = tf.reshape(inputs, group_shape)
-        return reshaped_inputs, group_shape
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
+            group_shape[self.axis] = input_shape[self.axis] // self.groups
+            group_shape.insert(self.axis, self.groups)
+            group_shape = tf.stack(group_shape)
+            reshaped_inputs = tf.reshape(inputs, group_shape)
+            return reshaped_inputs, group_shape
+        else:
+            return inputs, group_shape
 
     def _apply_normalization(self, reshaped_inputs, input_shape):
 
         group_shape = tf.keras.backend.int_shape(reshaped_inputs)
         group_reduction_axes = list(range(1, len(group_shape)))
-        axis = -2 if self.axis == -1 else self.axis - 1
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
+            axis = -2 if self.axis == -1 else self.axis - 1
+        else:
+            axis = -1 if self.axis == -1 else self.axis - 1
         group_reduction_axes.pop(axis)
 
         mean, variance = tf.nn.moments(
@@ -274,8 +287,12 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     def _create_broadcast_shape(self, input_shape):
         broadcast_shape = [1] * len(input_shape)
-        broadcast_shape[self.axis] = input_shape[self.axis] // self.groups
-        broadcast_shape.insert(self.axis, self.groups)
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
+            broadcast_shape[self.axis] = input_shape[self.axis] // self.groups
+            broadcast_shape.insert(self.axis, self.groups)
+        else:
+            broadcast_shape[self.axis] = self.groups
         return broadcast_shape
 
 
@@ -378,10 +395,10 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         learned_epsilon: bool = False,
         learned_epsilon_constraint: types.Constraint = None,
         name: str = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, **kwargs)
-        self.epsilon = tf.math.abs(tf.cast(epsilon, dtype=self.dtype))
+        self.epsilon = epsilon
         self.beta_initializer = tf.keras.initializers.get(beta_initializer)
         self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
         self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
@@ -423,7 +440,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs):
-        epsilon = self.epsilon
+        epsilon = tf.math.abs(tf.cast(self.epsilon, dtype=self.dtype))
         if self.use_eps_learned:
             epsilon += tf.math.abs(self.eps_learned)
         nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)

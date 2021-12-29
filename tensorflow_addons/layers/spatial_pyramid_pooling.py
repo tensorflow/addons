@@ -32,7 +32,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
     regardless of input size/scale. It is typically used before a layer
     that requires a constant input shape, for example before a Dense Layer.
 
-    Arguments:
+    Args:
       bins: Either a collection of integers or a collection of collections of 2 integers.
         Each element in the inner collection must contain 2 integers, (pooled_rows, pooled_cols)
         For example, providing [1, 3, 5] or [[1, 1], [3, 3], [5, 5]] preforms pooling
@@ -66,7 +66,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
         bins: Union[Iterable[int], Iterable[Iterable[int]]],
         data_format=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.bins = [conv_utils.normalize_tuple(bin, 2, "bin") for bin in bins]
         self.data_format = conv_utils.normalize_data_format(data_format)
@@ -86,9 +86,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 new_input_height = dynamic_input_shape[1] - height_overflow
                 new_input_width = dynamic_input_shape[2] - width_overflow
 
-                new_inp = inputs[
-                    :, :new_input_height, :new_input_width, :,
-                ]
+                new_inp = inputs[:, :new_input_height, :new_input_width, :]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(
                     output, [dynamic_input_shape[0], bin[0] * bin[1], inputs.shape[-1]]
@@ -103,9 +101,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 new_input_height = dynamic_input_shape[2] - height_overflow
                 new_input_width = dynamic_input_shape[3] - width_overflow
 
-                new_inp = inputs[
-                    :, :, :new_input_height, :new_input_width,
-                ]
+                new_inp = inputs[:, :, :new_input_height, :new_input_width]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(
                     output, [dynamic_input_shape[0], inputs.shape[1], bin[0] * bin[1]]

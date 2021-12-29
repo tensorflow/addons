@@ -44,7 +44,7 @@ class BeamSearchDecoderState(
         ),
     )
 ):
-    """State of a `BeamSearchDecoder`.
+    """State of a `tfa.seq2seq.BeamSearchDecoder`.
 
     Attributes:
       cell_state: The cell state returned at the previous time step.
@@ -63,15 +63,15 @@ class BeamSearchDecoderState(
 
 class BeamSearchDecoderOutput(
     collections.namedtuple(
-        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids"),
+        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
     )
 ):
-    """Outputs of a `BeamSearchDecoder` step.
+    """Outputs of a `tfa.seq2seq.BeamSearchDecoder` step.
 
     Attributes:
       scores: The scores this step, which are the log
         probabilities over the output vocabulary, possibly penalized by length
-        and attention coverage. When `BeamSearchDecoder` is created with
+        and attention coverage. When `tfa.seq2seq.BeamSearchDecoder` is created with
         `output_all_scores=False` (default), this will be a `float32` `Tensor`
         of shape `[batch_size, beam_width]` containing the top scores
         corresponding to the predicted IDs. When `output_all_scores=True`,
@@ -97,7 +97,7 @@ class FinalBeamSearchDecoderOutput(
       predicted_ids: The final prediction. A tensor of shape
         `[batch_size, T, beam_width]` (or `[T, batch_size, beam_width]` if
         `output_time_major` is True). Beams are ordered from best to worst.
-      beam_search_decoder_output: An instance of `BeamSearchDecoderOutput` that
+      beam_search_decoder_output: An instance of `tfa.seq2seq.BeamSearchDecoderOutput` that
         describes the state of the beam search.
     """
 
@@ -122,8 +122,7 @@ def _tile_batch(t, multiplier):
 
 
 def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf.Tensor:
-    """Tile the batch dimension of a (possibly nested structure of) tensor(s)
-    t.
+    """Tiles the batch dimension of a (possibly nested structure of) tensor(s).
 
     For each tensor t in a (possibly nested structure) of tensors,
     this function takes a tensor t shaped `[batch_size, s0, s1, ...]` composed
@@ -235,7 +234,7 @@ def gather_tree(
     Raises:
       InvalidArgumentError: if `parent_ids` contains an invalid index.
     """
-    if not options.TF_ADDONS_PY_OPS:
+    if not options.is_custom_kernel_disabled():
         try:
             return _beam_search_so.ops.addons_gather_tree(
                 step_ids, parent_ids, max_sequence_lengths, end_token
@@ -253,7 +252,7 @@ def gather_tree(
 def gather_tree_from_array(
     t: TensorLike, parent_ids: TensorLike, sequence_length: TensorLike
 ) -> tf.Tensor:
-    """Calculates the full beams for `TensorArray`s.
+    """Calculates the full beams for a `TensorArray`.
 
     Args:
       t: A stacked `TensorArray` of size `max_time` that contains `Tensor`s of
@@ -385,7 +384,7 @@ class BeamSearchDecoderMixin:
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
         output_all_scores: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the BeamSearchDecoderMixin.
 
@@ -748,10 +747,10 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     # the first parent class since we will use super().__init__(), and Mixin
     # which is a object will properly invoke the __init__ method of other parent
     # class.
-    """BeamSearch sampling decoder.
+    """Beam search decoder.
 
     **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped in
-    `AttentionWrapper`, then you must ensure that:
+    `tfa.seq2seq.AttentionWrapper`, then you must ensure that:
 
     - The encoder output has been tiled to `beam_width` via
       `tfa.seq2seq.tile_batch` (NOT `tf.tile`).
@@ -781,7 +780,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         cell_state=tiled_encoder_final_state)
     ```
 
-    Meanwhile, with `AttentionWrapper`, coverage penalty is suggested to use
+    Meanwhile, with `tfa.seq2seq.AttentionWrapper`, coverage penalty is suggested to use
     when computing scores (https://arxiv.org/pdf/1609.08144.pdf). It encourages
     the decoding to cover all inputs.
     """
@@ -796,7 +795,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the BeamSearchDecoder.
 

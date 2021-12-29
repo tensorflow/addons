@@ -24,13 +24,15 @@ from typing import Optional
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class FBetaScore(tf.keras.metrics.Metric):
-    """Computes F-Beta score.
+    r"""Computes F-Beta score.
 
     It is the weighted harmonic mean of precision
-    and recall. Output range is [0, 1]. Works for
+    and recall. Output range is `[0, 1]`. Works for
     both multi-class and multi-label classification.
 
-    F-Beta = (1 + beta^2) * (prec * recall) / ((beta^2 * prec) + recall)
+    $$
+    F_{\beta} = (1 + \beta^2) * \frac{\textrm{precision} * \textrm{recall}}{(\beta^2 \cdot \textrm{precision}) + \textrm{recall}}
+    $$
 
     Args:
         num_classes: Number of unique classes in the dataset.
@@ -43,19 +45,22 @@ class FBetaScore(tf.keras.metrics.Metric):
         threshold: Elements of `y_pred` greater than threshold are
             converted to be 1, and the rest 0. If threshold is
             None, the argmax is converted to 1, and the rest 0.
+        name: (Optional) String name of the metric instance.
+        dtype: (Optional) Data type of the metric result.
 
     Returns:
-        F-Beta Score: float
+        F-Beta Score: float.
 
     Raises:
         ValueError: If the `average` has values other than
-        [None, micro, macro, weighted].
+        `[None, 'micro', 'macro', 'weighted']`.
 
         ValueError: If the `beta` value is less than or equal
         to 0.
 
     `average` parameter behavior:
-        None: Scores for each class are returned
+
+        None: Scores for each class are returned.
 
         micro: True positivies, false positives and
             false negatives are computed globally.
@@ -67,6 +72,20 @@ class FBetaScore(tf.keras.metrics.Metric):
         weighted: Metrics are computed for each class
             and returns the mean weighted by the
             number of true instances in each class.
+
+    Usage:
+
+    >>> metric = tfa.metrics.FBetaScore(num_classes=3, beta=2.0, threshold=0.5)
+    >>> y_true = np.array([[1, 1, 1],
+    ...                    [1, 0, 0],
+    ...                    [1, 1, 0]], np.int32)
+    >>> y_pred = np.array([[0.2, 0.6, 0.7],
+    ...                    [0.2, 0.6, 0.6],
+    ...                    [0.6, 0.8, 0.0]], np.float32)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()
+    array([0.3846154 , 0.90909094, 0.8333334 ], dtype=float32)
     """
 
     @typechecked
@@ -78,14 +97,14 @@ class FBetaScore(tf.keras.metrics.Metric):
         threshold: Optional[FloatTensorLike] = None,
         name: str = "fbeta_score",
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, dtype=dtype)
 
         if average not in (None, "micro", "macro", "weighted"):
             raise ValueError(
                 "Unknown average type. Acceptable values "
-                "are: [None, micro, macro, weighted]"
+                "are: [None, 'micro', 'macro', 'weighted']"
             )
 
         if not isinstance(beta, float):
@@ -184,20 +203,28 @@ class FBetaScore(tf.keras.metrics.Metric):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def reset_states(self):
+    def reset_state(self):
         reset_value = tf.zeros(self.init_shape, dtype=self.dtype)
         K.batch_set_value([(v, reset_value) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class F1Score(FBetaScore):
-    """Computes F-1 Score.
+    r"""Computes F-1 Score.
 
     It is the harmonic mean of precision and recall.
-    Output range is [0, 1]. Works for both multi-class
+    Output range is `[0, 1]`. Works for both multi-class
     and multi-label classification.
 
-    F-1 = 2 * (precision * recall) / (precision + recall)
+    $$
+    F_1 = 2 \cdot \frac{\textrm{precision} \cdot \textrm{recall}}{\textrm{precision} + \textrm{recall}}
+    $$
 
     Args:
         num_classes: Number of unique classes in the dataset.
@@ -207,13 +234,15 @@ class F1Score(FBetaScore):
         threshold: Elements of `y_pred` above threshold are
             considered to be 1, and the rest 0. If threshold is
             None, the argmax is converted to 1, and the rest 0.
+        name: (Optional) String name of the metric instance.
+        dtype: (Optional) Data type of the metric result.
 
     Returns:
-        F-1 Score: float
+        F-1 Score: float.
 
     Raises:
         ValueError: If the `average` has values other than
-        [None, micro, macro, weighted].
+        [None, 'micro', 'macro', 'weighted'].
 
     `average` parameter behavior:
         None: Scores for each class are returned
@@ -228,6 +257,20 @@ class F1Score(FBetaScore):
         weighted: Metrics are computed for each class
             and returns the mean weighted by the
             number of true instances in each class.
+
+    Usage:
+
+    >>> metric = tfa.metrics.F1Score(num_classes=3, threshold=0.5)
+    >>> y_true = np.array([[1, 1, 1],
+    ...                    [1, 0, 0],
+    ...                    [1, 1, 0]], np.int32)
+    >>> y_pred = np.array([[0.2, 0.6, 0.7],
+    ...                    [0.2, 0.6, 0.6],
+    ...                    [0.6, 0.8, 0.0]], np.float32)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()
+    array([0.5      , 0.8      , 0.6666667], dtype=float32)
     """
 
     @typechecked

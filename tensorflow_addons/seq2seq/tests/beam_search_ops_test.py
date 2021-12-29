@@ -83,7 +83,7 @@ def test_bad_parent_values_on_gpu():
     expected_result = _transpose_batch_time(
         [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
     )
-    if options.TF_ADDONS_PY_OPS:
+    if options.is_custom_kernel_disabled():
         # The Python version has the same behavior on CPU and GPU.
         with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
             _ = gather_tree(
@@ -141,7 +141,7 @@ def test_gather_tree_batch():
             # valid id and everything after it should be end_token.
             if found > 0:
                 np.testing.assert_equal(
-                    v[: found - 1] >= 0, np.ones_like(v[: found - 1], dtype=bool),
+                    v[: found - 1] >= 0, np.ones_like(v[: found - 1], dtype=bool)
                 )
             np.testing.assert_allclose(
                 v[found + 1 :], end_token * np.ones_like(v[found + 1 :])

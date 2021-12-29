@@ -33,9 +33,12 @@ def euclidean_dist_transform(
 ) -> tf.Tensor:
     """Applies euclidean distance transform(s) to the image(s).
 
+    Based on [Distance Transforms of Sampled Functions]
+    (http://www.theoryofcomputing.org/articles/v008a019/v008a019.pdf).
+
     Args:
-      images: A tensor of shape `(num_images, num_rows, num_columns, 1)`
-        (NHWC), or `(num_rows, num_columns, 1)` (HWC) or
+      images: A tensor of shape `(num_images, num_rows, num_columns, num_channels)`
+        (NHWC), or `(num_rows, num_columns, num_channels)` (HWC) or
         `(num_rows, num_columns)` (HW).
       dtype: `tf.dtypes.DType` of the output tensor.
       name: The name of the op.
@@ -47,8 +50,6 @@ def euclidean_dist_transform(
 
     Raises:
       TypeError: If `image` is not tf.uint8, or `dtype` is not floating point.
-      ValueError: If `image` more than one channel, or `image` is not of
-        rank between 2 and 4.
     """
 
     with tf.name_scope(name or "euclidean_distance_transform"):
@@ -60,13 +61,9 @@ def euclidean_dist_transform(
         images = img_utils.to_4D_image(image_or_images)
         original_ndims = img_utils.get_ndims(image_or_images)
 
-        if images.get_shape()[3] != 1 and images.get_shape()[3] is not None:
-            raise ValueError("`images` must have only one channel")
-
         if dtype not in [tf.float16, tf.float32, tf.float64]:
             raise TypeError("`dtype` must be float16, float32 or float64")
 
-        images = tf.cast(images, dtype)
-        output = _image_so.ops.addons_euclidean_distance_transform(images)
+        output = _image_so.ops.addons_euclidean_distance_transform(images, dtype)
 
         return img_utils.from_4D_image(output, original_ndims)

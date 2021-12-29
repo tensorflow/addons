@@ -92,7 +92,7 @@ def test_dynamic_decode_tflite_conversion():
     cell = tf.keras.layers.LSTMCell(units)
     sampler = sampler_py.GreedyEmbeddingSampler()
     embeddings = tf.random.uniform([vocab_size, units])
-    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler,)
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
 
     @tf.function
     def _decode(start_tokens, end_token):
@@ -113,7 +113,12 @@ def test_dynamic_decode_tflite_conversion():
     concrete_function = _decode.get_concrete_function(
         tf.TensorSpec([1], dtype=tf.int32), tf.TensorSpec([], dtype=tf.int32)
     )
-    converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_function])
+    if tf.__version__[:3] >= "2.7":
+        converter = tf.lite.TFLiteConverter.from_concrete_functions(
+            [concrete_function], _decode
+        )
+    else:
+        converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_function])
     converter.target_spec.supported_ops = [
         tf.lite.OpsSet.TFLITE_BUILTINS,
         tf.lite.OpsSet.SELECT_TF_OPS,
@@ -148,7 +153,7 @@ def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
         cell=cell, sampler=sampler, impute_finished=use_sequence_length
     )
 
-    (final_decoder_outputs, final_decoder_state, _,) = my_decoder(
+    (final_decoder_outputs, final_decoder_state, _) = my_decoder(
         inputs, initial_state=zero_state, sequence_length=sequence_length
     )
 
@@ -168,7 +173,7 @@ def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
     # to dynamic_rnn, which also zeros out outputs and passes along
     # state.
     np.testing.assert_allclose(
-        final_decoder_outputs.rnn_output, final_rnn_outputs[:, 0:max_out, :],
+        final_decoder_outputs.rnn_output, final_rnn_outputs[:, 0:max_out, :]
     )
     if use_sequence_length:
         np.testing.assert_allclose(final_decoder_state, final_rnn_state)
