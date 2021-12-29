@@ -49,6 +49,8 @@ class DecoupledWeightDecayExtension:
         super(AdamW, self).__init__(weight_decay, *args, **kwargs).
     ```
 
+    Something, something
+
     Note: this extension decays weights BEFORE applying the update based
     on the gradient, i.e. this extension only has the desired behaviour for
     optimizers which do not depend on the value of'var' in the update step!
