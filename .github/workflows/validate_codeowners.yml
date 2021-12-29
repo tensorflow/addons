@@ -1,0 +1,26 @@
+name: Validate codeowners
+
+on:
+  push:
+    branches:
+      - master
+      - r*
+  pull_request_target:
+    branches:
+      - master
+      - r*
+
+jobs:
+  validate-codeowners:
+    name: Check that the CODEOWNERS is valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - run: pip install pygithub click
+      - name: Check that the CODEOWNERS is valid
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: python .github/workflows/notify_codeowners.py
