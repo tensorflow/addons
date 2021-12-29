@@ -19,7 +19,7 @@ jobs:
         env:
           PR: ${{ steps.findPr.outputs.pr }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
+        run:  |
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=auto \
               --no-dry-run \
