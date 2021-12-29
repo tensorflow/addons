@@ -22,4 +22,4 @@ jobs:
         run: |
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=auto \
-              --no-dry-run \
+              --no-dry-run

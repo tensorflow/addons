@@ -1,6 +1,6 @@
 import github
 import click
-import urllib.request
+
 from pathlib import Path
 from typing import List, Tuple
 import re

@@ -96,7 +96,7 @@ jobs:
       - name: Check that the CODEOWNERS is valid
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS
+        run: python .github/workflows/notify_codeowners.py
   nbfmt:
     name: Notebook format
     runs-on: ubuntu-latest
