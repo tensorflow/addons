@@ -1,7 +1,7 @@
 name: Notify codeowners
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
 
 
@@ -18,8 +18,8 @@ jobs:
       - name: Drop a message for codeowners
         env:
           PR: ${{ steps.findPr.outputs.pr }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=auto \
-              --no-dry-run \
-              https://raw.githubusercontent.com/tensorflow/addons/master/.github/CODEOWNERS
+              --no-dry-run
