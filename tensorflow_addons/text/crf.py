@@ -490,7 +490,11 @@ def crf_decode_forward(
     mask = tf.sequence_mask(sequence_lengths, tf.shape(inputs)[1])
     crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params, dtype=inputs.dtype)
     crf_fwd_layer = tf.keras.layers.RNN(
-        crf_fwd_cell, return_sequences=True, return_state=True, dtype=inputs.dtype
+        crf_fwd_cell,
+        return_sequences=True,
+        return_state=True,
+        dtype=inputs.dtype,
+        zero_output_for_mask=True,  # See: https://github.com/tensorflow/addons/issues/2639
     )
     return crf_fwd_layer(inputs, state, mask=mask)
 
