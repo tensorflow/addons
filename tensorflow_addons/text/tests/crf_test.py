@@ -563,7 +563,8 @@ def test_crf_decode_save_load(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "potentials,sequence_length", [
+    "potentials,sequence_length",
+    [
         # performs masking
         pytest.param(
             tf.random.normal([2, 12, 3]),
@@ -574,7 +575,7 @@ def test_crf_decode_save_load(tmpdir):
             tf.random.normal([4, 8, 10]),
             tf.constant([8, 8, 8, 8]),
         ),
-    ]
+    ],
 )
 def test_crf_decode_forward_mask(potentials, sequence_length):
     # mimics setup of the `_multi_seq_fn` closure in `crf_decode`
@@ -600,7 +601,9 @@ def test_crf_decode_forward_mask(potentials, sequence_length):
     masked_indices = tf.cast(tf.logical_not(mask), tf.int32)
 
     # sum of each row in the mask should equal timedim - seq lens
-    exp_mask_sums = tf.repeat(inputs.shape[1], inputs.shape[0]) - sequence_length_less_one
+    exp_mask_sums = (
+        tf.repeat(inputs.shape[1], inputs.shape[0]) - sequence_length_less_one
+    )
     mask_sums = tf.reduce_sum(masked_indices, axis=1)
     assert_array_equal(
         exp_mask_sums.numpy(),
@@ -611,4 +614,6 @@ def test_crf_decode_forward_mask(potentials, sequence_length):
     # we appropriately masked timesteps
     masked_indices = tf.expand_dims(masked_indices, [2])
     zeros = masked_indices * backpointers
-    assert tf.reduce_all(zeros == 0).numpy(), "Mask not applied correctly: {0}".format(zeros)
+    assert tf.reduce_all(zeros == 0).numpy(), "Mask not applied correctly: {0}".format(
+        zeros
+    )
