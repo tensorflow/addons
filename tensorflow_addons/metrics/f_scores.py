@@ -339,14 +339,14 @@ class Recall(FBetaScore):
         num_classes: FloatTensorLike,
         average: str = None,
         threshold: Optional[FloatTensorLike] = None,
-        name: str = "f1_score",
+        name: str = "recall",
         dtype: AcceptableDTypes = None,
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 
     def result(self):
-        precision = tf.math.divide_no_nan(
-            self.true_positives, self.true_positives + self.false_positives
+        recall = tf.math.divide_no_nan(
+            self.true_positives, self.true_positives + self.false_negatives
         )
         
         if self.average == "weighted":
@@ -415,7 +415,7 @@ class Precision(FBetaScore):
         num_classes: FloatTensorLike,
         average: str = None,
         threshold: Optional[FloatTensorLike] = None,
-        name: str = "f1_score",
+        name: str = "precision",
         dtype: AcceptableDTypes = None,
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
