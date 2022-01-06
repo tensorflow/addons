@@ -288,3 +288,156 @@ class F1Score(FBetaScore):
         base_config = super().get_config()
         del base_config["beta"]
         return base_config
+
+
+@tf.keras.utils.register_keras_serializable(package="Addons")
+class Recall(FBetaScore):
+    """ Recall
+    
+    Args:
+        num_classes: Number of unique classes in the dataset.
+        average: Type of averaging to be performed on data.
+            Acceptable values are `None`, `micro`, `macro`
+            and `weighted`. Default value is None.
+        threshold: Elements of `y_pred` above threshold are
+            considered to be 1, and the rest 0. If threshold is
+            None, the argmax is converted to 1, and the rest 0.
+        name: (Optional) String name of the metric instance.
+        dtype: (Optional) Data type of the metric result.
+    Returns:
+        Recall Score: float.
+    Raises:
+        ValueError: If the `average` has values other than
+        [None, 'micro', 'macro', 'weighted'].
+    `average` parameter behavior:
+        None: Scores for each class are returned
+        micro: True positivies, false positives and
+            false negatives are computed globally.
+        macro: True positivies, false positives and
+            false negatives are computed for each class
+            and their unweighted mean is returned.
+        weighted: Metrics are computed for each class
+            and returns the mean weighted by the
+            number of true instances in each class.
+    Usage:
+    >>> metric = tfa.metrics.Recall(num_classes=3, threshold=0.5)
+    >>> y_true = np.array([[1, 1, 1],
+    ...                    [1, 0, 0],
+    ...                    [1, 1, 0]], np.int32)
+    >>> y_pred = np.array([[0.2, 0.6, 0.7],
+    ...                    [0.2, 0.6, 0.6],
+    ...                    [0.6, 0.8, 0.0]], np.float32)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy() # not the correct result is displayed here
+    array([0.5      , 0.8      , 0.6666667], dtype=float32)
+    """
+    
+    @typechecked
+    def __init__(
+        self,
+        num_classes: FloatTensorLike,
+        average: str = None,
+        threshold: Optional[FloatTensorLike] = None,
+        name: str = "f1_score",
+        dtype: AcceptableDTypes = None,
+    ):
+        super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
+
+    def result(self):
+        precision = tf.math.divide_no_nan(
+            self.true_positives, self.true_positives + self.false_positives
+        )
+        
+        if self.average == "weighted":
+            weights = tf.math.divide_no_nan(
+                self.weights_intermediate, tf.reduce_sum(self.weights_intermediate)
+            )
+            recall = tf.reduce_sum(recall * weights)
+
+        elif self.average is not None:  # [micro, macro]
+            recall = tf.reduce_mean(recall)
+
+        return recall
+    
+    def get_config(self):
+        base_config = super().get_config()
+        del base_config["beta"]
+        return base_config
+    
+
+@tf.keras.utils.register_keras_serializable(package="Addons")
+class Precision(FBetaScore):
+    """ Precision
+    
+    Args:
+        num_classes: Number of unique classes in the dataset.
+        average: Type of averaging to be performed on data.
+            Acceptable values are `None`, `micro`, `macro`
+            and `weighted`. Default value is None.
+        threshold: Elements of `y_pred` above threshold are
+            considered to be 1, and the rest 0. If threshold is
+            None, the argmax is converted to 1, and the rest 0.
+        name: (Optional) String name of the metric instance.
+        dtype: (Optional) Data type of the metric result.
+    Returns:
+        Precision Score: float.
+    Raises:
+        ValueError: If the `average` has values other than
+        [None, 'micro', 'macro', 'weighted'].
+    `average` parameter behavior:
+        None: Scores for each class are returned
+        micro: True positivies, false positives and
+            false negatives are computed globally.
+        macro: True positivies, false positives and
+            false negatives are computed for each class
+            and their unweighted mean is returned.
+        weighted: Metrics are computed for each class
+            and returns the mean weighted by the
+            number of true instances in each class.
+    Usage:
+    >>> metric = tfa.metrics.Precision(num_classes=3, threshold=0.5)
+    >>> y_true = np.array([[1, 1, 1],
+    ...                    [1, 0, 0],
+    ...                    [1, 1, 0]], np.int32)
+    >>> y_pred = np.array([[0.2, 0.6, 0.7],
+    ...                    [0.2, 0.6, 0.6],
+    ...                    [0.6, 0.8, 0.0]], np.float32)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy() # not the correct result is displayed here
+    array([0.5      , 0.8      , 0.6666667], dtype=float32)
+    """
+    
+    @typechecked
+    def __init__(
+        self,
+        num_classes: FloatTensorLike,
+        average: str = None,
+        threshold: Optional[FloatTensorLike] = None,
+        name: str = "f1_score",
+        dtype: AcceptableDTypes = None,
+    ):
+        super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
+
+    def result(self):
+        precision = tf.math.divide_no_nan(
+            self.true_positives, self.true_positives + self.false_positives
+        )
+        
+        if self.average == "weighted":
+            weights = tf.math.divide_no_nan(
+                self.weights_intermediate, tf.reduce_sum(self.weights_intermediate)
+            )
+            precision = tf.reduce_sum(precision * weights)
+
+        elif self.average is not None:  # [micro, macro]
+            precision = tf.reduce_mean(precision)
+
+        return precision
+    
+    def get_config(self):
+        base_config = super().get_config()
+        del base_config["beta"]
+        return base_config
+ 
