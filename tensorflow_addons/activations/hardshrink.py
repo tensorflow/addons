@@ -40,7 +40,7 @@ def hardshrink(x: TensorLike, lower: Number = -0.5, upper: Number = 0.5) -> tf.T
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `bfloat16`, float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
         lower: `float`, lower bound for setting values to zeros.
         upper: `float`, upper bound for setting values to zeros.
     Returns:
