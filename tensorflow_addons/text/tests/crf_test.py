@@ -590,7 +590,7 @@ def test_crf_decode_forward_mask(potentials, sequence_length):
     n_tags = potentials.shape[-1]
     transition_params = tf.random.normal([n_tags, n_tags])
 
-    backpointers, last_score = text.crf_decode_forward(
+    backpointers, _ = text.crf_decode_forward(
         inputs, initial_state, transition_params, sequence_length_less_one
     )
 
