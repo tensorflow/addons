@@ -39,6 +39,10 @@ class GroupNormalization(tf.keras.layers.Layer):
     If the number of groups is set to 1, then this operation becomes identical
     to Layer Normalization.
 
+    If mixed precision is used, cast inputs to float32 to abtain numerical
+    stability, just like 'tf.keras.layers.LayerNormalization' and
+    'tf.keras.layers.BatchNormalization' do.
+
     Relation to Instance Normalization:
     If the number of groups is set to the
     input dimension (number of groups is equal
@@ -117,6 +121,10 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     def call(self, inputs):
 
+        input_dtype = inputs.dtype
+        if input_dtype in ("float16", "bfloat16") and self.dtype == "float32":
+            inputs = tf.cast(inputs, "float32")
+
         input_shape = tf.keras.backend.int_shape(inputs)
         tensor_input_shape = tf.shape(inputs)
 
@@ -131,6 +139,8 @@ class GroupNormalization(tf.keras.layers.Layer):
             outputs = tf.reshape(normalized_inputs, tensor_input_shape)
         else:
             outputs = normalized_inputs
+
+        outputs = tf.cast(outputs, input_dtype)
 
         return outputs
 
@@ -265,6 +275,7 @@ class GroupNormalization(tf.keras.layers.Layer):
                 initializer=self.gamma_initializer,
                 regularizer=self.gamma_regularizer,
                 constraint=self.gamma_constraint,
+                experimental_autocast=False,
             )
         else:
             self.gamma = None
@@ -281,6 +292,7 @@ class GroupNormalization(tf.keras.layers.Layer):
                 initializer=self.beta_initializer,
                 regularizer=self.beta_regularizer,
                 constraint=self.beta_constraint,
+                experimental_autocast=False,
             )
         else:
             self.beta = None
