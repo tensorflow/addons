@@ -18,6 +18,7 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
@@ -344,6 +345,150 @@ def test_groupnorm_convnet_no_center_no_scale():
     np.testing.assert_allclose(
         np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
     )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", ["float16", "mixed_float16", "float32", "float64"])
+def test_groupnorm_mixed_precision_behavior(dtype):
+    norm = GroupNormalization(axis=-1, groups=1, dtype=dtype)
+    norm.build(input_shape=(1000, 28, 28, 3))
+    baseline_norm = tf.keras.layers.LayerNormalization(axis=-1, dtype=dtype)
+    baseline_norm.build(input_shape=(1000, 28, 28, 3))
+    if dtype == "mixed_float16":
+        compute_dtype = "float16"  # mixed precision's feature https://tensorflow.google.cn/guide/mixed_precision
+        variable_dtype = "float32"  # mixed precision's feature https://tensorflow.google.cn/guide/mixed_precision
+        _layer_dtype = "float32"  # mixed precision's feature https://tensorflow.google.cn/guide/mixed_precision
+    else:
+        compute_dtype = dtype
+        variable_dtype = dtype
+        _layer_dtype = dtype
+
+    assert norm.dtype == baseline_norm.dtype == _layer_dtype
+    assert (
+        norm.dtype_policy.name
+        == baseline_norm.dtype_policy.name
+        == tf.keras.mixed_precision.Policy(dtype).name
+    )
+
+    assert norm.compute_dtype == baseline_norm.compute_dtype == compute_dtype
+    assert norm.variable_dtype == baseline_norm.variable_dtype == variable_dtype
+    for w_in_norm, w_in_base_norm in zip(norm.weights, baseline_norm.weights):
+        assert hasattr(w_in_norm, "_cast_dtype") == hasattr(
+            w_in_base_norm, "_cast_dtype"
+        )
+        assert w_in_norm.shape == w_in_base_norm.shape
+
+
+@pytest.mark.with_device(["cpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", ["float16", "mixed_float16", "float32", "float64"])
+def test_groupnorm_mixed_precision_accuracy_cpu(dtype):
+    random_generator = tf.random.Generator.from_seed(0x2020)
+
+    norm = GroupNormalization(
+        axis=-1,
+        groups=1,
+        dtype=dtype,
+    )
+    norm.build(input_shape=(10, 28, 28, 3))
+
+    baseline_norm = tf.keras.layers.LayerNormalization(
+        axis=-1, dtype=dtype, input_shape=(28, 28, 3)
+    )
+    baseline_norm.build(input_shape=(10, 28, 28, 3))
+
+    for _ in range(10):
+        x = random_generator.normal(shape=(10, 28, 28, 3), mean=5.0, stddev=10.0)
+        computed_1 = tf.reduce_mean(
+            norm(x, training=True) - baseline_norm(x, training=True)
+        ).numpy()
+        computed_2 = tf.reduce_mean(
+            norm(x, training=False) - baseline_norm(x, training=False)
+        ).numpy()
+        if dtype == "mixed_float16":
+            test_utils.assert_allclose_according_to_type(
+                computed_1,
+                0.0,
+                rtol=1e-5,
+                atol=1e-5,
+                float_rtol=1e-5,
+                float_atol=1e-5,
+                half_rtol=1e-5,
+                half_atol=1e-5,
+                bfloat16_rtol=1e-5,
+                bfloat16_atol=1e-5,
+            )
+            test_utils.assert_allclose_according_to_type(
+                computed_2,
+                0.0,
+                rtol=1e-5,
+                atol=1e-5,
+                float_rtol=1e-5,
+                float_atol=1e-5,
+                half_rtol=1e-5,
+                half_atol=1e-5,
+                bfloat16_rtol=1e-5,
+                bfloat16_atol=1e-5,
+            )
+        else:
+            test_utils.assert_allclose_according_to_type(computed_1, 0.0)
+            test_utils.assert_allclose_according_to_type(computed_2, 0.0)
+
+
+@pytest.mark.with_device(["gpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", ["float16", "mixed_float16", "float32", "float64"])
+def test_groupnorm_mixed_precision_accuracy_gpu(dtype):
+    random_generator = tf.random.Generator.from_seed(0x2020)
+
+    norm = GroupNormalization(
+        axis=-1,
+        groups=1,
+        dtype=dtype,
+    )
+    norm.build(input_shape=(10, 28, 28, 3))
+
+    baseline_norm = tf.keras.layers.LayerNormalization(
+        axis=-1, dtype=dtype, input_shape=(28, 28, 3)
+    )
+    baseline_norm.build(input_shape=(10, 28, 28, 3))
+
+    for _ in range(10):
+        x = random_generator.normal(shape=(10, 28, 28, 3), mean=5.0, stddev=10.0)
+        computed_1 = tf.reduce_mean(
+            norm(x, training=True) - baseline_norm(x, training=True)
+        ).numpy()
+        computed_2 = tf.reduce_mean(
+            norm(x, training=False) - baseline_norm(x, training=False)
+        ).numpy()
+        if dtype == "mixed_float16":
+            test_utils.assert_allclose_according_to_type(
+                computed_1,
+                0.0,
+                rtol=1e-5,
+                atol=1e-5,
+                float_rtol=1e-5,
+                float_atol=1e-5,
+                half_rtol=1e-5,
+                half_atol=1e-5,
+                bfloat16_rtol=1e-5,
+                bfloat16_atol=1e-5,
+            )
+            test_utils.assert_allclose_according_to_type(
+                computed_2,
+                0.0,
+                rtol=1e-5,
+                atol=1e-5,
+                float_rtol=1e-5,
+                float_atol=1e-5,
+                half_rtol=1e-5,
+                half_atol=1e-5,
+                bfloat16_rtol=1e-5,
+                bfloat16_atol=1e-5,
+            )
+        else:
+            test_utils.assert_allclose_according_to_type(computed_1, 0.0)
+            test_utils.assert_allclose_according_to_type(computed_2, 0.0)
 
 
 def calculate_frn(
