@@ -144,7 +144,7 @@ class FBetaScore(tf.keras.metrics.Metric):
         # check for sparse labels
         if tf.rank(y_true) < tf.rank(y_pred):
             y_true = tf.one_hot(y_true, self.num_classes)
-        
+
         if self.threshold is None:
             threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
             # make sure [0, 0, 0] doesn't become [1, 1, 1]
