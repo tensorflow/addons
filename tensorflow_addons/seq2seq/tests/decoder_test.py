@@ -181,7 +181,7 @@ def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
 
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_dynamic_decode_rnn_with_scheduled_embedding_training_sampler():
-    policy = tf.keras.mixed_precision.experimental.global_policy()
+    policy = tf.keras.mixed_precision.global_policy()
     sequence_length = [3, 4, 3, 1]
     batch_size = 4
     input_depth = 7
