@@ -41,7 +41,7 @@ def stochastic_depth_test(seed, training):
 
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_with_mixed_precision_policy():
-    policy = tf.keras.mixed_precision.experimental.global_policy()
+    policy = tf.keras.mixed_precision.global_policy()
 
     shortcut = np.asarray([[0.2, 0.1, 0.4]])
     residual = np.asarray([[0.2, 0.4, 0.5]])

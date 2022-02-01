@@ -20,7 +20,6 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.mixed_precision.experimental import Policy
 
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.layers.noisy_dense import NoisyDense
@@ -47,7 +46,7 @@ def test_noisy_dense_dtype(dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_noisy_dense_with_policy():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = NoisyDense(5, dtype=Policy("mixed_float16"), name="noisy_dense_policy")
+    layer = NoisyDense(5, dtype="mixed_float16", name="noisy_dense_policy")
     outputs = layer(inputs)
     output_signature = layer.compute_output_signature(
         tf.TensorSpec(dtype="float16", shape=(2, 2))
