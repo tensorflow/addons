@@ -272,6 +272,7 @@ class AttentionMechanism(tf.keras.layers.Layer):
             # passed from __call__(), which does not have proper keras metadata.
             # TODO(omalleyt12): Remove this hack once the mask the has proper
             # keras history.
+            
             def _mark_checked(tensor):
                 tensor._keras_history_checked = True  # pylint: disable=protected-access
 
