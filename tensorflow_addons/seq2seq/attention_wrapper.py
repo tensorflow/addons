@@ -273,7 +273,7 @@ class AttentionMechanism(tf.keras.layers.Layer):
             # TODO(omalleyt12): Remove this hack once the mask the has proper
             # keras history.
             def _mark_checked(tensor):
-                tensor._keras_history_checked = True  # pylint: disable=protected-access
+                tensor._keras_history_checked = True    # pylint: disable=protected-access
 
             tf.nest.map_structure(_mark_checked, self.values)
             if self.memory_layer is not None:
