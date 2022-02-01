@@ -34,9 +34,6 @@ from tensorflow_addons.utils.types import (
 from typeguard import typechecked
 from typing import Optional, Callable, Union, List
 
-# TODO: Find public API alternatives to these
-from tensorflow.python.keras.engine import base_layer_utils
-
 
 class AttentionMechanism(tf.keras.layers.Layer):
     """Base class for attention mechanisms.
@@ -275,7 +272,9 @@ class AttentionMechanism(tf.keras.layers.Layer):
             # passed from __call__(), which does not have proper keras metadata.
             # TODO(omalleyt12): Remove this hack once the mask the has proper
             # keras history.
-            base_layer_utils.mark_checked(self.values)
+            def _mark_checked(tensor):
+                tensor._keras_history_checked = True  # pylint: disable=protected-access
+            tf.nest.map_structure(_mark_checked, self.values)
             if self.memory_layer is not None:
                 self.keys = self.memory_layer(self.values)
             else:
