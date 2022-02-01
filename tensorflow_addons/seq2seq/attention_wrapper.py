@@ -274,6 +274,7 @@ class AttentionMechanism(tf.keras.layers.Layer):
             # keras history.
             def _mark_checked(tensor):
                 tensor._keras_history_checked = True  # pylint: disable=protected-access
+
             tf.nest.map_structure(_mark_checked, self.values)
             if self.memory_layer is not None:
                 self.keys = self.memory_layer(self.values)
