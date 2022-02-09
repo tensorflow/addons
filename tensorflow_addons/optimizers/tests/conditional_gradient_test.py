@@ -85,7 +85,7 @@ def test_minimize_sparse_resource_variable_frobenius(dtype, device):
     grads0_0 = 32 * 1.0 + 40 * 2.0
     grads0_1 = 40 * 1.0 + 50 * 2.0
     grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
-    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
+    norm0 = tf.math.reduce_sum(grads0**2) ** 0.5
 
     learning_rate = 0.1
     lambda_ = 0.1
@@ -117,8 +117,8 @@ def test_basic_frobenius(dtype, use_resource):
         var1 = tf.Variable([3.0, 4.0], dtype=dtype[0])
     grads0 = tf.constant([0.1, 0.1], dtype=dtype[0])
     grads1 = tf.constant([0.01, 0.01], dtype=dtype[0])
-    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
-    norm1 = tf.math.reduce_sum(grads1 ** 2) ** 0.5
+    norm0 = tf.math.reduce_sum(grads0**2) ** 0.5
+    norm1 = tf.math.reduce_sum(grads1**2) ** 0.5
 
     def learning_rate():
         return 0.5
@@ -440,7 +440,7 @@ def test_minimize_with_2D_indicies_for_embedding_lookup_frobenius():
 
     # the gradient for this loss function:
     grads0 = tf.constant([[0, 0], [1, 1]], dtype=tf.float32)
-    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
+    norm0 = tf.math.reduce_sum(grads0**2) ** 0.5
 
     learning_rate = 0.1
     lambda_ = 0.1
@@ -503,8 +503,8 @@ def test_tensor_learning_rate_and_conditional_gradient_frobenius(dtype):
     var1 = tf.Variable([3.0, 4.0], dtype=dtype)
     grads0 = tf.constant([0.1, 0.1], dtype=dtype)
     grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
-    norm1 = tf.math.reduce_sum(grads1 ** 2) ** 0.5
+    norm0 = tf.math.reduce_sum(grads0**2) ** 0.5
+    norm1 = tf.math.reduce_sum(grads1**2) ** 0.5
     ord = "fro"
     cg_opt = cg_lib.ConditionalGradient(
         learning_rate=tf.constant(0.5), lambda_=tf.constant(0.01), ord=ord
@@ -943,8 +943,8 @@ def test_sharing_frobenius(dtype):
     var1 = tf.Variable([3.0, 4.0], dtype=dtype)
     grads0 = tf.constant([0.1, 0.1], dtype=dtype)
     grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
-    norm1 = tf.math.reduce_sum(grads1 ** 2) ** 0.5
+    norm0 = tf.math.reduce_sum(grads0**2) ** 0.5
+    norm1 = tf.math.reduce_sum(grads1**2) ** 0.5
     learning_rate = 0.1
     lambda_ = 0.1
     ord = "fro"

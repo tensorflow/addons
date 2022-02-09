@@ -59,7 +59,7 @@ def yogi_update_numpy(
     beta1 = np.array(beta1, dtype=param.dtype)
     beta2 = np.array(beta2, dtype=param.dtype)
 
-    alpha_t = alpha * np.sqrt(1 - beta2 ** t) / (1 - beta1 ** t)
+    alpha_t = alpha * np.sqrt(1 - beta2**t) / (1 - beta1**t)
 
     m_t = beta1 * m + (1 - beta1) * g_t
     g2_t = g_t * g_t
@@ -128,8 +128,8 @@ def do_test_sparse(beta1=0.0, l1reg=0.0, l2reg=0.0):
         # Run 3 steps of Yogi.
         for t in range(1, 4):
             beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
-            test_utils.assert_allclose_according_to_type(beta1 ** t, beta1_power)
-            test_utils.assert_allclose_according_to_type(0.999 ** t, beta2_power)
+            test_utils.assert_allclose_according_to_type(beta1**t, beta1_power)
+            test_utils.assert_allclose_according_to_type(0.999**t, beta2_power)
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
             var0_np, m0, v0 = yogi_update_numpy(
@@ -224,8 +224,8 @@ def do_test_basic(beta1=0.0, l1reg=0.0, l2reg=0.0):
         # Run 3 steps of Yogi.
         for t in range(1, 4):
             beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
-            test_utils.assert_allclose_according_to_type(beta1 ** t, beta1_power)
-            test_utils.assert_allclose_according_to_type(0.999 ** t, beta2_power)
+            test_utils.assert_allclose_according_to_type(beta1**t, beta1_power)
+            test_utils.assert_allclose_according_to_type(0.999**t, beta2_power)
 
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
@@ -284,8 +284,8 @@ def test_tensor_learning_rate():
         # Run 3 steps of Yogi.
         for t in range(1, 4):
             beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
-            test_utils.assert_allclose_according_to_type(0.9 ** t, beta1_power)
-            test_utils.assert_allclose_according_to_type(0.999 ** t, beta2_power)
+            test_utils.assert_allclose_according_to_type(0.9**t, beta1_power)
+            test_utils.assert_allclose_according_to_type(0.999**t, beta2_power)
 
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
@@ -320,8 +320,8 @@ def test_sharing():
         # Run 3 steps of intertwined Yogi1 and Yogi2.
         for t in range(1, 4):
             beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
-            test_utils.assert_allclose_according_to_type(0.9 ** t, beta1_power)
-            test_utils.assert_allclose_according_to_type(0.999 ** t, beta2_power)
+            test_utils.assert_allclose_according_to_type(0.9**t, beta1_power)
+            test_utils.assert_allclose_according_to_type(0.999**t, beta2_power)
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
             var0_np, m0, v0 = yogi_update_numpy(var0_np, grads0_np, t, m0, v0)
             var1_np, m1, v1 = yogi_update_numpy(var1_np, grads1_np, t, m1, v1)

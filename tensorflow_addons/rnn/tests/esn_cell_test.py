@@ -97,7 +97,7 @@ def test_esn_connectivity():
     cell.build((3, 3))
     recurrent_weights = tf.constant(cell.get_weights()[0])
     num_non_zero = tf.math.count_nonzero(recurrent_weights)
-    actual_connectivity = tf.divide(num_non_zero, units ** 2)
+    actual_connectivity = tf.divide(num_non_zero, units**2)
     np.testing.assert_allclose(
         np.asarray([actual_connectivity]), np.asanyarray([connectivity]), 1e-2
     )
