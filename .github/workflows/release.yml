@@ -44,7 +44,7 @@ jobs:
         cpu: ['x86']
         exclude:
           - py-version: '3.10'
-          - tf-version: '2.6.2'
+            tf-version: '2.6.2'
         include:
           - os: 'macos-11'
             cpu: 'arm64'
