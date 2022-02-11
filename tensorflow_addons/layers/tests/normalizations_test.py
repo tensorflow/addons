@@ -395,35 +395,15 @@ def test_groupnorm_mixed_precision_accuracy(dtype):
         axis=-1, dtype=dtype, input_shape=(28, 28, 3)
     )
     baseline_norm.build(input_shape=(10, 28, 28, 3))
-
-    for _ in range(10):
-        x = random_generator.normal(shape=(10, 28, 28, 3), mean=5.0, stddev=10.0)
-        computed_1 = tf.reduce_mean(
-            norm(x, training=True) - baseline_norm(x, training=True)
-        ).numpy()
-        computed_2 = tf.reduce_mean(
-            norm(x, training=False) - baseline_norm(x, training=False)
-        ).numpy()
-        if dtype == "mixed_float16":
-            test_utils.assert_allclose_according_to_type(
-                computed_1,
-                0.0,
-                half_rtol=1e-4,
-                half_atol=1e-4,
-                bfloat16_rtol=1e-4,
-                bfloat16_atol=1e-4,
-            )
-            test_utils.assert_allclose_according_to_type(
-                computed_2,
-                0.0,
-                half_rtol=1e-4,
-                half_atol=1e-4,
-                bfloat16_rtol=1e-4,
-                bfloat16_atol=1e-4,
-            )
-        else:
-            test_utils.assert_allclose_according_to_type(computed_1, 0.0)
-            test_utils.assert_allclose_according_to_type(computed_2, 0.0)
+    x = random_generator.normal(shape=(10, 28, 28, 3), mean=5.0, stddev=10.0)
+    computed_1 = tf.reduce_mean(
+        norm(x, training=True) - baseline_norm(x, training=True)
+    ).numpy()
+    computed_2 = tf.reduce_mean(
+        norm(x, training=False) - baseline_norm(x, training=False)
+    ).numpy()
+    test_utils.assert_allclose_according_to_type(computed_1, 0.0)
+    test_utils.assert_allclose_according_to_type(computed_2, 0.0)
 
 
 def calculate_frn(
