@@ -92,7 +92,6 @@ def test_no_private_tf_api():
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
         "tensorflow_addons/seq2seq/decoder.py",
-        "tensorflow_addons/seq2seq/attention_wrapper.py",
         "tensorflow_addons/utils/types.py",
     ]
 
