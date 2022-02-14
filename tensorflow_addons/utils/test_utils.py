@@ -114,9 +114,9 @@ def run_custom_and_py_ops(request):
 
 @pytest.fixture(scope="function", params=["float32", "mixed_float16"])
 def run_with_mixed_precision_policy(request):
-    tf.keras.mixed_precision.experimental.set_policy(request.param)
+    tf.keras.mixed_precision.set_global_policy(request.param)
     yield
-    tf.keras.mixed_precision.experimental.set_policy("float32")
+    tf.keras.mixed_precision.set_global_policy("float32")
 
 
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])

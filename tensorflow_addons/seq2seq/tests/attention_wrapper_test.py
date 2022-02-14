@@ -398,7 +398,7 @@ def _test_with_attention(
                 seed=1337
             )
 
-    policy = tf.keras.mixed_precision.experimental.global_policy()
+    policy = tf.keras.mixed_precision.global_policy()
     sampler = sampler_py.TrainingSampler()
     my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
     initial_state = cell.get_initial_state(
@@ -541,7 +541,7 @@ def set_random_state_for_tf_and_np():
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_bahdanau_not_normalized():
     set_random_state_for_tf_and_np()
-    policy = tf.keras.mixed_precision.experimental.global_policy()
+    policy = tf.keras.mixed_precision.global_policy()
     create_attention_mechanism = wrapper.BahdanauAttention
     create_attention_kwargs = {"kernel_initializer": "ones"}
     expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -617,7 +617,7 @@ def test_bahdanau_normalized():
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_luong_not_normalized():
     set_random_state_for_tf_and_np()
-    policy = tf.keras.mixed_precision.experimental.global_policy()
+    policy = tf.keras.mixed_precision.global_policy()
     create_attention_mechanism = wrapper.LuongAttention
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
