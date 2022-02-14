@@ -39,4 +39,4 @@ RUN pip install /artifacts/tensorflow_addons-*.whl
 # check that we didnd't forget to add a py file to
 # The corresponding BUILD file.
 # Also test that the wheel works in a fresh environment
-RUN python -c "import tensorflow_addons"
+RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"
