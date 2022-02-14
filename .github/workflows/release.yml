@@ -40,7 +40,7 @@ jobs:
       matrix:
         os: ['macos-10.15', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.6.3', '2.8.0']
+        tf-version: ['2.6.3', '2.8.0rc1']
         cpu: ['x86']
         exclude:
           - py-version: '3.10'
@@ -48,15 +48,15 @@ jobs:
         include:
           - os: 'macos-11'
             cpu: 'arm64'
-            tf-version: '2.8.0'
+            tf-version: '2.8.0rc1'
             py-version: '3.8'
           - os: 'macos-11'
             cpu: 'arm64'
-            tf-version: '2.8.0'
+            tf-version: '2.8.0rc1'
             py-version: '3.9'
           - os: 'macOS-11'
             cpu: 'arm64'
-            tf-version: '2.8.0'
+            tf-version: '2.8.0rc1'
             py-version: '3.10'
       fail-fast: false
     steps:
@@ -101,20 +101,20 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.8.0']
+        tf-version: ['2.8.0rc1']
         cpu: ['x86']
         include:
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.8.0'
+            tf-version: '2.8.0rc1'
             py-version: '3.8'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.8.0'
+            tf-version: '2.8.0rc1'
             py-version: '3.9'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.8.0'
+            tf-version: '2.8.0rc1'
             py-version: '3.10'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
