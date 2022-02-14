@@ -25,6 +25,8 @@ FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 
+RUN python -m pip list
+
 RUN python configure.py
 
 RUN bash tools/testing/build_and_run_tests.sh && \
