@@ -13,6 +13,11 @@ RUN python -m pip install -r /install_deps/pytest.txt
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
+# TODO REMOVE ME!
+RUN python -m pip list
+RUN python -m pip uninstall -y keras-nightly
+
+
 COPY ./ /addons
 WORKDIR /addons
 
@@ -24,8 +29,6 @@ CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
-
-RUN python -m pip list
 
 RUN python configure.py
 
