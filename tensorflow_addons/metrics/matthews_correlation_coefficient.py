@@ -102,9 +102,9 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         # covariance true-pred
         cov_ytyp = num_correct * num_samples - tf.tensordot(true_sum, pred_sum, axes=1)
         # covariance pred-pred
-        cov_ypyp = num_samples ** 2 - tf.tensordot(pred_sum, pred_sum, axes=1)
+        cov_ypyp = num_samples**2 - tf.tensordot(pred_sum, pred_sum, axes=1)
         # covariance true-true
-        cov_ytyt = num_samples ** 2 - tf.tensordot(true_sum, true_sum, axes=1)
+        cov_ytyt = num_samples**2 - tf.tensordot(true_sum, true_sum, axes=1)
 
         mcc = cov_ytyp / tf.math.sqrt(cov_ytyt * cov_ypyp)
 

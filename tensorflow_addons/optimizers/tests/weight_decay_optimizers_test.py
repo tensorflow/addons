@@ -152,9 +152,9 @@ def adamw_update_numpy(
         for v in (learning_rate, beta_1, beta_2, epsilon, weight_decay)
     )
     t = slot_vars.get("t", 0) + 1
-    lr_t = lr * np.sqrt(1 - beta2 ** t) / (1 - beta1 ** t)
+    lr_t = lr * np.sqrt(1 - beta2**t) / (1 - beta1**t)
     slot_vars["m"] = beta1 * slot_vars.get("m", 0) + (1 - beta1) * grad_t
-    slot_vars["v"] = beta2 * slot_vars.get("v", 0) + (1 - beta2) * grad_t ** 2
+    slot_vars["v"] = beta2 * slot_vars.get("v", 0) + (1 - beta2) * grad_t**2
     param_t = param * (1 - wd) - lr_t * slot_vars["m"] / (np.sqrt(slot_vars["v"]) + eps)
     slot_vars["t"] = t
     return param_t, slot_vars

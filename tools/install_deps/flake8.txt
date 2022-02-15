@@ -1,2 +1,2 @@
-flake8~=3.7.9
-pep8-naming~=0.10.0
+flake8~=4.0
+pep8-naming~=0.12.1

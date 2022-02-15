@@ -204,8 +204,8 @@ def _get_gaussian_kernel(sigma, filter_shape):
     """Compute 1D Gaussian kernel."""
     sigma = tf.convert_to_tensor(sigma)
     x = tf.range(-filter_shape // 2 + 1, filter_shape // 2 + 1)
-    x = tf.cast(x ** 2, sigma.dtype)
-    x = tf.nn.softmax(-x / (2.0 * (sigma ** 2)))
+    x = tf.cast(x**2, sigma.dtype)
+    x = tf.nn.softmax(-x / (2.0 * (sigma**2)))
     return x
 
 

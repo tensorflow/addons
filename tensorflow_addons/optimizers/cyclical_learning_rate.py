@@ -309,7 +309,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
-            scale_fn=lambda x: gamma ** x,
+            scale_fn=lambda x: gamma**x,
             scale_mode=scale_mode,
             name=name,
         )
