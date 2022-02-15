@@ -138,6 +138,7 @@ def test_r2_reset_state():
 def test_r2_sklearn_comparison(multioutput):
     pytest.skip("Wait #XXXXX to be fixed")
     from sklearn.metrics import r2_score as sklearn_r2_score
+
     """Test against sklearn's implementation on random inputs."""
     for _ in range(10):
         actuals = np.random.rand(64, 3)
