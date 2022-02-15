@@ -20,7 +20,6 @@ import numpy as np
 
 from tensorflow_addons.image import color_ops
 from PIL import Image, ImageOps, ImageEnhance
-from skimage.exposure import equalize_hist
 
 _DTYPES = {
     np.uint8,
@@ -54,6 +53,9 @@ def test_equalize_with_PIL():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("bins", [256, 65536])
 def test_equalize_with_skimage(bins):
+    pytest.skip("Wait #2666 to be fixed")
+    from skimage.exposure import equalize_hist
+
     np.random.seed(0)
     image = np.random.randint(low=0, high=256, size=(5, 5, 3, 3), dtype=np.uint8)
     equalized = tf.cast(color_ops.equalize(tf.constant(image), bins), np.float16)

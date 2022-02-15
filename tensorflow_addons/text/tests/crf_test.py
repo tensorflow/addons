@@ -512,6 +512,10 @@ class CRFDecode(tf.keras.layers.Layer):
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
 )
 def test_crf_decode_save_load(tmpdir):
+    class DummyLoss(tf.keras.losses.Loss):
+        def call(self, y_true, y_pred):
+            return tf.zeros(shape=())
+
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
     seq_len = tf.keras.Input(shape=(), dtype=tf.int32, name="seq_len")
@@ -523,7 +527,7 @@ def test_crf_decode_save_load(tmpdir):
     model = tf.keras.Model(
         inputs=[input_tensor, seq_len], outputs=[output, decoded], name="example_model"
     )
-    model.compile(optimizer="Adam")
+    model.compile(optimizer="Adam", loss=DummyLoss())
 
     x_data = {
         "input_tensor": np.random.random_sample((5, 10, 3)).astype(dtype=np.float32),
@@ -551,7 +555,10 @@ def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     model = tf.keras.models.load_model(
         temp_dir,
-        custom_objects={"CrfDecodeForwardRnnCell": text.crf.CrfDecodeForwardRnnCell},
+        custom_objects={
+            "CrfDecodeForwardRnnCell": text.crf.CrfDecodeForwardRnnCell,
+            "DummyLoss": DummyLoss,
+        },
     )
     model.fit(x_data, y_data)
     model.predict(

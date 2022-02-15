@@ -16,7 +16,7 @@ on:
 
 env:
   MIN_PY_VERSION: '3.7'
-  MAX_PY_VERSION: '3.9'
+  MAX_PY_VERSION: '3.10'
 
 jobs:
   test-with-bazel:
@@ -38,18 +38,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['macos-10.15', 'windows-latest', 'ubuntu-18.04']
-        py-version: ['3.7', '3.8', '3.9']
-        tf-version: ['2.5.1', '2.7.0']
+        # To switch on windows-2022/latest, please verify the bazel version:
+        # https://github.com/bazelbuild/bazel/issues/14232#issuecomment-1011247429
+        os: ['macos-10.15', 'windows-2019', 'ubuntu-18.04']
+        py-version: ['3.7', '3.8', '3.9', '3.10']
+        tf-version: ['2.6.3', '2.8.0']
         cpu: ['x86']
+        exclude:
+          - py-version: '3.10'
+            tf-version: '2.6.3'
         include:
           - os: 'macos-11'
             cpu: 'arm64'
-            tf-version: '2.7.0'
+            tf-version: '2.8.0'
             py-version: '3.8'
           - os: 'macos-11'
             cpu: 'arm64'
-            tf-version: '2.7.0'
+            tf-version: '2.8.0'
             py-version: '3.9'
       fail-fast: false
     steps:
@@ -93,17 +98,17 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.7', '3.8', '3.9']
-        tf-version: ['2.7.0']
+        py-version: ['3.7', '3.8', '3.9', '3.10']
+        tf-version: ['2.8.0']
         cpu: ['x86']
         include:
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.7.0'
+            tf-version: '2.8.0'
             py-version: '3.8'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.7.0'
+            tf-version: '2.8.0'
             py-version: '3.9'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'

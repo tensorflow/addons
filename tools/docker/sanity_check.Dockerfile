@@ -53,7 +53,7 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.7-alpine as clang-format
 
-RUN apk add --no-cache git
+RUN apk update && apk add git
 RUN git clone https://github.com/gabrieldemarmiesse/clang-format-lint-action.git
 WORKDIR ./clang-format-lint-action
 RUN git checkout 1044fee
