@@ -290,7 +290,7 @@ docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-te
 
 Configure:
 ```bash
-python3 -m pip install tensorflow==2.8.
+python3 -m pip install tensorflow==2.8
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -329,7 +329,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```bash
-python3 -m pip install tensorflow==2.8.
+python3 -m pip install tensorflow==2.8
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \

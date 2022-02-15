@@ -53,7 +53,7 @@ def test_equalize_with_PIL():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("bins", [256, 65536])
 def test_equalize_with_skimage(bins):
-    pytest.skip("Wait #XXXXX to be fixed")
+    pytest.skip("Wait #2666 to be fixed")
     from skimage.exposure import equalize_hist
 
     np.random.seed(0)

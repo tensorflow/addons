@@ -408,7 +408,7 @@ def test_unknown_shape():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
 def test_shear_x(dtype):
-    pytest.skip("Wait #XXXXX to be fixed")
+    pytest.skip("Wait #2666 to be fixed")
     from skimage import transform
 
     image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
@@ -435,7 +435,7 @@ def test_shear_x(dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
 def test_shear_y(dtype):
-    pytest.skip("Wait #XXXXX to be fixed")
+    pytest.skip("Wait #2666 to be fixed")
     from skimage import transform
 
     image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(

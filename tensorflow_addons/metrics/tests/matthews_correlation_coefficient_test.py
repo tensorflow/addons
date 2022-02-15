@@ -53,7 +53,7 @@ def test_binary_classes():
 
 # See issue #2339
 def test_multiple_classes():
-    pytest.skip("Wait #XXXXX to be fixed")
+    pytest.skip("Wait #2666 to be fixed")
     from sklearn.metrics import matthews_corrcoef as sklearn_matthew
 
     gt_label = np.array(

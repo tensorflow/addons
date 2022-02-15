@@ -136,7 +136,7 @@ def test_r2_reset_state():
 
 @pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
 def test_r2_sklearn_comparison(multioutput):
-    pytest.skip("Wait #XXXXX to be fixed")
+    pytest.skip("Wait #2666 to be fixed")
     from sklearn.metrics import r2_score as sklearn_r2_score
 
     """Test against sklearn's implementation on random inputs."""
