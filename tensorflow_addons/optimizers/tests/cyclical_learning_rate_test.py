@@ -99,7 +99,7 @@ def test_exponential_cyclical_learning_rate(serialize):
         non_bounded_value = np.abs(i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1)
         expected = initial_learning_rate + (
             maximal_learning_rate - initial_learning_rate
-        ) * np.maximum(0, (1 - non_bounded_value)) * (gamma ** i)
+        ) * np.maximum(0, (1 - non_bounded_value)) * (gamma**i)
         computed = exponential_cyclical_lr(step).numpy()
         np.testing.assert_allclose(computed, expected, 1e-6)
         step += 1

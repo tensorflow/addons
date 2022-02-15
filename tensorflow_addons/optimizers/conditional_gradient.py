@@ -123,7 +123,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     @staticmethod
     def _frobenius_norm(m):
-        return tf.reduce_sum(m ** 2) ** 0.5
+        return tf.reduce_sum(m**2) ** 0.5
 
     @staticmethod
     def _top_singular_vector(m):

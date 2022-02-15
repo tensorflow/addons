@@ -18,8 +18,6 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
-from skimage import transform
-
 from tensorflow_addons.image import transform_ops
 from tensorflow_addons.utils import test_utils
 
@@ -410,6 +408,9 @@ def test_unknown_shape():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
 def test_shear_x(dtype):
+    pytest.skip("Wait #2666 to be fixed")
+    from skimage import transform
+
     image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
         dtype.as_numpy_dtype
     )
@@ -434,6 +435,9 @@ def test_shear_x(dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
 def test_shear_y(dtype):
+    pytest.skip("Wait #2666 to be fixed")
+    from skimage import transform
+
     image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
         dtype.as_numpy_dtype
     )

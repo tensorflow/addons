@@ -1,24 +1,14 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-ARG TF_VERSION
 ARG PY_VERSION
-FROM gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010-multipython as base_install
+FROM tensorflow/build:latest-python$PY_VERSION as base_install
+
 ENV TF_NEED_CUDA="1"
-
-# Required for setuptools v50.0.0
-# https://setuptools.readthedocs.io/en/latest/history.html#v50-0-0
-# https://github.com/pypa/setuptools/issues/2352
-ENV SETUPTOOLS_USE_DISTUTILS=stdlib
-
-# Fix presented in
-# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
-RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
-RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
-RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
-
 ARG PY_VERSION
-RUN ln -sf /usr/local/bin/python$PY_VERSION /usr/bin/python
-
 ARG TF_VERSION
+
+# TODO: Remove this if tensorflow/build container removes their keras-nightly install
+RUN python -m pip uninstall -y keras-nightly
+
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
 COPY tools/install_deps/ /install_deps
@@ -28,7 +18,6 @@ COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
-RUN rm /addons/.bazeliskrc
 WORKDIR /addons
 
 # -------------------------------------------------------------------

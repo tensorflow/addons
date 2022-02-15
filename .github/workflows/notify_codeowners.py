@@ -1,6 +1,6 @@
 import github
 import click
-import urllib.request
+
 from pathlib import Path
 from typing import List, Tuple
 import re
@@ -23,22 +23,18 @@ WRITE_ACCESS_LIST = [
 ]
 
 
-def xor_strings(a, b):
-    result = int(a, 16) ^ int(b, 16)
-    return "{:x}".format(result)
-
-
 def get_github_client():
-    bot_token = "1353d990cdb8b8ceb1b73d301dce83cc0da3db29"
-    bot_token_key = "a1b2c3d47311f8e29e204f85a81b4df4a44e252c"
-
-    return github.Github(xor_strings(bot_token, bot_token_key))
+    return github.Github(os.environ["BOT_TOKEN"])
 
 
 CLIENT = get_github_client()
 
+# faster checks
+valid_users_cache = set()
+
 
 def check_user(user: str, line_idx: int):
+    print(f"Checking that {user} actually exists")
     if user[0] != "@":
         raise ValueError(
             f"User '{user}' at line {line_idx} of CODEOWNERS "
@@ -49,7 +45,10 @@ def check_user(user: str, line_idx: int):
     if user in WRITE_ACCESS_LIST:
         return None
     try:
+        if user in valid_users_cache:
+            return user
         CLIENT.get_user(user)
+        valid_users_cache.add(user)
     except github.UnknownObjectException:
         raise KeyError(
             f"User '{user}' line {line_idx} does not exist. Did you make a typo?"
@@ -158,12 +157,8 @@ def get_pull_request_id_from_gh_actions():
 @click.command()
 @click.option("--pull-request-id")
 @click.option("--no-dry-run", is_flag=True)
-@click.argument("file")
-def notify_codeowners(pull_request_id, no_dry_run, file):
-    if file.startswith("http"):
-        text = urllib.request.urlopen(file).read().decode("utf-8")
-    else:
-        text = Path(file).read_text()
+def notify_codeowners(pull_request_id, no_dry_run):
+    text = (Path(__file__).parents[1] / "CODEOWNERS").read_text()
     codeowners = parse_codeowners(text)
 
     if pull_request_id is not None:

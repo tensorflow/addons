@@ -23,6 +23,7 @@ import tensorflow as tf
 
 from tensorflow_addons import text
 from tensorflow_addons.utils import test_utils
+from numpy.testing import assert_array_equal
 
 
 def calculate_sequence_score(inputs, transition_params, tag_indices, sequence_lengths):
@@ -511,6 +512,10 @@ class CRFDecode(tf.keras.layers.Layer):
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
 )
 def test_crf_decode_save_load(tmpdir):
+    class DummyLoss(tf.keras.losses.Loss):
+        def call(self, y_true, y_pred):
+            return tf.zeros(shape=())
+
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
     seq_len = tf.keras.Input(shape=(), dtype=tf.int32, name="seq_len")
@@ -522,7 +527,7 @@ def test_crf_decode_save_load(tmpdir):
     model = tf.keras.Model(
         inputs=[input_tensor, seq_len], outputs=[output, decoded], name="example_model"
     )
-    model.compile(optimizer="Adam")
+    model.compile(optimizer="Adam", loss=DummyLoss())
 
     x_data = {
         "input_tensor": np.random.random_sample((5, 10, 3)).astype(dtype=np.float32),
@@ -550,7 +555,10 @@ def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     model = tf.keras.models.load_model(
         temp_dir,
-        custom_objects={"CrfDecodeForwardRnnCell": text.crf.CrfDecodeForwardRnnCell},
+        custom_objects={
+            "CrfDecodeForwardRnnCell": text.crf.CrfDecodeForwardRnnCell,
+            "DummyLoss": DummyLoss,
+        },
     )
     model.fit(x_data, y_data)
     model.predict(
@@ -558,4 +566,61 @@ def test_crf_decode_save_load(tmpdir):
             "input_tensor": tf.expand_dims(x_data["input_tensor"][0], 0),
             "seq_len": np.array([10]),
         }
+    )
+
+
+@pytest.mark.parametrize(
+    "potentials,sequence_length",
+    [
+        # performs masking
+        pytest.param(
+            tf.random.normal([2, 12, 3]),
+            tf.constant([8, 10]),
+        ),
+        # does not perform masking
+        pytest.param(
+            tf.random.normal([4, 8, 10]),
+            tf.constant([8, 8, 8, 8]),
+        ),
+    ],
+)
+def test_crf_decode_forward_mask(potentials, sequence_length):
+    # mimics setup of the `_multi_seq_fn` closure in `crf_decode`
+    initial_state = tf.slice(potentials, [0, 0, 0], [-1, 1, -1])
+    initial_state = tf.squeeze(initial_state, axis=[1])
+    inputs = tf.slice(potentials, [0, 1, 0], [-1, -1, -1])
+
+    sequence_length_less_one = tf.maximum(
+        tf.constant(0, dtype=tf.int32), sequence_length - 1
+    )
+
+    n_tags = potentials.shape[-1]
+    transition_params = tf.random.normal([n_tags, n_tags])
+
+    backpointers, _ = text.crf_decode_forward(
+        inputs, initial_state, transition_params, sequence_length_less_one
+    )
+
+    # everything masked by `sequence_length_less_one` should be equal to 0.
+    mask = tf.sequence_mask(sequence_length_less_one, tf.shape(inputs)[1])
+
+    # the indices that _should_ have been masked in the RNN operation
+    masked_indices = tf.cast(tf.logical_not(mask), tf.int32)
+
+    # sum of each row in the mask should equal timedim - seq lens
+    exp_mask_sums = (
+        tf.repeat(inputs.shape[1], inputs.shape[0]) - sequence_length_less_one
+    )
+    mask_sums = tf.reduce_sum(masked_indices, axis=1)
+    assert_array_equal(
+        exp_mask_sums.numpy(),
+        mask_sums.numpy(),
+    )
+
+    # now apply the inverse mask to the backpointers and show that ALL are zeros. this is proof that
+    # we appropriately masked timesteps
+    masked_indices = tf.expand_dims(masked_indices, [2])
+    zeros = masked_indices * backpointers
+    assert tf.reduce_all(zeros == 0).numpy(), "Mask not applied correctly: {0}".format(
+        zeros
     )

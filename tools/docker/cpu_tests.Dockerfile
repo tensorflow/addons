@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 FROM python:3.7 as build_wheel
 
-ARG TF_VERSION=2.7.0
+ARG TF_VERSION=2.8.0
 RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
@@ -39,4 +39,4 @@ RUN pip install /artifacts/tensorflow_addons-*.whl
 # check that we didnd't forget to add a py file to
 # The corresponding BUILD file.
 # Also test that the wheel works in a fresh environment
-RUN python -c "import tensorflow_addons"
+RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"

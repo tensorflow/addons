@@ -80,6 +80,7 @@ def do_test(
     opt = optimizer(**optimizer_kwargs)
     # Create the update op.
     # Run 3 steps of the optimizer
+    optimizer_kwargs.pop("exclude_from_weight_decay", None)
     for _ in range(3):
         if do_decay_var_list:
             opt.apply_gradients(
@@ -151,9 +152,9 @@ def adamw_update_numpy(
         for v in (learning_rate, beta_1, beta_2, epsilon, weight_decay)
     )
     t = slot_vars.get("t", 0) + 1
-    lr_t = lr * np.sqrt(1 - beta2 ** t) / (1 - beta1 ** t)
+    lr_t = lr * np.sqrt(1 - beta2**t) / (1 - beta1**t)
     slot_vars["m"] = beta1 * slot_vars.get("m", 0) + (1 - beta1) * grad_t
-    slot_vars["v"] = beta2 * slot_vars.get("v", 0) + (1 - beta2) * grad_t ** 2
+    slot_vars["v"] = beta2 * slot_vars.get("v", 0) + (1 - beta2) * grad_t**2
     param_t = param * (1 - wd) - lr_t * slot_vars["m"] / (np.sqrt(slot_vars["v"]) + eps)
     slot_vars["t"] = t
     return param_t, slot_vars
@@ -238,6 +239,31 @@ def test_basic_decay_var_list_adamw(dtype):
         beta_2=0.999,
         epsilon=1e-8,
         weight_decay=WEIGHT_DECAY,
+    )
+
+
+def test_exclude_weight_decay_adamw():
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=1e-4, exclude_from_weight_decay=["var1"]
+    )
+    assert optimizer._do_use_weight_decay(tf.Variable([], name="var0"))
+    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1"))
+    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1_weight"))
+
+
+@pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
+def test_var_list_with_exclude_list_adamw(dtype):
+    do_test(
+        dtype,
+        weight_decay_optimizers.AdamW,
+        adamw_update_numpy,
+        do_decay_var_list=True,
+        learning_rate=0.001,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=1e-8,
+        weight_decay=WEIGHT_DECAY,
+        exclude_from_weight_decay=["var0_*", "var1_*"],
     )
 
 
@@ -341,6 +367,30 @@ def test_basic_decay_var_list_sgdw(dtype):
     )
 
 
+def test_exclude_weight_decay_sgdw():
+    optimizer = weight_decay_optimizers.SGDW(
+        learning_rate=0.01, weight_decay=1e-4, exclude_from_weight_decay=["var1"]
+    )
+    assert optimizer._do_use_weight_decay(tf.Variable([], name="var0"))
+    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1"))
+    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1_weight"))
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
+def test_var_list_with_exclude_list_sgdw(dtype):
+    do_test(
+        dtype,
+        weight_decay_optimizers.SGDW,
+        sgdw_update_numpy,
+        do_decay_var_list=True,
+        learning_rate=0.001,
+        momentum=0.9,
+        weight_decay=WEIGHT_DECAY,
+        exclude_from_weight_decay=["var0_*", "var1_*"],
+    )
+
+
 @pytest.mark.parametrize(
     "optimizer",
     [
@@ -379,7 +429,9 @@ def test_optimizer_sparse(dtype, optimizer):
 
 
 def test_serialization():
-    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=1e-4, exclude_from_weight_decay=["var1"]
+    )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
