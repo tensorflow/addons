@@ -5,6 +5,12 @@ FROM tensorflow/build:latest-python$PY_VERSION as base_install
 ENV TF_NEED_CUDA="1"
 ARG PY_VERSION
 ARG TF_VERSION
+
+# TODO REMOVE ME!
+RUN python -m pip list
+RUN python -m pip uninstall -y keras-nightly
+
+
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
 COPY tools/install_deps/ /install_deps
@@ -12,11 +18,6 @@ RUN python -m pip install -r /install_deps/pytest.txt
 
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
-
-# TODO REMOVE ME!
-RUN python -m pip list
-RUN python -m pip uninstall -y keras-nightly
-
 
 COPY ./ /addons
 WORKDIR /addons
