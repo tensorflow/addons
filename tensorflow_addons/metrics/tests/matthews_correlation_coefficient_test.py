@@ -14,11 +14,11 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Test."""
 
-import pytest
 import tensorflow as tf
 
 import numpy as np
 from tensorflow_addons.metrics import MatthewsCorrelationCoefficient
+from sklearn.metrics import matthews_corrcoef as sklearn_matthew
 
 
 def test_config():
@@ -53,9 +53,6 @@ def test_binary_classes():
 
 # See issue #2339
 def test_multiple_classes():
-    pytest.skip("Wait #2666 to be fixed")
-    from sklearn.metrics import matthews_corrcoef as sklearn_matthew
-
     gt_label = np.array(
         [
             [1.0, 0.0, 0.0],
