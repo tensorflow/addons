@@ -473,24 +473,11 @@ class SpecificConvPad(tf.keras.layers.Wrapper):
         Give out equivalent conv paddings from current padding to VALID padding.
         For example, there is a conv(X,padding='same'), find the equivalent conv paddings and
         make conv(X,padding='same')===conv(pad(X,equivalent_conv_paddings),padding='VALID')
-
         see the:
         https://www.tensorflow.org/api_docs/python/tf/nn#notes_on_padding_2
         If padding == "SAME": output_shape = ceil(input_length/stride)
         If padding == "VALID": output_shape = ceil((input_length-(filter_size-1)*dilation_rate)/stride)
 
-        NOTE In conv op, FULL padding, CUSUAL padding and VALID padding have explicit padding prodedure.
-        We can easliy give out the equivalent conv paddings without know the input_length.
-        However, it "SAME" is very special and ambiguous, beacuse its padding prodedure is influenced by
-        input_length and stride to ensure "output_shape===ceil(input_length/stride)".
-        So we should give out a equivalent padding prodedure to find the equivalent conv paddings from "SAME" to "VALID" finally.
-        Consider the equation, where pad_length is should known first:
-            ceil(input_length/stride) == ceil((input_length+pad_length-(filter_size-1)*dilation_rate)/stride)
-            ceil function makes the pad_length not unique.
-            but by testing,
-            we find tensorflow (C++ API) 'SAME' padding's feature:
-            1. always choose the minimum pad_length.
-            2. divide pad_length equally to pad_left and pad_right and make pad_left<=pad_right
         return  paddings(padding vectors) for conv's padding behaviour
         """
         dilated_filter_size = filter_size + (filter_size - 1) * (dilation_rate - 1)
