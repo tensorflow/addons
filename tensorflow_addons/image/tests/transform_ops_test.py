@@ -410,9 +410,6 @@ def test_unknown_shape():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
 def test_shear_x(dtype):
-    if dtype == tf.dtypes.uint8:
-        pytest.skip("Wait #2666 to be fixed")
-
     image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
         dtype.as_numpy_dtype
     )
@@ -424,6 +421,9 @@ def test_shear_x(dtype):
     transform_matrix = transform.AffineTransform(
         np.array([[1, level.numpy(), 0], [0, 1, 0], [0, 0, 1]])
     )
+    if dtype == tf.uint8:
+        # uint8 can't represent cval=-1, so we use int32 instead
+        image = image.astype(np.int32)
     expected_img = transform.warp(
         image, transform_matrix, order=0, cval=-1, preserve_range=True
     )
@@ -437,9 +437,6 @@ def test_shear_x(dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
 def test_shear_y(dtype):
-    if dtype == tf.dtypes.uint8:
-        pytest.skip("Wait #2666 to be fixed")
-
     image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
         dtype.as_numpy_dtype
     )
@@ -451,6 +448,9 @@ def test_shear_y(dtype):
     transform_matrix = transform.AffineTransform(
         np.array([[1, 0, 0], [level.numpy(), 1, 0], [0, 0, 1]])
     )
+    if dtype == tf.uint8:
+        # uint8 can't represent cval=-1, so we use int32 instead
+        image = image.astype(np.int32)
     expected_img = transform.warp(
         image, transform_matrix, order=0, cval=-1, preserve_range=True
     )
