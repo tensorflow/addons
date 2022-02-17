@@ -230,7 +230,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class SpecificConvPad(tf.keras.layers.Wrapper):
+class ConvPadConcretization(tf.keras.layers.Wrapper):
     """
     Extend padding behavior of tf.keras.layers.Conv1D, tf.keras.layers.Conv2D
     and tf.keras.layers.Conv3D.
@@ -252,7 +252,7 @@ class SpecificConvPad(tf.keras.layers.Wrapper):
     >>> import numpy as np
     >>> x = np.random.rand(1, 5, 1)
     >>> conv1d = tf.keras.layers.Conv1D(filters=1, kernel_size=[3,]*1, strides=(1,)*1, padding="same",dilation_rate=1)
-    >>> conv1d = SpecificConvPad(conv1d, padding_mode='constant',padding_constant=0)
+    >>> conv1d = ConvPadConcretization(conv1d, padding_mode='constant',padding_constant=0)
     >>> y = conv1d(x)
     >>> print(y.shape)
     (1, 5, 1)
@@ -260,21 +260,21 @@ class SpecificConvPad(tf.keras.layers.Wrapper):
     Inidicate the artificial padding behavior:
     >>> x = tf.constant([1.,2.,3.,4.,5.],shape=[1,5,1])
     >>> conv1d_ = tf.keras.layers.Conv1D(filters=1, kernel_size=[2,]*1, strides=(1,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
-    >>> conv1d = SpecificConvPad(conv1d_, padding_mode='constant',padding_constant=1)
+    >>> conv1d = ConvPadConcretization(conv1d_, padding_mode='constant',padding_constant=1)
     >>> y = conv1d(x)
     >>> # x --> padded_x [1.,2.,3.,4.,5.,1.], zero padding x from right side
     >>> # kernel = [1,1]
     >>> # padded_x --> y [3.,7.,5.,9.,6.], conv padded x by kernel, and do not need extral 'padding'
     >>> print(tf.squeeze(y))
     tf.Tensor([3. 5. 7. 9. 6.], shape=(5,), dtype=float32)
-    >>> conv1d = SpecificConvPad(conv1d_, padding_mode='reflect')
+    >>> conv1d = ConvPadConcretization(conv1d_, padding_mode='reflect')
     >>> y = conv1d(x)
     >>> # x --> padded_x [1.,2.,3.,4.,5.,4.], zero padding x from right side
     >>> # kernel = [1,1]
     >>> # padded_x --> y [3.,7.,5.,9.,9.], conv padded x by kernel, and do not need extral 'padding'
     >>> print(tf.squeeze(y))
     tf.Tensor([3. 5. 7. 9. 9.], shape=(5,), dtype=float32)
-    >>> conv1d = SpecificConvPad(conv1d_, padding_mode='symmetric')
+    >>> conv1d = ConvPadConcretization(conv1d_, padding_mode='symmetric')
     >>> y = conv1d(x)
     >>> # x --> padded_x [1.,2.,3.,4.,5.,5.], zero padding x from right side
     >>> # kernel = [1,1]
@@ -289,7 +289,7 @@ class SpecificConvPad(tf.keras.layers.Wrapper):
     tf.Tensor([1. 2. 3. 4. 5.], shape=(5,), dtype=float32)
     >>> conv1d = tf.keras.layers.Conv1D(filters=1, kernel_size=[3,]*1, strides=(2,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
     >>> conv1d_ = tf.keras.layers.Conv1D(filters=1, kernel_size=[3,]*1, strides=(2,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
-    >>> conv1d_2 = SpecificConvPad(conv1d_, padding_mode='constant',padding_constant=0)
+    >>> conv1d_2 = ConvPadConcretization(conv1d_, padding_mode='constant',padding_constant=0)
     When 'constant' padding with constant 0, wrappered layer should have the same behavior than original one. So:
     >>> y = conv1d(x)
     >>> print(tf.squeeze(y))
@@ -329,13 +329,13 @@ class SpecificConvPad(tf.keras.layers.Wrapper):
 
         if "name" not in kwargs.keys():
             kwargs["name"] = "specific_padded_" + layer.name
-        super(SpecificConvPad, self).__init__(layer, **kwargs)
+        super(ConvPadConcretization, self).__init__(layer, **kwargs)
 
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tf.TensorShape(input_shape)
         self.input_spec = tf.keras.layers.InputSpec(shape=[None] + input_shape[1:])
-        # input_shape is needed for
+
         _kernel_size = self.layer.kernel_size
         _strides = self.layer.strides
         self._padding = (
@@ -390,7 +390,7 @@ class SpecificConvPad(tf.keras.layers.Wrapper):
                     self.layer.padding = self._normalize_padding("valid")
                     self.layer._is_causal = (
                         self.layer.padding == self._normalize_padding("causal")
-                    )  # causal is very special
+                    )
         layer_input_shape = self._prefix_input_shape(input_shape)
         super().build(layer_input_shape)
 

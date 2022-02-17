@@ -203,7 +203,7 @@ def test_removal(base_layer_fn, input_shape, data_init):
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid", "causal"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
-def test_specificconvpad_behavior_1d(
+def test_convpadspecific_behavior_1d(
     input_shape, kernel_size, stride, padding, dilation_rate
 ):
     if dilation_rate > 1 and stride != 1:
@@ -251,7 +251,7 @@ def test_specificconvpad_behavior_1d(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv1d_2 = wrappers.SpecificConvPad(
+        conv1d_2 = wrappers.ConvPadConcretization(
             conv1d_, padding_mode="constant", padding_constant=0
         )
         y_ = conv1d_2(x)
@@ -267,7 +267,7 @@ def test_specificconvpad_behavior_1d(
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
-def test_specificconvpad_behavior_2d(
+def test_convpadspecific_behavior_2d(
     input_shape, kernel_size, stride, padding, dilation_rate
 ):
     if dilation_rate > 1 and stride != 1:
@@ -315,7 +315,7 @@ def test_specificconvpad_behavior_2d(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv2d_2 = wrappers.SpecificConvPad(
+        conv2d_2 = wrappers.ConvPadConcretization(
             conv2d_, padding_mode="constant", padding_constant=0
         )
         y_ = conv2d_2(x)
@@ -331,7 +331,7 @@ def test_specificconvpad_behavior_2d(
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
-def test_specificconvpad_behavior_3d(
+def test_convpadspecific_behavior_3d(
     input_shape, kernel_size, stride, padding, dilation_rate
 ):
     if dilation_rate > 1 and stride != 1:
@@ -379,7 +379,7 @@ def test_specificconvpad_behavior_3d(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv3d_2 = wrappers.SpecificConvPad(
+        conv3d_2 = wrappers.ConvPadConcretization(
             conv3d_, padding_mode="constant", padding_constant=0
         )
         y_ = conv3d_2(x)
@@ -397,7 +397,7 @@ def test_specificconvpad_behavior_3d(
 @pytest.mark.parametrize("dilation_rate", [1, 2])
 @pytest.mark.parametrize("padding_mode", ["constant", "reflect", "symmetric"])
 @pytest.mark.parametrize("padding_constant", [0, 1])
-def test_specificconvpad_behavior_1d_with_padding_mode(
+def test_convpadspecific_behavior_1d_with_padding_mode(
     input_shape,
     kernel_size,
     stride,
@@ -453,7 +453,7 @@ def test_specificconvpad_behavior_1d_with_padding_mode(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv1d_2 = wrappers.SpecificConvPad(
+        conv1d_2 = wrappers.ConvPadConcretization(
             conv1d_, padding_mode=padding_mode, padding_constant=padding_constant
         )
         y_ = conv1d_2(x)
@@ -468,7 +468,7 @@ def test_specificconvpad_behavior_1d_with_padding_mode(
 @pytest.mark.parametrize("dilation_rate", [1, 2])
 @pytest.mark.parametrize("padding_mode", ["constant", "reflect", "symmetric"])
 @pytest.mark.parametrize("padding_constant", [0, 1])
-def test_specificconvpad_behavior_2d_with_padding_mode(
+def test_convpadspecific_behavior_2d_with_padding_mode(
     input_shape,
     kernel_size,
     stride,
@@ -522,7 +522,7 @@ def test_specificconvpad_behavior_2d_with_padding_mode(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv2d_2 = wrappers.SpecificConvPad(
+        conv2d_2 = wrappers.ConvPadConcretization(
             conv2d_, padding_mode=padding_mode, padding_constant=padding_constant
         )
         y_ = conv2d_2(x)
@@ -537,7 +537,7 @@ def test_specificconvpad_behavior_2d_with_padding_mode(
 @pytest.mark.parametrize("dilation_rate", [1, 2])
 @pytest.mark.parametrize("padding_mode", ["constant", "reflect", "symmetric"])
 @pytest.mark.parametrize("padding_constant", [0, 1])
-def test_specificconvpad_behavior_3d_with_padding_mode(
+def test_convpadspecific_behavior_3d_with_padding_mode(
     input_shape,
     kernel_size,
     stride,
@@ -591,7 +591,7 @@ def test_specificconvpad_behavior_3d_with_padding_mode(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv3d_2 = wrappers.SpecificConvPad(
+        conv3d_2 = wrappers.ConvPadConcretization(
             conv3d_, padding_mode=padding_mode, padding_constant=padding_constant
         )
         y_ = conv3d_2(x)
