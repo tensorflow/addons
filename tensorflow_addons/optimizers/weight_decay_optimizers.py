@@ -157,9 +157,7 @@ class DecoupledWeightDecayExtension:
         Raises:
             ValueError: If some of the variables are not `Variable` objects.
         """
-        self._decay_var_list = (
-            set([v.ref() for v in decay_var_list]) if decay_var_list else False
-        )
+        self._set_decay_var_list(var_list, decay_var_list)
         return super().minimize(
             loss, var_list=var_list, grad_loss=grad_loss, name=name, tape=tape
         )
@@ -186,9 +184,8 @@ class DecoupledWeightDecayExtension:
             TypeError: If `grads_and_vars` is malformed.
             ValueError: If none of the variables have gradients.
         """
-        self._decay_var_list = (
-            set([v.ref() for v in decay_var_list]) if decay_var_list else False
-        )
+        grads_and_vars = list(grads_and_vars)
+        self._set_decay_var_list((v for _, v in grads_and_vars), decay_var_list)
         return super().apply_gradients(grads_and_vars, name=name, **kwargs)
 
     def _decay_weights_op(self, var, apply_state=None):
@@ -245,11 +242,23 @@ class DecoupledWeightDecayExtension:
                 grad, var, indices, apply_state=apply_state
             )
 
+    def _set_decay_var_list(self, var_list, decay_var_list=None):
+        if decay_var_list:
+            self._decay_var_list = set(v.ref() for v in decay_var_list)
+        elif self.exclude_from_weight_decay:
+            self._decay_var_list = set(
+                v.ref()
+                for v in var_list
+                if not is_variable_matched_by_regexes(v, self.exclude_from_weight_decay)
+            )
+        else:
+            self._decay_var_list = None
+
     def _do_use_weight_decay(self, var):
         """Whether to use L2 weight decay for `var`."""
-        if self._decay_var_list and var.ref() in self._decay_var_list:
+        if self._decay_var_list is None:
             return True
-        return not is_variable_matched_by_regexes(var, self.exclude_from_weight_decay)
+        return var.ref() in self._decay_var_list
 
 
 @typechecked
