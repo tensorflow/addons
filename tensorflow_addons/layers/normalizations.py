@@ -155,9 +155,6 @@ class GroupNormalization(tf.keras.layers.Layer):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def compute_output_shape(self, input_shape):
-        return input_shape
-
     def _reshape_into_groups(self, inputs, input_shape, tensor_input_shape):
 
         group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
@@ -446,9 +443,6 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
         normalized_inputs = inputs * tf.math.rsqrt(nu2 + epsilon)
         return self.gamma * normalized_inputs + self.beta
-
-    def compute_output_shape(self, input_shape):
-        return input_shape
 
     def get_config(self):
         config = {
