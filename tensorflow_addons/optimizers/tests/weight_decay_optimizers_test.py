@@ -246,9 +246,14 @@ def test_exclude_weight_decay_adamw():
     optimizer = weight_decay_optimizers.AdamW(
         learning_rate=1e-4, weight_decay=1e-4, exclude_from_weight_decay=["var1"]
     )
-    assert optimizer._do_use_weight_decay(tf.Variable([], name="var0"))
-    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1"))
-    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1_weight"))
+    var0 = tf.Variable([], name="var0")
+    var1 = tf.Variable([], name="var1")
+    var1_weight = tf.Variable([], name="var1_weight")
+
+    optimizer._set_decay_var_list([var0, var1, var1_weight])
+    assert optimizer._do_use_weight_decay(var0)
+    assert not optimizer._do_use_weight_decay(var1)
+    assert not optimizer._do_use_weight_decay(var1_weight)
 
 
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
@@ -371,9 +376,14 @@ def test_exclude_weight_decay_sgdw():
     optimizer = weight_decay_optimizers.SGDW(
         learning_rate=0.01, weight_decay=1e-4, exclude_from_weight_decay=["var1"]
     )
-    assert optimizer._do_use_weight_decay(tf.Variable([], name="var0"))
-    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1"))
-    assert not optimizer._do_use_weight_decay(tf.Variable([], name="var1_weight"))
+    var0 = tf.Variable([], name="var0")
+    var1 = tf.Variable([], name="var1")
+    var1_weight = tf.Variable([], name="var1_weight")
+
+    optimizer._set_decay_var_list([var0, var1, var1_weight])
+    assert optimizer._do_use_weight_decay(var0)
+    assert not optimizer._do_use_weight_decay(var1)
+    assert not optimizer._do_use_weight_decay(var1_weight)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
