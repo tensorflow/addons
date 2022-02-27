@@ -198,8 +198,8 @@ def test_removal(base_layer_fn, input_shape, data_init):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("input_shape", [15, 16, 17])
-@pytest.mark.parametrize("kernel_size", [1, 2, 3])
+@pytest.mark.parametrize("input_shape", [16, 17])
+@pytest.mark.parametrize("kernel_size", [2, 3])
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid", "causal"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
@@ -262,8 +262,8 @@ def test_convpadconcretization_behavior_1d(
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("input_shape", [15, 16, 17])
-@pytest.mark.parametrize("kernel_size", [1, 2, 3])
+@pytest.mark.parametrize("input_shape", [16, 17])
+@pytest.mark.parametrize("kernel_size", [2, 3])
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
@@ -326,8 +326,8 @@ def test_convpadconcretization_behavior_2d(
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("input_shape", [15, 16, 17])
-@pytest.mark.parametrize("kernel_size", [1, 2, 3])
+@pytest.mark.parametrize("input_shape", [16, 17])
+@pytest.mark.parametrize("kernel_size", [2, 3])
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
@@ -390,13 +390,12 @@ def test_convpadconcretization_behavior_3d(
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("input_shape", [15, 16, 17])
-@pytest.mark.parametrize("kernel_size", [1, 2, 3])
+@pytest.mark.parametrize("input_shape", [16, 17])
+@pytest.mark.parametrize("kernel_size", [2, 3])
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid", "causal"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
 @pytest.mark.parametrize("padding_mode", ["constant", "reflect", "symmetric"])
-@pytest.mark.parametrize("padding_constant", [0, 1])
 def test_convpadconcretization_behavior_1d_with_padding_mode(
     input_shape,
     kernel_size,
@@ -404,7 +403,6 @@ def test_convpadconcretization_behavior_1d_with_padding_mode(
     padding,
     dilation_rate,
     padding_mode,
-    padding_constant,
 ):
     if dilation_rate > 1 and stride != 1:
         pass
@@ -453,21 +451,18 @@ def test_convpadconcretization_behavior_1d_with_padding_mode(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv1d_2 = wrappers.ConvPadConcretization(
-            conv1d_, padding_mode=padding_mode, padding_constant=padding_constant
-        )
+        conv1d_2 = wrappers.ConvPadConcretization(conv1d_, padding_mode=padding_mode)
         y_ = conv1d_2(x)
         assert y.shape == y_.shape
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("input_shape", [15, 16, 17])
-@pytest.mark.parametrize("kernel_size", [1, 2, 3])
+@pytest.mark.parametrize("input_shape", [16, 17])
+@pytest.mark.parametrize("kernel_size", [2, 3])
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
 @pytest.mark.parametrize("padding_mode", ["constant", "reflect", "symmetric"])
-@pytest.mark.parametrize("padding_constant", [0, 1])
 def test_convpadconcretization_behavior_2d_with_padding_mode(
     input_shape,
     kernel_size,
@@ -475,7 +470,6 @@ def test_convpadconcretization_behavior_2d_with_padding_mode(
     padding,
     dilation_rate,
     padding_mode,
-    padding_constant,
 ):
     if dilation_rate > 1 and stride != 1:
         pass
@@ -522,21 +516,18 @@ def test_convpadconcretization_behavior_2d_with_padding_mode(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv2d_2 = wrappers.ConvPadConcretization(
-            conv2d_, padding_mode=padding_mode, padding_constant=padding_constant
-        )
+        conv2d_2 = wrappers.ConvPadConcretization(conv2d_, padding_mode=padding_mode)
         y_ = conv2d_2(x)
         assert y.shape == y_.shape
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("input_shape", [15, 16, 17])
-@pytest.mark.parametrize("kernel_size", [1, 2, 3])
+@pytest.mark.parametrize("input_shape", [16, 17])
+@pytest.mark.parametrize("kernel_size", [2, 3])
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("padding", ["same", "valid"])
 @pytest.mark.parametrize("dilation_rate", [1, 2])
 @pytest.mark.parametrize("padding_mode", ["constant", "reflect", "symmetric"])
-@pytest.mark.parametrize("padding_constant", [0, 1])
 def test_convpadconcretization_behavior_3d_with_padding_mode(
     input_shape,
     kernel_size,
@@ -544,7 +535,6 @@ def test_convpadconcretization_behavior_3d_with_padding_mode(
     padding,
     dilation_rate,
     padding_mode,
-    padding_constant,
 ):
     if dilation_rate > 1 and stride != 1:
         pass
@@ -591,8 +581,6 @@ def test_convpadconcretization_behavior_3d_with_padding_mode(
             use_bias=False,
             kernel_initializer=kernel_initializer,
         )
-        conv3d_2 = wrappers.ConvPadConcretization(
-            conv3d_, padding_mode=padding_mode, padding_constant=padding_constant
-        )
+        conv3d_2 = wrappers.ConvPadConcretization(conv3d_, padding_mode=padding_mode)
         y_ = conv3d_2(x)
         assert y.shape == y_.shape

@@ -267,6 +267,7 @@ class ConvPadConcretization(tf.keras.layers.Wrapper):
     >>> # padded_x --> y [3.,7.,5.,9.,6.], conv padded x by kernel, and do not need extral 'padding'
     >>> print(tf.squeeze(y))
     tf.Tensor([3. 5. 7. 9. 6.], shape=(5,), dtype=float32)
+    >>> conv1d_ = tf.keras.layers.Conv1D(filters=1, kernel_size=[2,]*1, strides=(1,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
     >>> conv1d = ConvPadConcretization(conv1d_, padding_mode='reflect')
     >>> y = conv1d(x)
     >>> # x --> padded_x [1.,2.,3.,4.,5.,4.], zero padding x from right side
@@ -274,13 +275,14 @@ class ConvPadConcretization(tf.keras.layers.Wrapper):
     >>> # padded_x --> y [3.,7.,5.,9.,9.], conv padded x by kernel, and do not need extral 'padding'
     >>> print(tf.squeeze(y))
     tf.Tensor([3. 5. 7. 9. 9.], shape=(5,), dtype=float32)
+    >>> conv1d_ = tf.keras.layers.Conv1D(filters=1, kernel_size=[2,]*1, strides=(1,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
     >>> conv1d = ConvPadConcretization(conv1d_, padding_mode='symmetric')
     >>> y = conv1d(x)
     >>> # x --> padded_x [1.,2.,3.,4.,5.,5.], zero padding x from right side
     >>> # kernel = [1,1]
     >>> # padded_x --> y [3.,7.,5.,9.,10.], conv padded x by kernel, and do not need extral 'padding'
     >>> print(tf.squeeze(y))
-    tf.Tensor([3. 5. 7. 9. 10.], shape=(5,), dtype=float32)
+    tf.Tensor([ 3.  5.  7.  9. 10.], shape=(5,), dtype=float32)
 
     This wrapper will maintain original layer's shape-wise behavior ant only change the numerical-wise behavior:
     >>> import numpy as np
@@ -292,13 +294,13 @@ class ConvPadConcretization(tf.keras.layers.Wrapper):
     >>> conv1d_2 = ConvPadConcretization(conv1d_, padding_mode='constant',padding_constant=0)
     When 'constant' padding with constant 0, wrappered layer should have the same behavior than original one. So:
     >>> y = conv1d(x)
-    >>> print(tf.squeeze(y))
-    tf.Tensor([3. 9. 9.], shape=(3,), dtype=float32) # the original layer's output
+    >>> print(tf.squeeze(y)) # the original layer's output
+    tf.Tensor([3. 9. 9.], shape=(3,), dtype=float32)
     >>> y_2 = conv1d_2(x)
-    >>> print(tf.squeeze(y_2))
-    tf.Tensor([3. 9. 9.], shape=(3,), dtype=float32) # the wrappered layer's output
-    >>> print(np.isclose(tf.reduce_mean(y-y_2),0.0))
-    True #
+    >>> print(tf.squeeze(y_2))  # the wrappered layer's output
+    tf.Tensor([3. 9. 9.], shape=(3,), dtype=float32)
+    >>> print(np.isclose(tf.reduce_mean(y-y_2),0.0)) # so the wrapped conv's behavior is equal to original's procedure in shape-wise.
+    True
 
     Args:
       layer: A `tf.keras.layers.Conv1D`, `tf.keras.layers.Conv2D` or `tf.keras.layers.Conv3D` instance.
@@ -384,7 +386,7 @@ class ConvPadConcretization(tf.keras.layers.Wrapper):
                             )
                         )
                     )
-                    self.padding_vectors = self._norm_paddings_by_data_format(
+                    self.padding_vectors = self._normalize_paddings_by_data_format(
                         _tf_data_format, _paddings
                     )
                     self.layer.padding = self._normalize_padding("valid")
@@ -517,7 +519,7 @@ class ConvPadConcretization(tf.keras.layers.Wrapper):
         return length
 
     @typechecked
-    def _norm_paddings_by_data_format(self, data_format: str, paddings: Iterable):
+    def _normalize_paddings_by_data_format(self, data_format: str, paddings: Iterable):
         out_buf = []
         for data_format_per_dim in data_format:
             if data_format_per_dim.upper() in ["N", "C"]:
