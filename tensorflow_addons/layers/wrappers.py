@@ -292,6 +292,7 @@ class ConvPadConcretization(tf.keras.layers.Wrapper):
     >>> conv1d = tf.keras.layers.Conv1D(filters=1, kernel_size=[3,]*1, strides=(2,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
     >>> conv1d_ = tf.keras.layers.Conv1D(filters=1, kernel_size=[3,]*1, strides=(2,)*1, padding="same",dilation_rate=1,kernel_initializer=tf.initializers.Ones(),use_bias=False)
     >>> conv1d_2 = ConvPadConcretization(conv1d_, padding_mode='constant',padding_constant=0)
+
     When 'constant' padding with constant 0, wrappered layer should have the same behavior than original one. So:
     >>> y = conv1d(x)
     >>> print(tf.squeeze(y)) # the original layer's output
