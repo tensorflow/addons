@@ -1,1 +1,2 @@
 typeguard>=2.7
+packaging
