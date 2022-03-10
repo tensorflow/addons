@@ -18,7 +18,7 @@
 # needs to happen before anything else, since the imports below will try to
 # import TensorFlow, too.
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 import warnings
 
 import tensorflow as tf
@@ -44,10 +44,10 @@ def _check_tf_version():
         )
         return
 
-    min_version = LooseVersion(INCLUSIVE_MIN_TF_VERSION)
-    max_version = LooseVersion(EXCLUSIVE_MAX_TF_VERSION)
+    min_version = Version(INCLUSIVE_MIN_TF_VERSION)
+    max_version = Version(EXCLUSIVE_MAX_TF_VERSION)
 
-    if min_version <= LooseVersion(tf.__version__) < max_version:
+    if min_version <= Version(tf.__version__) < max_version:
         return
 
     warnings.warn(
