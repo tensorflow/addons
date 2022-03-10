@@ -15,7 +15,7 @@
 """Tests for CRF."""
 
 import itertools
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 import pytest
 import numpy as np
@@ -536,7 +536,7 @@ def test_crf_decode_save_load(tmpdir):
 
     tensor_name = (
         "tf.math.multiply"
-        if LooseVersion(tf.__version__) >= "2.5.0"
+        if Version(tf.__version__) >= Version("2.5.0")
         else "tf_op_layer_Mul"
     )
     y_data = {tensor_name: np.random.randint(0, 3, (5, 10))}

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Utilities similar to tf.python.platform.resource_loader."""
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 import os
 import warnings
 
@@ -117,6 +117,6 @@ def abi_is_compatible():
         # tf-nightly
         return False
 
-    min_version = LooseVersion(INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
-    max_version = LooseVersion(EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
-    return min_version <= LooseVersion(tf.__version__) < max_version
+    min_version = Version(INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
+    max_version = Version(EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
+    return min_version <= Version(tf.__version__) < max_version
