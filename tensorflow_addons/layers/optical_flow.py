@@ -140,7 +140,7 @@ class CorrelationCost(tf.keras.layers.Layer):
     """Correlation Cost Layer.
 
     This layer implements the correlation operation from [FlowNet Learning
-    Optical Flow with Convolutional Networks](https://arxiv.org/abs/1504.06)(Fischer et al.).
+    Optical Flow with Convolutional Networks](https://arxiv.org/abs/1504.06852)(Fischer et al.).
 
     Args:
         kernel_size: An integer specifying the height and width of the
