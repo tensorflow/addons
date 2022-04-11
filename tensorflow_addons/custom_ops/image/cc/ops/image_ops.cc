@@ -55,7 +55,7 @@ components: Component ids for each pixel in "image". Same shape as "image". Zero
 
 REGISTER_OP("Addons>EuclideanDistanceTransform")
     .Input("images: uint8")
-    .Attr("dtype: {float16, float32, float64}")
+    .Attr("dtype: {bfloat16, float16, float32, float64}")
     .Output("transformed_images: dtype")
     .SetShapeFn(shape_inference::UnchangedShape)
     .Doc(EuclideanDistanceTransformDoc);
@@ -65,7 +65,7 @@ REGISTER_OP("Addons>ImageConnectedComponents")
     .Output("components: int64")
     .Attr(
         "dtype: {int64, int32, uint16, int16, uint8, int8, half, float, "
-        "double, bool, string}")
+        "bfloat16, double, bool, string}")
     .SetShapeFn(shape_inference::UnchangedShape)
     .Doc(ImageConnectedComponentsDoc);
 

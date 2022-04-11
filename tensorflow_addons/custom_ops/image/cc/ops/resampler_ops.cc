@@ -29,7 +29,7 @@ REGISTER_OP("Addons>Resampler")
     .Input("data: T")
     .Input("warp: T")
     .Output("output: T")
-    .Attr("T: {half, float, double}")
+    .Attr("T: {bfloat16, half, float, double}")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle data;
       ShapeHandle warp;
@@ -53,7 +53,7 @@ REGISTER_OP("Addons>ResamplerGrad")
     .Input("grad_output: T")
     .Output("grad_data: T")
     .Output("grad_warp: T")
-    .Attr("T: {half, float, double}")
+    .Attr("T: {bfloat16, half, float, double}")
     .SetShapeFn([](InferenceContext* c) {
       c->set_output(0, c->input(0));
       c->set_output(1, c->input(1));
