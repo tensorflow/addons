@@ -31,7 +31,8 @@ REGISTER_OP("Addons>AdjustHsvInYiq")
     .Input("scale_s: float")
     .Input("scale_v: float")
     .Output("output: T")
-    .Attr("T: {uint8, int8, int16, int32, int64, half, float, double}")
+    .Attr(
+        "T: {uint8, int8, int16, int32, int64, half, float, double, bfloat16}")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle images, delta_h, scale_s, scale_v;
 
