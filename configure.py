@@ -20,7 +20,11 @@ import os
 import pathlib
 import platform
 import logging
-from packaging.version import Version
+
+try:
+    from packaging.version import Version
+except:
+    from distutils.version import LooseVersion as Version
 
 import tensorflow as tf
 
