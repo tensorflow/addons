@@ -23,7 +23,7 @@ import logging
 
 try:
     from packaging.version import Version
-except:
+except ImportError:
     from distutils.version import LooseVersion as Version
 
 import tensorflow as tf
