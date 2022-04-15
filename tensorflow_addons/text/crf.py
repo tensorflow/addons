@@ -524,7 +524,7 @@ def crf_decode_backward(inputs: TensorLike, state: TensorLike) -> tf.Tensor:
 
 def crf_decode(
     potentials: TensorLike, transition_params: TensorLike, sequence_length: TensorLike
-) -> tf.Tensor:
+) -> Tuple[tf.Tensor, tf.Tensor]:
     """Decode the highest scoring sequence of tags.
 
     Args:
