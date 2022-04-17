@@ -174,7 +174,7 @@ Just run from the root:
 
 ```bash
 pip install tensorflow==2.8
-# you can use "pip install tensorflow-cpu==2.8.0" too if you're not testing on gpu.
+# you can use "pip install tensorflow-cpu==2.9.0rc0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
