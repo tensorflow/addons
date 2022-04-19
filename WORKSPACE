@@ -18,3 +18,45 @@ tf_configure(
 )
 
 cuda_configure(name = "local_config_cuda")
+
+http_archive(
+    name = "org_tensorflow",
+    sha256 = "7d736fa5ff3868516359d8370e7b57251b8080243fc38e8089ee0ceb8ee90264",
+    strip_prefix = "tensorflow-2.9.0-rc0",
+    urls = [
+        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.9.0-rc0.tar.gz",
+    ],
+)
+
+
+load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
+
+
+tf_workspace3()
+
+
+load("@org_tensorflow//tensorflow:workspace2.bzl", "tf_workspace2")
+
+
+tf_workspace2()
+
+
+load("@org_tensorflow//tensorflow:workspace1.bzl", "tf_workspace1")
+
+
+tf_workspace1()
+
+
+load("@org_tensorflow//tensorflow:workspace0.bzl", "tf_workspace0")
+
+
+tf_workspace0()
+
+
+load("//third_party/toolchains/tf:tf_configure.bzl", "tf_configure")
+
+
+tf_configure(name = "local_config_tf")
+
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
