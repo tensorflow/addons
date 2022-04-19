@@ -28,7 +28,7 @@ from tensorflow_addons.utils import resource_loader
 # TODO: copy the layer_test implementation in Addons.
 if tf.__version__[:3] > "2.8":
     from keras.testing_infra.test_utils import layer_test  # noqa: F401
-if tf.__version__[:3] > "2.5":
+elif tf.__version__[:3] > "2.5":
     from keras.testing_utils import layer_test  # noqa: F401
 else:
     from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
