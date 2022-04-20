@@ -68,7 +68,7 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
         from_logits: bool = False,
         alpha: FloatTensorLike = 0.25,
         gamma: FloatTensorLike = 2.0,
-        reduction: str = tf.keras.losses.Reduction.NONE,
+        reduction: str = tf.keras.losses.Reduction.AUTO,
         name: str = "sigmoid_focal_crossentropy",
     ):
         super().__init__(
@@ -136,7 +136,8 @@ def sigmoid_focal_crossentropy(
 
     if gamma:
         gamma = tf.cast(gamma, dtype=y_true.dtype)
-        modulating_factor = tf.pow((1.0 - p_t), gamma)
-
+        focal_weight = K.clip((1.0 - p_t), K.epsilon(), 1.0) 
+        modulating_factor = tf.pow(focal_weight, gamma)
+        
     # compute the final loss and return
     return tf.reduce_sum(alpha_factor * modulating_factor * ce, axis=-1)
