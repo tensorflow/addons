@@ -182,8 +182,11 @@ def configure_cuda():
 
     write("test --config=cuda")
     write("build --config=cuda")
+    write("build  --experimental_repo_remote_exec")
     write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
-    write("build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain")
+    write(
+        "build:cuda --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain"
+    )
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ RUN bazel build \
         --noshow_loading_progress \
         --verbose_failures \
         --test_output=errors \
-        --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda11:toolchain \
+        --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain \
         build_pip_pkg && \
     # Package Whl
     bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG

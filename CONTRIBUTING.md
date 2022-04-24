@@ -174,7 +174,7 @@ Just run from the root:
 
 ```bash
 pip install tensorflow==2.8
-# you can use "pip install tensorflow-cpu==2.9.0rc0" too if you're not testing on gpu.
+# you can use "pip install tensorflow-cpu==2.9.0rc1" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -329,7 +329,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```bash
-python3 -m pip install tensorflow==2.8
+python3 -m pip install tensorflow==2.9rc1
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
