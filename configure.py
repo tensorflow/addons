@@ -134,6 +134,7 @@ def create_build_configuration():
 
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
+    write("build  --experimental_repo_remote_exec")
     write("build -c opt")
 
     if Version(tf.__version__) >= Version("2.9.0"):
@@ -182,7 +183,6 @@ def configure_cuda():
 
     write("test --config=cuda")
     write("build --config=cuda")
-    write("build  --experimental_repo_remote_exec")
     write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
     write(
         "build:cuda --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain"
