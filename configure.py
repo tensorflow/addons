@@ -132,6 +132,10 @@ def create_build_configuration():
     write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
     write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
+    print("!!!!!!!!!!!!!!!!!!!!!DEBUG - CX11 FLAG !!!!!!!!!!!!!!!!!!!!!!")
+    print(tf.sysconfig.CXX11_ABI_FLAG)
+    print("!!!!!!!!!!!!!!!!!!!!!DEBUG - CX11 FLAG !!!!!!!!!!!!!!!!!!!!!!")
+
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
     write("build  --experimental_repo_remote_exec")
