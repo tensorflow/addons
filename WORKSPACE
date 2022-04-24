@@ -43,9 +43,3 @@ tf_workspace1()
 load("@org_tensorflow//tensorflow:workspace0.bzl", "tf_workspace0")
 
 tf_workspace0()
-
-load("//third_party/toolchains/tf:tf_configure.bzl", "tf_configure")
-
-tf_configure(name = "local_config_tf")
-
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
