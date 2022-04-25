@@ -173,7 +173,7 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```bash
-pip install tensorflow==2.8
+pip install tensorflow==2.9
 # you can use "pip install tensorflow-cpu==2.9.0rc1" too if you're not testing on gpu.
 pip install -e ./
 ```
@@ -262,7 +262,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.8 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.9 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -290,7 +290,7 @@ docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-te
 
 Configure:
 ```bash
-python3 -m pip install tensorflow==2.8
+python3 -m pip install tensorflow==2.9
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
