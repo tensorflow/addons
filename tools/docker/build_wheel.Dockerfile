@@ -7,6 +7,7 @@ ARG PY_VERSION
 ARG TF_VERSION
 
 # TODO: Remove this if tensorflow/build container removes their keras-nightly install
+# https://github.com/tensorflow/build/issues/78
 RUN python -m pip uninstall -y keras-nightly
 
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
