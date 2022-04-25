@@ -141,7 +141,7 @@ def create_build_configuration():
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
 
-    if Version(tf.__version__) >= Version("2.9.0"):
+    if Version(tf.__version__) >= Version("2.9.0rc1"):
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
     else:
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
