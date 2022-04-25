@@ -76,8 +76,7 @@ jobs:
         name: Setup Bazel
         # Ubuntu bazel is run inside of the docker image
         run: bash tools/install_deps/install_bazelisk.sh ./
-      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.4.2'
-        name: Build wheels
+      - name: Build wheels
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -86,8 +85,7 @@ jobs:
           CPU: ${{ matrix.cpu }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}_${CPU}.sh
-      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.4.2'
-        uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v1
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-${{ matrix.cpu }}-wheel
           path: wheelhouse
