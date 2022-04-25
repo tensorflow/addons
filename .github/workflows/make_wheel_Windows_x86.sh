@@ -7,6 +7,8 @@ export BAZEL_VC="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/
 python --version
 python -m pip install --default-timeout=1000 wheel setuptools tensorflow==$TF_VERSION
 
+export PYTHON_BIN_PATH=C:\\hostedtoolcache\\windows\\Python\\3.8.10\\x64\\python3.exe
+
 # Test
 bash ./tools/testing/build_and_run_tests.sh
 
