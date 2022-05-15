@@ -145,7 +145,6 @@ def create_build_configuration():
             write("build --copt=-mavx")
         write("build --cxxopt=-std=c++14")
         write("build --host_cxxopt=-std=c++14")
-        write("build --cxxopt=" + glibcxx)
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
