@@ -24,29 +24,23 @@ from tensorflow_addons.metrics.r_square import _VALID_MULTIOUTPUT
 
 
 @pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
-@pytest.mark.parametrize("y_shape", [(), (1,)])
-def test_config(multioutput, y_shape):
-    r2_obj = RSquare(multioutput=multioutput, y_shape=y_shape, name="r_square")
+def test_config(multioutput):
+    r2_obj = RSquare(multioutput=multioutput, name="r_square")
     assert r2_obj.name == "r_square"
     assert r2_obj.dtype == tf.float32
     assert r2_obj.multioutput == multioutput
-    assert r2_obj.y_shape == y_shape
     # Check save and restore config
     r2_obj2 = RSquare.from_config(r2_obj.get_config())
     assert r2_obj2.name == "r_square"
     assert r2_obj2.dtype == tf.float32
     assert r2_obj2.multioutput == multioutput
-    assert r2_obj2.y_shape == y_shape
 
 
 def initialize_vars(
-    y_shape=(),
     multioutput: str = "uniform_average",
     num_regressors: tf.int32 = 0,
 ):
-    return RSquare(
-        y_shape=y_shape, multioutput=multioutput, num_regressors=num_regressors
-    )
+    return RSquare(multioutput=multioutput, num_regressors=num_regressors)
 
 
 def update_obj_states(obj, actuals, preds, sample_weight=None):
@@ -149,7 +143,7 @@ def test_r2_sklearn_comparison(multioutput):
         tensor_preds = tf.cast(tensor_preds, dtype=tf.float32)
         tensor_sample_weight = tf.cast(tensor_sample_weight, dtype=tf.float32)
         # Initialize
-        r2_obj = initialize_vars(y_shape=(3,), multioutput=multioutput)
+        r2_obj = initialize_vars(multioutput=multioutput)
         # Update
         update_obj_states(
             r2_obj,
@@ -171,7 +165,7 @@ def test_unrecognized_multioutput():
 
 def test_keras_fit():
     model = tf.keras.Sequential([tf.keras.layers.Dense(1)])
-    model.compile(loss="mse", metrics=[RSquare(y_shape=(1,))])
+    model.compile(loss="mse", metrics=[RSquare()])
     data = tf.data.Dataset.from_tensor_slices(
         (tf.random.normal(shape=(100, 1)), tf.random.normal(shape=(100, 1)))
     )
