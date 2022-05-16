@@ -94,7 +94,8 @@ class RSquare(Metric):
 
         if "y_shape" in kwargs:
             warnings.warn(
-                "y_shape has been removed, because it's automatically derived.",
+                "y_shape has been removed, because it's automatically derived,"
+                "and will be deprecated in Addons 0.18.",
                 DeprecationWarning,
             )
 
