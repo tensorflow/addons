@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implements R^2 scores."""
+import warnings
 
 import numpy as np
 import tensorflow as tf
@@ -90,6 +91,12 @@ class RSquare(Metric):
         **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
+
+        if "y_shape" in kwargs:
+            warnings.warn(
+                "y_shape has been removed, because it's automatically derived.",
+                DeprecationWarning,
+            )
 
         if multioutput not in _VALID_MULTIOUTPUT:
             raise ValueError(
