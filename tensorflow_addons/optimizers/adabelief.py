@@ -113,7 +113,7 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             rectify: boolean. Whether to apply learning rate rectification as
                 from RAdam.
             total_steps: An integer. Total number of training steps. Enable
-                warmup by setting a positive value.
+                warmup by setting a value greater than zero.
             warmup_proportion: A floating point value. The proportion of
                 increasing steps.
             min_lr: A floating point value. Minimum learning rate after warmup.
