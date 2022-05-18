@@ -236,3 +236,26 @@ def test_scheduler_serialization():
         "class_name": "InverseTimeDecay",
         "config": wd_scheduler.get_config(),
     }
+
+
+def test_checkpoint_serialization(tmpdir):
+    optimizer = AdaBelief()
+    optimizer2 = AdaBelief()
+
+    var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
+    var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
+
+    grad_0 = tf.constant([0.1, 0.2], dtype=tf.dtypes.float32)
+    grad_1 = tf.constant([0.03, 0.04], dtype=tf.dtypes.float32)
+
+    grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
+
+    optimizer.apply_gradients(grads_and_vars)
+
+    checkpoint = tf.train.Checkpoint(optimizer=optimizer)
+    checkpoint2 = tf.train.Checkpoint(optimizer=optimizer2)
+    model_path = str(tmpdir / "adabelief_chkpt")
+    checkpoint.write(model_path)
+    checkpoint2.read(model_path)
+
+    optimizer2.apply_gradients(grads_and_vars)
