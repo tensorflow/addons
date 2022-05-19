@@ -329,7 +329,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```bash
-python3 -m pip install tensorflow==2.9rc1
+python3 -m pip install tensorflow==2.9
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
