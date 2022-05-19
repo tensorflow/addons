@@ -141,7 +141,6 @@ def create_build_configuration():
         write("build:windows --copt=/arch=AVX")
         write("build:windows --cxxopt=/std:c++14")
         write("build:windows --host_cxxopt=/std:c++14")
-        write("build --cxxopt=" + glibcxx)
 
     if is_macos() or is_linux():
         if not is_linux_ppc64le() and not is_linux_arm() and not is_linux_aarch64():
