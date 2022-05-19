@@ -19,7 +19,7 @@ import tensorflow as tf
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class COCOB(tf.keras.optimizers.Optimizer):
+class COCOB(tf.keras.optimizers.legacy.Optimizer):
     """Optimizer that implements COCOB Backprop Algorithm
 
         Reference:

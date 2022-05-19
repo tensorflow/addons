@@ -23,7 +23,7 @@ from tensorflow_addons.utils.types import FloatTensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ProximalAdagrad(tf.keras.optimizers.Optimizer):
+class ProximalAdagrad(tf.keras.optimizers.legacy.Optimizer):
     """Optimizer that implements the Proximal Adagrad algorithm.
 
     References:

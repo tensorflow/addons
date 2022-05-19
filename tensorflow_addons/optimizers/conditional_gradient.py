@@ -22,7 +22,7 @@ from typing import Union, Callable
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ConditionalGradient(tf.keras.optimizers.Optimizer):
+class ConditionalGradient(tf.keras.optimizers.legacy.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
 
     This optimizer helps handle constraints well.

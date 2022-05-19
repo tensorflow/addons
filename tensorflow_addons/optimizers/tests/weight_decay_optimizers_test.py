@@ -406,7 +406,7 @@ def test_var_list_with_exclude_list_sgdw(dtype):
     [
         weight_decay_optimizers.SGDW,
         weight_decay_optimizers.extend_with_decoupled_weight_decay(
-            tf.keras.optimizers.SGD
+            tf.keras.optimizers.legacy.SGD
         ),
     ],
 )

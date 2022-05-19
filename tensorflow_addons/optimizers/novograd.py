@@ -22,7 +22,7 @@ from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class NovoGrad(tf.keras.optimizers.Optimizer):
+class NovoGrad(tf.keras.optimizers.legacy.Optimizer):
     """Optimizer that implements NovoGrad.
 
     The NovoGrad Optimizer was first proposed in [Stochastic Gradient

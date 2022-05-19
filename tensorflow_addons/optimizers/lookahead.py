@@ -20,7 +20,7 @@ from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class Lookahead(tf.keras.optimizers.Optimizer):
+class Lookahead(tf.keras.optimizers.legacy.Optimizer):
     """This class allows to extend optimizers with the lookahead mechanism.
 
     The mechanism is proposed by Michael R. Zhang et.al in the paper
@@ -71,9 +71,12 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
-        if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
+        if not isinstance(
+            optimizer,
+            (tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer),
+        ):
             raise TypeError(
-                "optimizer is not an object of tf.keras.optimizers.Optimizer"
+                "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer"
             )
 
         self._optimizer = optimizer

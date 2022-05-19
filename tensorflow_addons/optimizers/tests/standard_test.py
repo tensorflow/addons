@@ -33,7 +33,7 @@ class_exceptions = [
 
 
 classes_to_test = discover_classes(
-    optimizers, tf.keras.optimizers.Optimizer, class_exceptions
+    optimizers, tf.keras.optimizers.legacy.Optimizer, class_exceptions
 )
 
 

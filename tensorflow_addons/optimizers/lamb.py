@@ -29,7 +29,7 @@ from tensorflow_addons.optimizers.utils import is_variable_matched_by_regexes
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class LAMB(tf.keras.optimizers.Optimizer):
+class LAMB(tf.keras.optimizers.legacy.Optimizer):
     """Optimizer that implements the Layer-wise Adaptive Moments (LAMB).
 
     See paper [Large Batch Optimization for Deep Learning: Training BERT

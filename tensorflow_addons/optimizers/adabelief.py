@@ -21,7 +21,7 @@ from typing import Union, Callable, Dict
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaBelief(tf.keras.optimizers.Optimizer):
+class AdaBelief(tf.keras.optimizers.legacy.Optimizer):
     """Variant of the Adam optimizer.
 
     It achieves fast convergence as Adam and generalization comparable to SGD.

@@ -21,7 +21,7 @@ from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class MultiOptimizer(tf.keras.optimizers.Optimizer):
+class MultiOptimizer(tf.keras.optimizers.legacy.Optimizer):
     """Multi Optimizer Wrapper for Discriminative Layer Training.
 
     Creates a wrapper around a set of instantiated optimizer layer pairs.
@@ -30,7 +30,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     Each optimizer will optimize only the weights associated with its paired layer.
     This can be used to implement discriminative layer training by assigning
     different learning rates to each optimizer layer pair.
-    `(tf.keras.optimizers.Optimizer, List[tf.keras.layers.Layer])` pairs are also supported.
+    `(tf.keras.optimizers.legacy.Optimizer, List[tf.keras.layers.Layer])` pairs are also supported.
     Please note that the layers must be instantiated before instantiating the optimizer.
 
     Args:
@@ -130,7 +130,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     @classmethod
     def create_optimizer_spec(
         cls,
-        optimizer: tf.keras.optimizers.Optimizer,
+        optimizer: tf.keras.optimizers.legacy.Optimizer,
         layers_or_model: Union[
             tf.keras.Model,
             tf.keras.Sequential,

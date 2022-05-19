@@ -263,8 +263,10 @@ class DecoupledWeightDecayExtension:
 
 @typechecked
 def extend_with_decoupled_weight_decay(
-    base_optimizer: Type[tf.keras.optimizers.Optimizer],
-) -> Type[tf.keras.optimizers.Optimizer]:
+    base_optimizer: Type[
+        Union[tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer]
+    ],
+) -> Type[Union[tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer]]:
     """Factory function returning an optimizer class with decoupled weight
     decay.
 

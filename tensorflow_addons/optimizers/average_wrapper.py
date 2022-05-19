@@ -22,7 +22,9 @@ from tensorflow_addons.utils import types
 from typeguard import typechecked
 
 
-class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
+class AveragedOptimizerWrapper(
+    tf.keras.optimizers.legacy.Optimizer, metaclass=abc.ABCMeta
+):
     @typechecked
     def __init__(
         self, optimizer: types.Optimizer, name: str = "AverageOptimizer", **kwargs
@@ -32,9 +34,12 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
 
-        if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
+        if not isinstance(
+            optimizer,
+            (tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer),
+        ):
             raise TypeError(
-                "optimizer is not an object of tf.keras.optimizers.Optimizer"
+                "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer"
             )
 
         self._optimizer = optimizer
