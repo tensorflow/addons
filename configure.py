@@ -21,11 +21,6 @@ import pathlib
 import platform
 import logging
 
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-
 import tensorflow as tf
 
 _TFA_BAZELRC = ".bazelrc"
@@ -137,7 +132,7 @@ def create_build_configuration():
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
 
-    if Version(tf.__version__) >= Version("2.9.0rc1"):
+    if Version(tf.__version__) >= Version("2.9.0"):
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
     else:
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
@@ -156,7 +151,6 @@ def create_build_configuration():
             write("build --copt=-mavx")
         write("build --cxxopt=-std=c++14")
         write("build --host_cxxopt=-std=c++14")
-        write("build --cxxopt=" + glibcxx)
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")

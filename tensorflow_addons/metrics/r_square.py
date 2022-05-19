@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implements R^2 scores."""
-from typing import Tuple
+import warnings
 
 import numpy as np
 import tensorflow as tf
@@ -86,13 +86,18 @@ class RSquare(Metric):
         self,
         name: str = "r_square",
         dtype: AcceptableDTypes = None,
-        y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
         num_regressors: tf.int32 = 0,
         **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
-        self.y_shape = y_shape
+
+        if "y_shape" in kwargs:
+            warnings.warn(
+                "y_shape has been removed, because it's automatically derived,"
+                "and will be deprecated in Addons 0.18.",
+                DeprecationWarning,
+            )
 
         if multioutput not in _VALID_MULTIOUTPUT:
             raise ValueError(
@@ -102,21 +107,38 @@ class RSquare(Metric):
             )
         self.multioutput = multioutput
         self.num_regressors = num_regressors
-        self.squared_sum = self.add_weight(
-            name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
-        )
-        self.sum = self.add_weight(
-            name="sum", shape=y_shape, initializer="zeros", dtype=dtype
-        )
-        self.res = self.add_weight(
-            name="residual", shape=y_shape, initializer="zeros", dtype=dtype
-        )
-        self.count = self.add_weight(
-            name="count", shape=y_shape, initializer="zeros", dtype=dtype
-        )
         self.num_samples = self.add_weight(name="num_samples", dtype=tf.int32)
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
+        if not hasattr(self, "squared_sum"):
+            self.squared_sum = self.add_weight(
+                name="squared_sum",
+                shape=y_true.shape[1:],
+                initializer="zeros",
+                dtype=self._dtype,
+            )
+        if not hasattr(self, "sum"):
+            self.sum = self.add_weight(
+                name="sum",
+                shape=y_true.shape[1:],
+                initializer="zeros",
+                dtype=self._dtype,
+            )
+        if not hasattr(self, "res"):
+            self.res = self.add_weight(
+                name="residual",
+                shape=y_true.shape[1:],
+                initializer="zeros",
+                dtype=self._dtype,
+            )
+        if not hasattr(self, "count"):
+            self.count = self.add_weight(
+                name="count",
+                shape=y_true.shape[1:],
+                initializer="zeros",
+                dtype=self._dtype,
+            )
+
         y_true = tf.cast(y_true, dtype=self._dtype)
         y_pred = tf.cast(y_pred, dtype=self._dtype)
         if sample_weight is None:
@@ -191,7 +213,6 @@ class RSquare(Metric):
 
     def get_config(self):
         config = {
-            "y_shape": self.y_shape,
             "multioutput": self.multioutput,
         }
         base_config = super().get_config()
