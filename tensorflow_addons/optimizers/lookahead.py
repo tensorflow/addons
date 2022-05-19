@@ -76,7 +76,8 @@ class Lookahead(tf.keras.optimizers.legacy.Optimizer):
             (tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer),
         ):
             raise TypeError(
-                "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer"
+                "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer "
+                "or tf.keras.optimizers.Optimizer."
             )
 
         self._optimizer = optimizer
