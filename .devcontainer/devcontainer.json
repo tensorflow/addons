@@ -55,5 +55,5 @@
 		"seccomp=unconfined" ],
 
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/pytest ./tensorflow_addons/layerscontainers/non-root.
-	"remoteUser": "vscode"
+	//"remoteUser": "vscode"
 }

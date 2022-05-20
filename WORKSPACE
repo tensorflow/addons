@@ -18,3 +18,28 @@ tf_configure(
 )
 
 cuda_configure(name = "local_config_cuda")
+
+http_archive(
+    name = "org_tensorflow",
+    sha256 = "8087cb0c529f04a4bfe480e49925cd64a904ad16d8ec66b98e2aacdfd53c80ff",
+    strip_prefix = "tensorflow-2.9.0",
+    urls = [
+        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.9.0.tar.gz",
+    ],
+)
+
+load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
+
+tf_workspace3()
+
+load("@org_tensorflow//tensorflow:workspace2.bzl", "tf_workspace2")
+
+tf_workspace2()
+
+load("@org_tensorflow//tensorflow:workspace1.bzl", "tf_workspace1")
+
+tf_workspace1()
+
+load("@org_tensorflow//tensorflow:workspace0.bzl", "tf_workspace0")
+
+tf_workspace0()

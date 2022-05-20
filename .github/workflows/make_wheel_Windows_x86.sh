@@ -1,6 +1,7 @@
 set -e -x
 
 export TF_NEED_CUDA=0
+export PYTHON_BIN_PATH=$(which python)
 export BAZEL_VC="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
 
 # Install Deps

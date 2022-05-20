@@ -80,7 +80,7 @@ what it was tested against.
 #### Python Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.6, 2.7, 2.8 | 3.7, 3.8, 3.9, 3.10 | 
+| tfa-nightly | 2.7, 2.8, 2.9 | 3.7, 3.8, 3.9, 3.10 | 
 | tensorflow-addons-0.16.1 | 2.6, 2.7, 2.8 |3.7, 3.8, 3.9, 3.10 |
 | tensorflow-addons-0.15.0 | 2.5, 2.6, 2.7 |3.7, 3.8, 3.9 |
 | tensorflow-addons-0.14.0 | 2.4, 2.5, 2.6 |3.6, 3.7, 3.8, 3.9 |

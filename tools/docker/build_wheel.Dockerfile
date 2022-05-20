@@ -7,6 +7,7 @@ ARG PY_VERSION
 ARG TF_VERSION
 
 # TODO: Remove this if tensorflow/build container removes their keras-nightly install
+# https://github.com/tensorflow/build/issues/78
 RUN python -m pip uninstall -y keras-nightly
 
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
@@ -40,13 +41,13 @@ RUN bazel build \
         --noshow_loading_progress \
         --verbose_failures \
         --test_output=errors \
-        --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda11:toolchain \
+        --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain \
         build_pip_pkg && \
     # Package Whl
     bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
 
 RUN bash tools/releases/tf_auditwheel_patch.sh
-RUN python -m auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
+RUN python -m auditwheel repair --plat manylinux2014_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
 # -------------------------------------------------------------------

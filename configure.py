@@ -23,6 +23,11 @@ import logging
 
 import tensorflow as tf
 
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
+
 _TFA_BAZELRC = ".bazelrc"
 
 
@@ -127,9 +132,16 @@ def create_build_configuration():
     write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
     write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
+    if Version(tf.__version__) >= Version("2.9.0"):
+        glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
+    else:
+        glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
+
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
+    write("build  --experimental_repo_remote_exec")
     write("build -c opt")
+    write("build --cxxopt=" + glibcxx)
 
     if is_windows():
         write("build --config=windows")
@@ -172,7 +184,9 @@ def configure_cuda():
     write("test --config=cuda")
     write("build --config=cuda")
     write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
-    write("build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain")
+    write(
+        "build:cuda --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain"
+    )
 
 
 if __name__ == "__main__":
