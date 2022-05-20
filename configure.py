@@ -136,13 +136,13 @@ def create_build_configuration():
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
     else:
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
-        
+
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
     write("build --cxxopt=" + glibcxx)
-    
+
     if is_windows():
         write("build --config=windows")
         write("build:windows --enable_runfiles")
