@@ -138,9 +138,7 @@ def create_build_configuration():
     write("build -c opt")
     
     
-    if Version(tf.__version__) >= Version("2.9.0"):
-        glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
-    else:
+    if Version(tf.__version__) < Version("2.9.0"):
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
 
     if is_windows():
