@@ -136,9 +136,11 @@ def create_build_configuration():
     write("build --strategy=Genrule=standalone")
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
+    write("build --cxxopt=" + glibcxx)
     
-    
-    if Version(tf.__version__) < Version("2.9.0"):
+    if Version(tf.__version__) >= Version("2.9.0"):
+        glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
+    else:
         glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
 
     if is_windows():
