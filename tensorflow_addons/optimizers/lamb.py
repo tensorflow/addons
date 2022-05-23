@@ -27,9 +27,14 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 from tensorflow_addons.optimizers.utils import is_variable_matched_by_regexes
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class LAMB(tf.keras.optimizers.legacy.Optimizer):
+class LAMB(optimizer_class):
     """Optimizer that implements the Layer-wise Adaptive Moments (LAMB).
 
     See paper [Large Batch Optimization for Deep Learning: Training BERT

@@ -22,9 +22,13 @@ from tensorflow_addons.utils import types
 from typeguard import typechecked
 
 
-class AveragedOptimizerWrapper(
-    tf.keras.optimizers.legacy.Optimizer, metaclass=abc.ABCMeta
-):
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
+class AveragedOptimizerWrapper(optimizer_class, metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
         self, optimizer: types.Optimizer, name: str = "AverageOptimizer", **kwargs

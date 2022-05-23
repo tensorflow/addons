@@ -20,8 +20,14 @@ import tensorflow as tf
 from typeguard import typechecked
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class MultiOptimizer(tf.keras.optimizers.legacy.Optimizer):
+class MultiOptimizer(optimizer_class):
     """Multi Optimizer Wrapper for Discriminative Layer Training.
 
     Creates a wrapper around a set of instantiated optimizer layer pairs.

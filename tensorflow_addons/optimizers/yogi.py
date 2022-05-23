@@ -49,8 +49,14 @@ def _solve(a, b, c):
     return w
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class Yogi(tf.keras.optimizers.legacy.Optimizer):
+class Yogi(optimizer_class):
     """Optimizer that implements the Yogi algorithm in Keras.
 
     See Algorithm 2 of

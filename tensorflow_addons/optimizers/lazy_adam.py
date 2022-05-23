@@ -27,8 +27,14 @@ from typeguard import typechecked
 from typing import Union, Callable
 
 
+if tf.__version__[:3] > "2.8":
+    adam_optimizer_class = tf.keras.optimizers.legacy.Adam
+else:
+    adam_optimizer_class = tf.keras.optimizers.Adam
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class LazyAdam(tf.keras.optimizers.Adam):
+class LazyAdam(adam_optimizer_class):
     """Variant of the Adam optimizer that handles sparse updates more
     efficiently.
 

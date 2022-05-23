@@ -19,9 +19,14 @@ from tensorflow_addons.utils.types import FloatTensorLike
 from typing import Union, Callable, Dict
 from typeguard import typechecked
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class RectifiedAdam(tf.keras.optimizers.legacy.Optimizer):
+class RectifiedAdam(optimizer_class):
     """Variant of the Adam optimizer whose adaptive learning rate is rectified
     so as to have a consistent variance.
 

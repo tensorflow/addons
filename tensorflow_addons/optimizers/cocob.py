@@ -18,8 +18,14 @@ from typeguard import typechecked
 import tensorflow as tf
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class COCOB(tf.keras.optimizers.legacy.Optimizer):
+class COCOB(optimizer_class):
     """Optimizer that implements COCOB Backprop Algorithm
 
         Reference:

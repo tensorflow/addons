@@ -21,8 +21,14 @@ from typing import Union, Callable
 from typeguard import typechecked
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class NovoGrad(tf.keras.optimizers.legacy.Optimizer):
+class NovoGrad(optimizer_class):
     """Optimizer that implements NovoGrad.
 
     The NovoGrad Optimizer was first proposed in [Stochastic Gradient

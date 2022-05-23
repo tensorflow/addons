@@ -19,9 +19,14 @@ from tensorflow_addons.utils.types import FloatTensorLike
 
 from typing import Union, Callable, Dict
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaBelief(tf.keras.optimizers.legacy.Optimizer):
+class AdaBelief(optimizer_class):
     """Variant of the Adam optimizer.
 
     It achieves fast convergence as Adam and generalization comparable to SGD.

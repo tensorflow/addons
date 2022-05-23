@@ -22,8 +22,14 @@ from typeguard import typechecked
 from tensorflow_addons.utils.types import FloatTensorLike
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ProximalAdagrad(tf.keras.optimizers.legacy.Optimizer):
+class ProximalAdagrad(optimizer_class):
     """Optimizer that implements the Proximal Adagrad algorithm.
 
     References:
