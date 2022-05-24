@@ -79,8 +79,8 @@ def equalize(
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        fn = partial(_equalize_image)
-        image = tf.map_fn(lambda x: fn(x, bins), image)
+        fn = partial(_equalize_image, bins=bins)
+        image = tf.map_fn(fn, image)
         return from_4D_image(image, image_dims)
 
 
