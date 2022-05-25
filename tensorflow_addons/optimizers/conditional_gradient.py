@@ -21,8 +21,14 @@ from typeguard import typechecked
 from typing import Union, Callable
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ConditionalGradient(tf.keras.optimizers.legacy.Optimizer):
+class ConditionalGradient(optimizer_class):
     """Optimizer that implements the Conditional Gradient optimization.
 
     This optimizer helps handle constraints well.
