@@ -179,6 +179,7 @@ def test_no_tf_control_dependencies():
         "tensorflow_addons/image/utils.py",
         "tensorflow_addons/image/dense_image_warp.py",
         "tensorflow_addons/optimizers/average_wrapper.py",
+        "tensorflow_addons/optimizers/discriminative_layer_training.py",
         "tensorflow_addons/optimizers/yogi.py",
         "tensorflow_addons/optimizers/lookahead.py",
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
