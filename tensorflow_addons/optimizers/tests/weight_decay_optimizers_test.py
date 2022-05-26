@@ -401,13 +401,17 @@ def test_var_list_with_exclude_list_sgdw(dtype):
     )
 
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.SGD
+else:
+    optimizer_class = tf.keras.optimizers.SGD
+
+
 @pytest.mark.parametrize(
     "optimizer",
     [
         weight_decay_optimizers.SGDW,
-        weight_decay_optimizers.extend_with_decoupled_weight_decay(
-            tf.keras.optimizers.legacy.SGD
-        ),
+        weight_decay_optimizers.extend_with_decoupled_weight_decay(optimizer_class),
     ],
 )
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
