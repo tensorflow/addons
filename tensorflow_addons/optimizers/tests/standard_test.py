@@ -31,10 +31,12 @@ class_exceptions = [
     "MovingAverage",  # is wrapper
 ]
 
+if tf.__version__[:3] > "2.8":
+    optimizer_class = tf.keras.optimizers.legacy.Optimizer
+else:
+    optimizer_class = tf.keras.optimizers.Optimizer
 
-classes_to_test = discover_classes(
-    optimizers, tf.keras.optimizers.legacy.Optimizer, class_exceptions
-)
+classes_to_test = discover_classes(optimizers, optimizer_class, class_exceptions)
 
 
 @pytest.mark.parametrize("optimizer", classes_to_test)
