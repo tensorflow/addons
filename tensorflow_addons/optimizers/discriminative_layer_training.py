@@ -136,7 +136,7 @@ class MultiOptimizer(optimizer_class):
     @classmethod
     def create_optimizer_spec(
         cls,
-        optimizer: tf.keras.optimizers.legacy.Optimizer,
+        optimizer: optimizer_class,
         layers_or_model: Union[
             tf.keras.Model,
             tf.keras.Sequential,
