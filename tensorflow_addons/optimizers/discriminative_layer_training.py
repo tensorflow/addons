@@ -124,7 +124,15 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
     def get_config(self):
         config = super(MultiOptimizer, self).get_config()
-        config.update({"optimizer_specs": self.optimizer_specs})
+        optimizer_specs_without_gv = []
+        for optimizer_spec in self.optimizer_specs:
+            optimizer_specs_without_gv.append(
+                {
+                    "optimizer": optimizer_spec["optimizer"],
+                    "weights": optimizer_spec["weights"],
+                }
+            )
+        config.update({"optimizer_specs": optimizer_specs_without_gv})
         return config
 
     @classmethod
