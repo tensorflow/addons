@@ -115,6 +115,8 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
                     if var.name == name:
                         spec["gv"].append((grad, var))
 
+        self.iterations.assign_add(1)
+
         return tf.group(
             [
                 spec["optimizer"].apply_gradients(spec["gv"], **kwargs)
