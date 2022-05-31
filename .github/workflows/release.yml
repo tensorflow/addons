@@ -112,7 +112,7 @@ jobs:
             cpu: 'arm64'
             tf-version: '2.9.0'
             py-version: '3.9'
-          - os: 'macos-11'
+          - os: 'macOS'
             cpu: 'arm64'
             tf-version: '2.9.0'
             py-version: '3.10'
