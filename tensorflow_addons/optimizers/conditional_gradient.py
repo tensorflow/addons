@@ -17,18 +17,13 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
+from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from typeguard import typechecked
 from typing import Union, Callable
 
 
-if tf.__version__[:3] > "2.8":
-    optimizer_class = tf.keras.optimizers.legacy.Optimizer
-else:
-    optimizer_class = tf.keras.optimizers.Optimizer
-
-
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ConditionalGradient(optimizer_class):
+class ConditionalGradient(BASE_OPTIMIZER_CLASS):
     """Optimizer that implements the Conditional Gradient optimization.
 
     This optimizer helps handle constraints well.

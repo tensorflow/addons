@@ -16,17 +16,12 @@
 import tensorflow as tf
 from tensorflow_addons.utils import types
 
+from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from typeguard import typechecked
 
 
-if tf.__version__[:3] > "2.8":
-    optimizer_class = tf.keras.optimizers.legacy.Optimizer
-else:
-    optimizer_class = tf.keras.optimizers.Optimizer
-
-
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class Lookahead(optimizer_class):
+class Lookahead(BASE_OPTIMIZER_CLASS):
     """This class allows to extend optimizers with the lookahead mechanism.
 
     The mechanism is proposed by Michael R. Zhang et.al in the paper

@@ -261,11 +261,10 @@ class DecoupledWeightDecayExtension:
         return var.ref() in self._decay_var_list
 
 
-if tf.__version__[:3] > "2.8":
-    optimizer_class = Union[
-        tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer
-    ]
-else:
+optimizer_class = Union[
+    tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer
+]
+if tf.__version__[:3] <= "2.8":
     optimizer_class = tf.keras.optimizers.Optimizer
 
 

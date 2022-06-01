@@ -17,18 +17,12 @@ import abc
 import warnings
 
 import tensorflow as tf
+from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from tensorflow_addons.utils import types
-
 from typeguard import typechecked
 
 
-if tf.__version__[:3] > "2.8":
-    optimizer_class = tf.keras.optimizers.legacy.Optimizer
-else:
-    optimizer_class = tf.keras.optimizers.Optimizer
-
-
-class AveragedOptimizerWrapper(optimizer_class, metaclass=abc.ABCMeta):
+class AveragedOptimizerWrapper(BASE_OPTIMIZER_CLASS, metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
         self, optimizer: types.Optimizer, name: str = "AverageOptimizer", **kwargs

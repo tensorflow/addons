@@ -17,17 +17,13 @@
 from typing import List, Union
 
 import tensorflow as tf
+
+from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from typeguard import typechecked
 
 
-if tf.__version__[:3] > "2.8":
-    optimizer_class = tf.keras.optimizers.legacy.Optimizer
-else:
-    optimizer_class = tf.keras.optimizers.Optimizer
-
-
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class MultiOptimizer(optimizer_class):
+class MultiOptimizer(BASE_OPTIMIZER_CLASS):
     """Multi Optimizer Wrapper for Discriminative Layer Training.
 
     Creates a wrapper around a set of instantiated optimizer layer pairs.
@@ -136,7 +132,7 @@ class MultiOptimizer(optimizer_class):
     @classmethod
     def create_optimizer_spec(
         cls,
-        optimizer: optimizer_class,
+        optimizer: BASE_OPTIMIZER_CLASS,
         layers_or_model: Union[
             tf.keras.Model,
             tf.keras.Sequential,

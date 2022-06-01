@@ -18,6 +18,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons import optimizers
+from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from tensorflow_addons.utils.test_utils import discover_classes
 
 class_exceptions = [
@@ -29,14 +30,10 @@ class_exceptions = [
     "ConditionalGradient",  # is wrapper
     "Lookahead",  # is wrapper
     "MovingAverage",  # is wrapper
+    "BASE_OPTIMIZER_CLASS",  # is a constantc
 ]
 
-if tf.__version__[:3] > "2.8":
-    optimizer_class = tf.keras.optimizers.legacy.Optimizer
-else:
-    optimizer_class = tf.keras.optimizers.Optimizer
-
-classes_to_test = discover_classes(optimizers, optimizer_class, class_exceptions)
+classes_to_test = discover_classes(optimizers, BASE_OPTIMIZER_CLASS, class_exceptions)
 
 
 @pytest.mark.parametrize("optimizer", classes_to_test)
