@@ -32,7 +32,12 @@ class AveragedOptimizerWrapper(BASE_OPTIMIZER_CLASS, metaclass=abc.ABCMeta):
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
 
-        if tf.__version__[:3] > "2.8":
+        if tf.__version__[:3] <= "2.8":
+            if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
+                raise TypeError(
+                    "optimizer is not an object of tf.keras.optimizers.Optimizer."
+                )
+        else:
             if not isinstance(
                 optimizer,
                 (tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer),
@@ -40,11 +45,6 @@ class AveragedOptimizerWrapper(BASE_OPTIMIZER_CLASS, metaclass=abc.ABCMeta):
                 raise TypeError(
                     "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer "
                     "or tf.keras.optimizers.Optimizer."
-                )
-        else:
-            if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
-                raise TypeError(
-                    "optimizer is not an object of tf.keras.optimizers.Optimizer."
                 )
 
         self._optimizer = optimizer
