@@ -72,20 +72,13 @@ class Lookahead(BASE_OPTIMIZER_CLASS):
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
-        if tf.__version__[:3] <= "2.8":
-            if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
-                raise TypeError(
-                    "optimizer is not an object of tf.keras.optimizers.Optimizer."
-                )
-        else:
-            if not isinstance(
-                optimizer,
-                (tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer),
-            ):
-                raise TypeError(
-                    "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer "
-                    "or tf.keras.optimizers.Optimizer."
-                )
+        if not isinstance(
+            optimizer, (tf.keras.optimizers.Optimizer, BASE_OPTIMIZER_CLASS)
+        ):
+            raise TypeError(
+                "optimizer is not an object of tf.keras.optimizers.Optimizer "
+                "or tf.keras.optimizers.legacy.Optimizer (if you have tf version >= 2.9.0)."
+            )
 
         self._optimizer = optimizer
         self._set_hyper("sync_period", sync_period)

@@ -16,6 +16,7 @@
 
 from typing import Union, Callable, List
 
+import importlib
 import numpy as np
 import tensorflow as tf
 
@@ -46,7 +47,12 @@ Initializer = Union[None, dict, str, Callable, tf.keras.initializers.Initializer
 Regularizer = Union[None, dict, str, Callable, tf.keras.regularizers.Regularizer]
 Constraint = Union[None, dict, str, Callable, tf.keras.constraints.Constraint]
 Activation = Union[None, str, Callable]
-Optimizer = Union[tf.keras.optimizers.Optimizer, str]
+if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
+    Optimizer = Union[
+        tf.keras.optimizers.Optimizer, tf.keras.optimizers.legacy.Optimizer, str
+    ]
+else:
+    Optimizer = Union[tf.keras.optimizers.Optimizer, str]
 
 TensorLike = Union[
     List[Union[Number, list]],

@@ -15,9 +15,9 @@
 """Conditional Gradient optimizer."""
 
 import tensorflow as tf
+from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from tensorflow_addons.utils.types import FloatTensorLike
 
-from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
 from typeguard import typechecked
 from typing import Union, Callable
 
