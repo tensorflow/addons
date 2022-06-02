@@ -16,13 +16,13 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
-from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
+from tensorflow_addons.optimizers import BaseOptimizerClass
 from typing import Union, Callable
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class NovoGrad(BASE_OPTIMIZER_CLASS):
+class NovoGrad(BaseOptimizerClass):
     """Optimizer that implements NovoGrad.
 
     The NovoGrad Optimizer was first proposed in [Stochastic Gradient

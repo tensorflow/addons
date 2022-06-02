@@ -17,11 +17,11 @@
 from typeguard import typechecked
 import tensorflow as tf
 
-from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
+from tensorflow_addons.optimizers import BaseOptimizerClass
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class COCOB(BASE_OPTIMIZER_CLASS):
+class COCOB(BaseOptimizerClass):
     """Optimizer that implements COCOB Backprop Algorithm
 
         Reference:

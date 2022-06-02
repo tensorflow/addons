@@ -25,7 +25,7 @@ https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pd
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
-from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
+from tensorflow_addons.optimizers import BaseOptimizerClass
 from typeguard import typechecked
 from typing import Union, Callable
 
@@ -51,7 +51,7 @@ def _solve(a, b, c):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class Yogi(BASE_OPTIMIZER_CLASS):
+class Yogi(BaseOptimizerClass):
     """Optimizer that implements the Yogi algorithm in Keras.
 
     See Algorithm 2 of

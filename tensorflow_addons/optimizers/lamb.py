@@ -24,13 +24,13 @@ from typing import Optional, Union, Callable, List
 from typeguard import typechecked
 
 import tensorflow as tf
-from tensorflow_addons.optimizers import BASE_OPTIMIZER_CLASS
+from tensorflow_addons.optimizers import BaseOptimizerClass
 from tensorflow_addons.utils.types import FloatTensorLike
 from tensorflow_addons.optimizers.utils import is_variable_matched_by_regexes
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class LAMB(BASE_OPTIMIZER_CLASS):
+class LAMB(BaseOptimizerClass):
     """Optimizer that implements the Layer-wise Adaptive Moments (LAMB).
 
     See paper [Large Batch Optimization for Deep Learning: Training BERT
