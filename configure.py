@@ -126,12 +126,14 @@ def create_build_configuration():
     write_action_env("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
     write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
     write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
-    
+
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
-    write("build --cxxopt=" + '"-D_GLIBCXX_USE_CXX11_ABI="' + tf.sysconfig.CXX11_ABI_FLAG)
+    write(
+        "build --cxxopt=" + '"-D_GLIBCXX_USE_CXX11_ABI="' + tf.sysconfig.CXX11_ABI_FLAG
+    )
 
     if is_windows():
         write("build --config=windows")
