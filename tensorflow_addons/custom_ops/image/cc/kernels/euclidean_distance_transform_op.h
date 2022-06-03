@@ -117,12 +117,12 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }
-  delete f;
-  delete d;
-  delete vh;
-  delete vw;
-  delete zh;
-  delete zw;
+  delete[] f;
+  delete[] d;
+  delete[] vh;
+  delete[] vw;
+  delete[] zh;
+  delete[] zw;
 }
 
 namespace functor {

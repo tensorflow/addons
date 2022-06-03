@@ -23,11 +23,6 @@ import logging
 
 import tensorflow as tf
 
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-
 _TFA_BAZELRC = ".bazelrc"
 
 
@@ -131,17 +126,12 @@ def create_build_configuration():
     write_action_env("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
     write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
     write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
-
-    if Version(tf.__version__) >= Version("2.9.0"):
-        glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=1"'
-    else:
-        glibcxx = '"-D_GLIBCXX_USE_CXX11_ABI=0"'
-
+    
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
-    write("build --cxxopt=" + glibcxx)
+    write("build --cxxopt=" + '"-D_GLIBCXX_USE_CXX11_ABI="' + tf.sysconfig.CXX11_ABI_FLAG)
 
     if is_windows():
         write("build --config=windows")
