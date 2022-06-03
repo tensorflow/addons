@@ -132,7 +132,9 @@ def create_build_configuration():
     write("build  --experimental_repo_remote_exec")
     write("build -c opt")
     write(
-        "build --cxxopt=" + '"-D_GLIBCXX_USE_CXX11_ABI="' + tf.sysconfig.CXX11_ABI_FLAG
+        "build --cxxopt="
+        + '"-D_GLIBCXX_USE_CXX11_ABI="'
+        + str(tf.sysconfig.CXX11_ABI_FLAG)
     )
 
     if is_windows():
