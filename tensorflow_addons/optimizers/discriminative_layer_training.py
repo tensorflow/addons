@@ -19,6 +19,9 @@ from typing import List, Union
 import tensorflow as tf
 from typeguard import typechecked
 
+from keras import backend
+from keras.utils import tf_utils
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class MultiOptimizer(tf.keras.optimizers.Optimizer):
@@ -115,12 +118,28 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
                     if var.name == name:
                         spec["gv"].append((grad, var))
 
-        return tf.group(
-            [
-                spec["optimizer"].apply_gradients(spec["gv"], **kwargs)
-                for spec in self.optimizer_specs
-            ]
+        update_ops = [
+            spec["optimizer"].apply_gradients(spec["gv"], **kwargs)
+            for spec in self.optimizer_specs
+        ]
+        update_group = tf.group(update_ops)
+
+        any_symbolic = any(
+            isinstance(i, tf.Operation) or tf_utils.is_symbolic_tensor(i)
+            for i in update_ops
         )
+
+        if not tf.executing_eagerly() or any_symbolic:
+            # If the current context is graph mode or any of the update ops are
+            # symbolic then the step update should be carried out under a graph
+            # context. (eager updates execute immediately)
+            with backend._current_graph(  # pylint: disable=protected-access
+                update_ops
+            ).as_default():
+                with tf.control_dependencies([update_group]):
+                    return self.iterations.assign_add(1, read_value=False)
+
+        return self.iterations.assign_add(1)
 
     def get_config(self):
         config = super(MultiOptimizer, self).get_config()

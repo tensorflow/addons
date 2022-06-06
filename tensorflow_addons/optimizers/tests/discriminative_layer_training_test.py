@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for Discriminative Layer Training Optimizer for TensorFlow."""
 
+from math import ceil
+
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -30,6 +32,12 @@ def assert_list_allclose(a, b):
 def assert_list_not_allclose(a, b):
     for x, y in zip(a, b):
         test_utils.assert_not_allclose(x, y)
+
+
+def assert_sync_iterations(opt, desired):
+    sub_opts = [specs["optimizer"] for specs in opt.optimizer_specs]
+    for o in [opt] + sub_opts:
+        np.testing.assert_equal(o.iterations.numpy(), desired)
 
 
 @pytest.mark.with_device(["cpu", "gpu"])
@@ -68,6 +76,7 @@ def test_fit_layer_optimizer(device, serialize, tmpdir):
 
     assert_list_not_allclose(dense1_weights_before_train, dense1_weights_after_train)
     assert_list_allclose(dense2_weights_before_train, dense2_weights_after_train)
+    assert_sync_iterations(model.optimizer, desired=ceil(100 / 8) * 10)
 
 
 def test_list_of_layers():
@@ -109,6 +118,8 @@ def test_list_of_layers():
     ):
         assert_list_not_allclose(layer_before, layer_after)
 
+    assert_sync_iterations(model.optimizer, desired=ceil(128 / 32) * 10)
+
 
 def test_model():
     inputs = tf.keras.Input(shape=(4,))
@@ -130,6 +141,8 @@ def test_model():
     x = np.ones((128, 4)).astype(np.float32)
     y = np.ones((128, 32)).astype(np.float32)
     model.fit(x, y, batch_size=32, epochs=10)
+
+    assert_sync_iterations(model.optimizer, desired=ceil(128 / 32) * 10)
 
 
 def test_subclass_model():
@@ -183,6 +196,7 @@ def test_subclass_model():
 
     assert_list_allclose(block1_weights_before_train, block1_weights_after_train)
     assert_list_not_allclose(block2_weights_before_train, block2_weights_after_train)
+    assert_sync_iterations(multi_optimizer, desired=ceil(128 / 32) * 10)
 
 
 def test_pretrained_model():
@@ -209,6 +223,7 @@ def test_pretrained_model():
 
     assert_list_allclose(resnet_weights_before_train, resnet_weights_after_train)
     assert_list_not_allclose(dense_weights_before_train, dense_weights_after_train)
+    assert_sync_iterations(model.optimizer, desired=ceil(128 / 32))
 
 
 def test_nested_model():
@@ -253,6 +268,7 @@ def test_nested_model():
     assert_list_not_allclose(model1_weights_before_train, model1_weights_after_train)
     assert_list_allclose(model2_weights_before_train, model2_weights_after_train)
     assert_list_not_allclose(model3_weights_before_train, model3_weights_after_train)
+    assert_sync_iterations(model.optimizer, desired=ceil(128 / 32))
 
 
 def test_serialization():
