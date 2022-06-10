@@ -14,6 +14,7 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
+import importlib
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -401,7 +402,7 @@ def test_var_list_with_exclude_list_sgdw(dtype):
     )
 
 
-if tf.__version__[:3] > "2.8":
+if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
     optimizer_class = tf.keras.optimizers.legacy.SGD
 else:
     optimizer_class = tf.keras.optimizers.SGD

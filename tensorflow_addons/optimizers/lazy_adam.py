@@ -20,6 +20,7 @@ applications. However, it provides slightly different semantics than the
 original Adam algorithm, and may lead to different empirical results.
 """
 
+import importlib
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
@@ -27,7 +28,7 @@ from typeguard import typechecked
 from typing import Union, Callable
 
 
-if tf.__version__[:3] > "2.8":
+if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
     adam_optimizer_class = tf.keras.optimizers.legacy.Adam
 else:
     adam_optimizer_class = tf.keras.optimizers.Adam

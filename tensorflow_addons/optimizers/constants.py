@@ -16,6 +16,6 @@ import importlib
 import tensorflow as tf
 
 if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
-    BaseOptimizerClass = tf.keras.optimizers.legacy.Optimizer
+    KerasLegacyOptimizer = tf.keras.optimizers.legacy.Optimizer
 else:
-    BaseOptimizerClass = tf.keras.optimizers.Optimizer
+    KerasLegacyOptimizer = tf.keras.optimizers.Optimizer

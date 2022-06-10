@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons import optimizers
-from tensorflow_addons.optimizers import BaseOptimizerClass
+from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from tensorflow_addons.utils.test_utils import discover_classes
 
 class_exceptions = [
@@ -30,10 +30,10 @@ class_exceptions = [
     "ConditionalGradient",  # is wrapper
     "Lookahead",  # is wrapper
     "MovingAverage",  # is wrapper
-    "BaseOptimizerClass",  # is a constantc
+    "KerasLegacyOptimizer",  # is a constantc
 ]
 
-classes_to_test = discover_classes(optimizers, BaseOptimizerClass, class_exceptions)
+classes_to_test = discover_classes(optimizers, KerasLegacyOptimizer, class_exceptions)
 
 
 @pytest.mark.parametrize("optimizer", classes_to_test)

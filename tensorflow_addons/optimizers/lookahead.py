@@ -16,12 +16,12 @@
 import tensorflow as tf
 from tensorflow_addons.utils import types
 
-from tensorflow_addons.optimizers import BaseOptimizerClass
+from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class Lookahead(BaseOptimizerClass):
+class Lookahead(KerasLegacyOptimizer):
     """This class allows to extend optimizers with the lookahead mechanism.
 
     The mechanism is proposed by Michael R. Zhang et.al in the paper
@@ -73,7 +73,7 @@ class Lookahead(BaseOptimizerClass):
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
         if not isinstance(
-            optimizer, (tf.keras.optimizers.Optimizer, BaseOptimizerClass)
+            optimizer, (tf.keras.optimizers.Optimizer, KerasLegacyOptimizer)
         ):
             raise TypeError(
                 "optimizer is not an object of tf.keras.optimizers.Optimizer "
