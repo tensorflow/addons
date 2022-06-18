@@ -19,6 +19,7 @@ import os
 from typedapi import ensure_api_is_typed
 
 import tensorflow_addons as tfa
+import tensorflow as tf
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
@@ -39,6 +40,7 @@ def test_api_typed():
     # Files within this list will be exempt from verification.
     exception_list = [
         tfa.rnn.PeepholeLSTMCell,
+        tf.keras.optimizers.legacy.optimizer.Optimizer,
     ]
     help_message = (
         "You can also take a look at the section about it in the CONTRIBUTING.md:\n"
