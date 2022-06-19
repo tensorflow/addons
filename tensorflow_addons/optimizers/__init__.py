@@ -14,6 +14,7 @@
 # ==============================================================================
 """Additional optimizers that conform to Keras API."""
 
+from tensorflow_addons.optimizers.constants import KerasLegacyOptimizer
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradient
 from tensorflow_addons.optimizers.cyclical_learning_rate import CyclicalLearningRate

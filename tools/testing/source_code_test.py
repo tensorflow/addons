@@ -18,7 +18,9 @@ import os
 
 from typedapi import ensure_api_is_typed
 
+import importlib
 import tensorflow_addons as tfa
+import tensorflow as tf
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
@@ -40,6 +42,9 @@ def test_api_typed():
     exception_list = [
         tfa.rnn.PeepholeLSTMCell,
     ]
+    if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
+        exception_list.append(tf.keras.optimizers.legacy.Optimizer)
+
     help_message = (
         "You can also take a look at the section about it in the CONTRIBUTING.md:\n"
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"

@@ -55,7 +55,7 @@ class MovingAverage(AveragedOptimizerWrapper):
         r"""Construct a new MovingAverage optimizer.
 
         Args:
-            optimizer: str or `tf.keras.optimizers.Optimizer` that will be
+            optimizer: str or `tf.keras.optimizers.legacy.Optimizer` that will be
                 used to compute and apply gradients.
             average_decay: float. Decay to use to maintain the moving averages
                 of trained variables.

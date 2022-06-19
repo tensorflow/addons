@@ -19,11 +19,12 @@ from typing import Callable, Union
 import tensorflow as tf
 from typeguard import typechecked
 
+from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from tensorflow_addons.utils.types import FloatTensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ProximalAdagrad(tf.keras.optimizers.Optimizer):
+class ProximalAdagrad(KerasLegacyOptimizer):
     """Optimizer that implements the Proximal Adagrad algorithm.
 
     References:

@@ -16,12 +16,13 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
+from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typing import Union, Callable, Dict
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class RectifiedAdam(tf.keras.optimizers.Optimizer):
+class RectifiedAdam(KerasLegacyOptimizer):
     """Variant of the Adam optimizer whose adaptive learning rate is rectified
     so as to have a consistent variance.
 

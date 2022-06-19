@@ -14,6 +14,7 @@
 # ==============================================================================
 """Base class to make optimizers weight decay ready."""
 
+import importlib
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 from tensorflow_addons.optimizers.utils import is_variable_matched_by_regexes
@@ -261,10 +262,18 @@ class DecoupledWeightDecayExtension:
         return var.ref() in self._decay_var_list
 
 
+if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
+    keras_legacy_optimizer = Union[
+        tf.keras.optimizers.legacy.Optimizer, tf.keras.optimizers.Optimizer
+    ]
+else:
+    keras_legacy_optimizer = tf.keras.optimizers.Optimizer
+
+
 @typechecked
 def extend_with_decoupled_weight_decay(
-    base_optimizer: Type[tf.keras.optimizers.Optimizer],
-) -> Type[tf.keras.optimizers.Optimizer]:
+    base_optimizer: Type[keras_legacy_optimizer],
+) -> Type[keras_legacy_optimizer]:
     """Factory function returning an optimizer class with decoupled weight
     decay.
 

@@ -17,11 +17,12 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
+from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typing import Union, Callable, Dict
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaBelief(tf.keras.optimizers.Optimizer):
+class AdaBelief(KerasLegacyOptimizer):
     """Variant of the Adam optimizer.
 
     It achieves fast convergence as Adam and generalization comparable to SGD.

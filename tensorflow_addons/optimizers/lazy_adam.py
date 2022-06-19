@@ -20,6 +20,7 @@ applications. However, it provides slightly different semantics than the
 original Adam algorithm, and may lead to different empirical results.
 """
 
+import importlib
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
@@ -27,8 +28,14 @@ from typeguard import typechecked
 from typing import Union, Callable
 
 
+if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
+    adam_optimizer_class = tf.keras.optimizers.legacy.Adam
+else:
+    adam_optimizer_class = tf.keras.optimizers.Adam
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class LazyAdam(tf.keras.optimizers.Adam):
+class LazyAdam(adam_optimizer_class):
     """Variant of the Adam optimizer that handles sparse updates more
     efficiently.
 

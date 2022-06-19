@@ -14,6 +14,7 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
+import importlib
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -401,13 +402,17 @@ def test_var_list_with_exclude_list_sgdw(dtype):
     )
 
 
+if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
+    optimizer_class = tf.keras.optimizers.legacy.SGD
+else:
+    optimizer_class = tf.keras.optimizers.SGD
+
+
 @pytest.mark.parametrize(
     "optimizer",
     [
         weight_decay_optimizers.SGDW,
-        weight_decay_optimizers.extend_with_decoupled_weight_decay(
-            tf.keras.optimizers.SGD
-        ),
+        weight_decay_optimizers.extend_with_decoupled_weight_decay(optimizer_class),
     ],
 )
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
