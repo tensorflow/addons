@@ -306,7 +306,7 @@ def test_serialization_after_training(tmpdir):
     model.compile(loss="categorical_crossentropy", optimizer=optimizer)
     model.fit(x, y)
 
-    # Verift the optimizer can still be serialized (saved).
+    # Verify the optimizer can still be serialized (saved).
     model.save(str(tmpdir))
     loaded_model = tf.keras.models.load_model(str(tmpdir))
     old_config = model.optimizer.get_config()
