@@ -24,7 +24,7 @@ def register_all(keras_objects: bool = True, custom_kernels: bool = True) -> Non
     or you can do:
     ```python
     tfa.register_all()
-    tf.tf.keras.models.load_model("my_model.tf")
+    tf.keras.models.load_model("my_model.tf")
     ```
 
     If the model contains custom ops (compiled ops) of TensorFlow Addons,
