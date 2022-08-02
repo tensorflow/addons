@@ -90,7 +90,8 @@ def test_keras_binary_classification_model():
     x = np.random.rand(1000, 10).astype(np.float32)
     y = np.random.rand(1000, 1).astype(np.float32)
 
-    model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+    history = model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+    assert not any(np.isnan(history.history["kendalls_tau"]))
 
 
 def test_kendalls_tau_serialization():
