@@ -15,7 +15,7 @@
 """Approximate Kendall's Tau-b Metric."""
 
 import tensorflow as tf
-from keras.metrics import Metric
+from tensorflow.keras.metrics import Metric
 from tensorflow_addons.utils.types import AcceptableDTypes
 
 from typeguard import typechecked
