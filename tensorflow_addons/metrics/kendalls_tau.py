@@ -151,15 +151,9 @@ class KendallsTau(Metric):
 
     def result(self):
         m = tf.cast(self.m, tf.float32)
-        n_cap = tf.cumsum(
-            tf.cumsum(
-                tf.slice(tf.pad(m, [[1, 0], [1, 0]]), [0, 0], self.m.shape),
-                axis=0,
-            ),
-            axis=1,
-        )
+        n_cap = tf.cumsum(tf.cumsum(m, axis=0), axis=1)
         # Number of concordant pairs.
-        p = tf.math.reduce_sum(tf.multiply(n_cap, m))
+        p = tf.math.reduce_sum(tf.multiply(n_cap[:-1, :-1], m[1:, 1:]))
         sum_m_squard = tf.math.reduce_sum(tf.math.square(m))
         # Ties in x.
         t = (
