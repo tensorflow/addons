@@ -79,7 +79,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # docs tests
-FROM python:3.7 as docs_tests
+FROM python:3.9 as docs_tests
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
