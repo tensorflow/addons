@@ -133,8 +133,8 @@
 /tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi @marload
 /tensorflow_addons/metrics/geometric_mean.py @marload
 /tensorflow_addons/metrics/tests/geometric_mean_test.py @marload
-/tensorflow_addons/metrics/kendalls_tau.py @sorensenjs
-/tensorflow_addons/metrics/tests/kendalls_tau_test.py @sorensenjs
+/tensorflow_addons/metrics/streaming_correlations.py @sorensenjs @nicolaspi
+/tensorflow_addons/metrics/tests/streaming_correlations_test.py @sorensenjs @nicolaspi
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
