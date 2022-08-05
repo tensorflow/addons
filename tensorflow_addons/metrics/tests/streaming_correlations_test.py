@@ -128,7 +128,7 @@ class TestStreamingCorrelations:
         np.testing.assert_almost_equal(metric_value, scipy_value, decimal=2)
 
     @pytest.mark.parametrize("correlation_type", testing_types)
-    def test_kendalls_tau_serialization(self, correlation_type):
+    def test_serialization(self, correlation_type):
         actuals = np.array([4, 4, 3, 3, 2, 2, 1, 1], dtype=np.int32)
         preds = np.array([1, 2, 4, 1, 3, 3, 4, 4], dtype=np.int32)
 
