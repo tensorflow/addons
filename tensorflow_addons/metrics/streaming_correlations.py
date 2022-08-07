@@ -278,9 +278,9 @@ class SpearmansRank(CorrelationBase):
         n = tf.cast(self.n, tf.float32)
 
         nrow_ = tf.where(nrow > 0, nrow, -1.0)
-        rrow = tf.pad(tf.cumsum(nrow)[:-1], [[1, 0]]) + (nrow_ - n) / 2
+        rrow = tf.cumsum(nrow, exclusive=True) + (nrow_ - n) / 2
         ncol_ = tf.where(ncol > 0, ncol, -1.0)
-        rcol = tf.pad(tf.cumsum(ncol)[:-1], [[1, 0]]) + (ncol_ - n) / 2
+        rcol = tf.cumsum(ncol, exclusive=True) + (ncol_ - n) / 2
 
         rrow = rrow / tf.math.sqrt(tf.reduce_sum(nrow * tf.square(rrow)))
         rcol = rcol / tf.math.sqrt(tf.reduce_sum(ncol * tf.square(rcol)))
