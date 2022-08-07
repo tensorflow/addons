@@ -21,10 +21,10 @@ cuda_configure(name = "local_config_cuda")
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "8087cb0c529f04a4bfe480e49925cd64a904ad16d8ec66b98e2aacdfd53c80ff",
-    strip_prefix = "tensorflow-2.9.0",
+    sha256 = "3BAC161442497C1AD5FD44EE7084064C0F5AAB2CCEB53A34C9345EAAA326A618",
+    strip_prefix = "v2.10.0-rc0",
     urls = [
-        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.9.0.tar.gz",
+        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.10.0-rc0.tar.gz",
     ],
 )
 
