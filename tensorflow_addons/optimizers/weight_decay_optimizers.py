@@ -26,7 +26,7 @@ from typing import Union, Callable, Type, Optional, List
 class DecoupledWeightDecayExtension:
     """This class allows to extend optimizers with decoupled weight decay.
 
-    It implements the decoupled weight decay described by Loshchilov & Hutter
+    It implements the decoupled weight decay described by [Loshchilov & Hutter]
     (https://arxiv.org/pdf/1711.05101.pdf), in which the weight decay is
     decoupled from the optimization steps w.r.t. to the loss function.
     For SGD variants, this simplifies hyperparameter search since it decouples
@@ -343,7 +343,7 @@ def extend_with_decoupled_weight_decay(
         This class computes the update step of `base_optimizer` and
         additionally decays the variable with the weight decay being
         decoupled from the optimization steps w.r.t. to the loss
-        function, as described by Loshchilov & Hutter
+        function, as described by [Loshchilov & Hutter]
         (https://arxiv.org/pdf/1711.05101.pdf). For SGD variants, this
         simplifies hyperparameter search since it decouples the settings
         of weight decay and learning rate. For adaptive gradient
@@ -367,9 +367,8 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     """Optimizer that implements the Momentum algorithm with weight_decay.
 
     This is an implementation of the SGDW optimizer described in "Decoupled
-    Weight Decay Regularization" by Loshchilov & Hutter
-    (https://arxiv.org/abs/1711.05101)
-    ([pdf])(https://arxiv.org/pdf/1711.05101.pdf).
+    Weight Decay Regularization" by [Loshchilov & Hutter]
+    (https://arxiv.org/pdf/1711.05101.pdf).
     It computes the update step of `tf.keras.optimizers.SGD` and additionally
     decays the variable. Note that this is different from adding
     L2 regularization on the variables to the loss. Decoupling the weight decay
@@ -447,9 +446,8 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     """Optimizer that implements the Adam algorithm with weight decay.
 
     This is an implementation of the AdamW optimizer described in "Decoupled
-    Weight Decay Regularization" by Loshch ilov & Hutter
-    (https://arxiv.org/abs/1711.05101)
-    ([pdf])(https://arxiv.org/pdf/1711.05101.pdf).
+    Weight Decay Regularization" by [Loshchilov & Hutter]
+    (https://arxiv.org/pdf/1711.05101.pdf).
 
     It computes the update step of `tf.keras.optimizers.Adam` and additionally
     decays the variable. Note that this is different from adding L2
