@@ -22,10 +22,11 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from packaging.version import Version
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
-if tf.__version__[:3] > "2.8":
+if Version(tf.__version__) > Version("2.8"):
     from keras.testing_infra.test_utils import layer_test  # noqa: F401
 else:
     from keras.testing_utils import layer_test  # noqa: F401
