@@ -301,7 +301,6 @@ def test_groupnorm_2d_different_groups():
         )
 
 
-@pytest.mark.xfail
 def test_groupnorm_batch_size_independence():
     # Dimensions
     b = 4
