@@ -301,6 +301,35 @@ def test_groupnorm_2d_different_groups():
         )
 
 
+@pytest.mark.xfail
+def test_groupnorm_batch_size_independence():
+    # Dimensions
+    b = 4
+    h = 60
+    w = 40
+    g = 3
+    c = g * 8
+
+    input = tf.random.stateless_uniform([b, h, w, c], seed=[1, 2])
+
+    gn = GroupNormalization(groups=g, axis=-1)
+    gn.build([None, None, None, c])
+
+    # Apply group normalization to the whole batch (4 slices) at once
+    output_b4 = gn.call(input)
+
+    # Apply group normalization to each slice individually
+    output_0 = gn.call(input[0:1])
+    output_1 = gn.call(input[1:2])
+    output_2 = gn.call(input[2:3])
+    output_3 = gn.call(input[3:4])
+    output_b1 = tf.concat([output_0, output_1, output_2, output_3], axis=0)
+
+    # Expect the results to be close
+    tolerance = 3 * np.finfo(np.float32).eps
+    np.testing.assert_allclose(output_b1, output_b4, rtol=0, atol=tolerance)
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_groupnorm_convnet():
     np.random.seed(0x2020)
