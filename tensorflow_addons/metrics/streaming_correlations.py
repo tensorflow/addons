@@ -102,6 +102,7 @@ class CorrelationBase(Metric):
                 self.actual_cuts,
                 tf.cast(tf.reshape(y_true, [-1]), self.actual_cuts.dtype),
                 side="right",
+                out_type=tf.int64,
             )
             - 1
         )
@@ -110,6 +111,7 @@ class CorrelationBase(Metric):
                 self.preds_cuts,
                 tf.cast(tf.reshape(y_pred, [-1]), self.preds_cuts.dtype),
                 side="right",
+                out_type=tf.int64,
             )
             - 1
         )
