@@ -102,6 +102,7 @@ class CorrelationBase(Metric):
                 self.actual_cuts,
                 tf.cast(tf.reshape(y_true, [-1]), self.actual_cuts.dtype),
                 side="right",
+                out_type=tf.int64,
             )
             - 1
         )
@@ -110,46 +111,24 @@ class CorrelationBase(Metric):
                 self.preds_cuts,
                 tf.cast(tf.reshape(y_pred, [-1]), self.preds_cuts.dtype),
                 side="right",
+                out_type=tf.int64,
             )
             - 1
         )
 
-        m = tf.sparse.from_dense(self.m)
-        nrow = tf.sparse.from_dense(self.nrow)
-        ncol = tf.sparse.from_dense(self.ncol)
+        nrow = tf.tensor_scatter_nd_add(
+            self.nrow, tf.expand_dims(i, axis=-1), tf.ones_like(i)
+        )
+        ncol = tf.tensor_scatter_nd_add(
+            self.ncol, tf.expand_dims(j, axis=-1), tf.ones_like(j)
+        )
+        ij = tf.stack([i, j], axis=1)
+        m = tf.tensor_scatter_nd_add(self.m, ij, tf.ones_like(i))
 
-        k = 0
-        while k < tf.shape(i)[0]:
-            m = tf.sparse.add(
-                m,
-                tf.SparseTensor(
-                    [[i[k], j[k]]],
-                    tf.cast([1], dtype=m.dtype),
-                    self.m.shape,
-                ),
-            )
-            nrow = tf.sparse.add(
-                nrow,
-                tf.SparseTensor(
-                    [[i[k]]],
-                    tf.cast([1], dtype=nrow.dtype),
-                    self.nrow.shape,
-                ),
-            )
-            ncol = tf.sparse.add(
-                ncol,
-                tf.SparseTensor(
-                    [[j[k]]],
-                    tf.cast([1], dtype=ncol.dtype),
-                    self.ncol.shape,
-                ),
-            )
-            k += 1
-
-        self.n.assign_add(tf.cast(k, tf.int64))
-        self.m.assign(tf.sparse.to_dense(m))
-        self.nrow.assign(tf.sparse.to_dense(nrow))
-        self.ncol.assign(tf.sparse.to_dense(ncol))
+        self.n.assign_add(tf.shape(i, out_type=tf.int64)[0])
+        self.m.assign(m)
+        self.nrow.assign(nrow)
+        self.ncol.assign(ncol)
 
     @abstractmethod
     def result(self):
