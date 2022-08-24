@@ -112,8 +112,8 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 #### C++ Custom Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
-| tfa-nightly | 2.9 | GCC 7.3.1 | 8.1 | 11.2 |
-| tensorflow-addons-0.17.1 | 2.9  | GCC 7.3.1 | 8.1 | 11.2 |
+| tfa-nightly | 2.9 | GCC 9.3.1 | 8.1 | 11.2 |
+| tensorflow-addons-0.17.1 | 2.9  | GCC 9.3.1 | 8.1 | 11.2 |
 | tensorflow-addons-0.16.1 | 2.8  | GCC 7.3.1 | 8.1 | 11.2 |
 | tensorflow-addons-0.15.0 | 2.7  | GCC 7.3.1 | 8.1 | 11.2 |
 | tensorflow-addons-0.14.0 | 2.6  | GCC 7.3.1 | 8.1 | 11.2 |
