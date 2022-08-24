@@ -113,10 +113,10 @@ class TestStreamingCorrelations:
             model(x)[:, 0], y[:, 0]
         )[0]
 
-        history = model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+        history = model.fit(x, y, epochs=2, verbose=0, batch_size=32)
 
         # the training should increase the correlation metric
-        assert np.all(history.history[metric.name] > initial_correlation)
+        assert np.all(history.history[metric.name][1:] > initial_correlation)
 
         preds = model(x)
         metric.reset_state()
