@@ -113,10 +113,13 @@ class TestStreamingCorrelations:
             model(x)[:, 0], y[:, 0]
         )[0]
 
-        history = model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+        history = model.fit(
+            x, y, epochs=1, verbose=0, batch_size=32, validation_data=(x, y)
+        )
 
         # the training should increase the correlation metric
-        assert np.all(history.history[metric.name] > initial_correlation)
+        metric_history = history.history["val_" + metric.name]
+        assert np.all(metric_history > initial_correlation)
 
         preds = model(x)
         metric.reset_state()
@@ -125,6 +128,7 @@ class TestStreamingCorrelations:
         tf.function(metric.update_state)(y, preds)
         metric_value = tf.function(metric.result)()
         scipy_value = self.scipy_corr[correlation_type](preds[:, 0], y[:, 0])[0]
+        np.testing.assert_almost_equal(metric_value, metric_history[-1])
         np.testing.assert_almost_equal(metric_value, scipy_value, decimal=2)
 
     @pytest.mark.parametrize("correlation_type", testing_types)
