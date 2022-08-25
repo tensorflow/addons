@@ -43,7 +43,6 @@ jobs:
         os: ['macos-10.15', 'windows-2019', 'ubuntu-18.04']
         py-version: ['3.7', '3.8', '3.9', '3.10']
         tf-version: ['2.8.2', '2.9.1', '2.10.0rc2']
-        custom-op-testable-version: ['2.10.0rc2']
         cpu: ['x86']
         include:
           - os: 'macos-11'
@@ -67,7 +66,7 @@ jobs:
           script: |
             const commit_details = await github.git.getCommit({owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha});
             return commit_details.data.author.date
-      - if: matrix.tf-version != matrix.custom-op-testable-version
+      - if: matrix.tf-version != '2.10.0rc2'
         shell: bash
         run: echo "SKIP_CUSTOM_OP_TESTS=--skip-custom-ops" >> $GITHUB_ENV
       - if: github.event_name == 'push'
