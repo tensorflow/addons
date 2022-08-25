@@ -51,7 +51,7 @@ def custom_op_library(
             "/DNOGDI",
             "/UTF_COMPILE_LIBRARY",
         ],
-        "//conditions:default": ["-pthread", "-std=c++17", D_GLIBCXX_USE_CXX11_ABI],
+        "//conditions:default": ["-pthread", "-std=c++14", D_GLIBCXX_USE_CXX11_ABI],
     })
 
     native.cc_binary(
