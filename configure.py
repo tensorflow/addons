@@ -23,6 +23,8 @@ import logging
 
 import tensorflow as tf
 
+from packaging.version import Version
+
 _TFA_BAZELRC = ".bazelrc"
 
 
@@ -79,6 +81,13 @@ def get_tf_header_dir():
     if is_windows():
         tf_header_dir = tf_header_dir.replace("\\", "/")
     return tf_header_dir
+
+
+def get_cpp_version():
+    cpp_version = "c++14"
+    if Version(tf.__version__) > Version("2.9"):
+        cpp_version = "c++17"
+    return cpp_version
 
 
 def get_tf_shared_lib_dir():
@@ -143,14 +152,14 @@ def create_build_configuration():
         write("build:windows --copt=/experimental:preprocessor")
         write("build:windows --host_copt=/experimental:preprocessor")
         write("build:windows --copt=/arch=AVX")
-        write("build:windows --cxxopt=/std:c++17")
-        write("build:windows --host_cxxopt=/std:c++17")
+        write("build:windows --cxxopt=/std:" + get_cpp_version())
+        write("build:windows --host_cxxopt=/std:" + get_cpp_version())
 
     if is_macos() or is_linux():
         if not is_linux_ppc64le() and not is_linux_arm() and not is_linux_aarch64():
             write("build --copt=-mavx")
-        write("build --cxxopt=-std=c++17")
-        write("build --host_cxxopt=-std=c++17")
+        write("build --cxxopt=-std=" + get_cpp_version())
+        write("build --host_cxxopt=-std=" + get_cpp_version())
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
