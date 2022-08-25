@@ -35,4 +35,4 @@ if ! [ -x "$(command -v nvidia-smi)" ]; then
 fi
 
 bazel clean
-python -m pytest -v --functions-durations=20 --modules-durations=5 $SKIP_CUSTOM_OP_TESTS_FLAG $EXTRA_ARGS $ ./tensorflow_addons
+python -m pytest -v --functions-durations=20 --modules-durations=5 $SKIP_CUSTOM_OP_TESTS_FLAG $EXTRA_ARGS ./tensorflow_addons
