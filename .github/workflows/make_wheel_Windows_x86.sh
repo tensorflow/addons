@@ -9,7 +9,7 @@ python --version
 python -m pip install --default-timeout=1000 wheel setuptools tensorflow==$TF_VERSION
 
 # Test
-bash ./tools/testing/build_and_run_tests.sh
+bash ./tools/testing/build_and_run_tests.sh $SKIP_CUSTOM_OP_TESTS
 
 # Clean
 bazel clean

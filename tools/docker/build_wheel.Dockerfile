@@ -29,11 +29,12 @@ CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
+ARG SKIP_CUSTOM_OP_TESTS
 
 RUN python configure.py
 
 # Test Before Building
-RUN bash tools/testing/build_and_run_tests.sh
+RUN bash tools/testing/build_and_run_tests.sh $SKIP_CUSTOM_OP_TESTS
 
 # Build
 RUN bazel build \
