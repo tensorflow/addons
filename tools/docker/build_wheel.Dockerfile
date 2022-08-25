@@ -63,7 +63,7 @@ RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 COPY --from=make_wheel /addons/wheelhouse/ /addons/wheelhouse/
 RUN pip install /addons/wheelhouse/*.whl
 
-RUN if [[ -z "$SKIP_CUSTOM_OP_TESTS" ]] ; python -c "import tensorflow_addons as tfa; print(tfa.register_all())" ; else python -c "import tensorflow_addons as tfa; print(tfa.register_all(custom_kernels=False))" ; fi
+RUN if [[ -z "$SKIP_CUSTOM_OP_TESTS" ]] ; then python -c "import tensorflow_addons as tfa; print(tfa.register_all())" ; else python -c "import tensorflow_addons as tfa; print(tfa.register_all(custom_kernels=False))" ; fi
 
 # -------------------------------------------------------------------
 FROM scratch as output
