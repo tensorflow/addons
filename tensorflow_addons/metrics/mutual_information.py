@@ -30,8 +30,8 @@ class MutualInformation(StreamingBuffer):
     continuous or a mix of both.
 
     This implementation has a memory complexity of
-    O(`buffer_size`x`compute_batch_size`), a time complexity of
-    O(`buffer_size`^2), and can be adjusted with the corresponding parameters.
+    O(`buffer_size`x`compute_batch_size`) and a time complexity of
+    O(`buffer_size`^2). They can be adjusted with the corresponding parameters.
     Smaller value of `buffer_size` increases the bias of the estimator while
     small value of `compute_batch_size` increases the computation time.
 
