@@ -58,7 +58,9 @@ class StreamingBuffer(Metric):
         self._y_true_buffer = self.add_weight(
             "y_true_buffer", (self.max_buffer_size,), dtype=tf.float32
         )
-        self._buffer_size = self.add_weight("buffer_size", (), dtype=tf.int32)
+        self._buffer_size = self.add_weight(
+            "buffer_size", (), initializer="zeros", dtype=tf.int32
+        )
 
     @property
     def y_pred_buffer(self):
@@ -127,7 +129,9 @@ class StreamingBuffer(Metric):
         pass
 
     def result(self):
-        self._update_state(self.y_true_buffer, self.y_pred_buffer)
+        if self._buffer_size > 0:
+            self._update_state(self.y_true_buffer, self.y_pred_buffer)
+            self._buffer_size.assign(0)
         return self._result()
 
     def get_config(self):

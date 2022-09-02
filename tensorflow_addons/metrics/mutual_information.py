@@ -56,7 +56,7 @@ class MutualInformation(StreamingBuffer):
     >>> metric = tfa.metrics.MutualInformation(n_neighbors=1)
     >>> metric.update_state([1, 0, 1, 0, 1], [0, 1, 0, 1, 0])
     >>> metric.result().numpy()
-    1.029490184601355
+    0.8866535773356332
 
     """
 
@@ -72,8 +72,10 @@ class MutualInformation(StreamingBuffer):
         """Creates a `MutualInformation` instance."""
         self.n_neighbors = n_neighbors
         self.compute_batch_size = compute_batch_size
-        self.epsilon = self.add_weight("epsilon", (), dtype=tf.float64)
-        self.count = self.add_weight("count", (), dtype=tf.int64)
+        self.epsilon = self.add_weight(
+            "epsilon", (), initializer="zeros", dtype=tf.float64
+        )
+        self.count = self.add_weight("count", (), initializer="zeros", dtype=tf.int64)
 
     @tf.function
     def _compute_epsilon(self, x, y, n_neighbors):

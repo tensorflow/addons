@@ -64,10 +64,12 @@ def test_buffer(buffer_size, dataset_size, batch_size):
     for batch in dataset:
         metric.update_state(batch["x"], batch["y"])
 
-    result = metric.result()
-    assert result[0] == result[1]
-    assert result[0] == dataset_size
-    assert result[2] == np.ceil(dataset_size / buffer_size)
+    for _ in range(2):
+        # multiple calls to `results` must be idempotent
+        result = metric.result()
+        assert result[0] == result[1]
+        assert result[0] == dataset_size
+        assert result[2] == np.ceil(dataset_size / buffer_size)
 
 
 def test_serialization():

@@ -98,6 +98,7 @@ def test_no_private_tf_api():
         "tensorflow_addons/utils/test_utils.py",
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/utils/types.py",
+        "tensorflow_addons/metrics/_streaming_buffer.py",
     ]
 
     for file_path, line_idx, line in get_lines_of_source_code(allowlist):
