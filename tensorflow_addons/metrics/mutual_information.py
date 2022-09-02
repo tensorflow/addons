@@ -56,7 +56,7 @@ class MutualInformation(StreamingBuffer):
     >>> metric = tfa.metrics.MutualInformation(n_neighbors=1)
     >>> metric.update_state([1, 0, 1, 0, 1], [0, 1, 0, 1, 0])
     >>> metric.result().numpy()
-    0.8866535773356332
+    0.88665357733
 
     """
 
