@@ -29,11 +29,11 @@ class MutualInformation(StreamingBuffer):
     The estimator works on any kind of distribution: discrete,
     continuous or a mix of both.
 
-    This implementation reduces the memory complexity from O(NxN) to
-    O(`buffer_size`x`compute_batch_size`) and the time complexity from
-    O(NxN) to O(`buffer_size`^2). The trade-off is on the bias that degrades
-    to the one induced from using a dataset of size `buffer_size` instead of N.
-    The variance remains same.
+    This implementation has a memory complexity of
+    O(`buffer_size`x`compute_batch_size`), a time complexity of
+    O(`buffer_size`^2), and can be adjusted with the corresponding parameters.
+    Smaller value of `buffer_size` increases the bias of the estimator while
+    small value of `compute_batch_size` increases the computation time.
 
     Args:
         n_neighbors: The number of nearest neighbors, larger value reduces
@@ -75,6 +75,7 @@ class MutualInformation(StreamingBuffer):
         self.epsilon = self.add_weight("epsilon", (), dtype=tf.float64)
         self.count = self.add_weight("count", (), dtype=tf.int64)
 
+    @tf.function
     def _compute_epsilon(self, x, y, n_neighbors):
         size = tf.shape(x)[0]
         processed_data = 0
@@ -119,6 +120,7 @@ class MutualInformation(StreamingBuffer):
 
         return sum_epsilon + fsize * tf.math.log(fsize)
 
+    @tf.function
     def _update_state(self, y_true_buffer, y_pred_buffer):
         epsilon = self._compute_epsilon(y_true_buffer, y_pred_buffer, self.n_neighbors)
         self.epsilon.assign_add(epsilon)
