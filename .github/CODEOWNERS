@@ -135,6 +135,10 @@
 /tensorflow_addons/metrics/tests/geometric_mean_test.py @marload
 /tensorflow_addons/metrics/streaming_correlations.py @sorensenjs @nicolaspi
 /tensorflow_addons/metrics/tests/streaming_correlations_test.py @sorensenjs @nicolaspi
+/tensorflow_addons/metrics/_streaming_buffer.py @nicolaspi
+/tensorflow_addons/metrics/tests/streaming_buffer_test.py @nicolaspi
+/tensorflow_addons/metrics/mutual_information.py @nicolaspi
+/tensorflow_addons/metrics/tests/mutual_information_test.py @nicolaspi
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu

@@ -21,6 +21,8 @@ from tensorflow_addons.metrics.hamming import (
     hamming_distance,
     hamming_loss_fn,
 )
+from tensorflow_addons.metrics.mutual_information import \
+  MutualInformation
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 from tensorflow_addons.metrics.matthews_correlation_coefficient import (
     MatthewsCorrelationCoefficient,
