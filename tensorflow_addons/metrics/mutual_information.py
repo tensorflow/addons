@@ -36,9 +36,15 @@ class MutualInformation(StreamingBuffer):
     The variance remains same.
 
     Args:
-        n_neighbors: The number of nearest neighbors, larger value reduces variance but may introduce a bias.
-        buffer_size: Size of the batches on which the MI will be estimated, larger value reduces the bias, but increases the compute complexity.
-        compute_batch_size: Size of the batches used for computing the distances, larger value increases the memory usage.
+        n_neighbors: The number of nearest neighbors, larger value reduces
+        variance but may introduce a bias.
+
+        buffer_size: Size of the batches on which the MI will be estimated,
+        larger value reduces the bias, but increases the compute complexity.
+
+        compute_batch_size: Size of the batches used for computing the
+        distances, larger value increases the memory usage.
+
         name: (Optional) String name of the metric instance.
         dtype: (Optional) Data type of the metric result.
 

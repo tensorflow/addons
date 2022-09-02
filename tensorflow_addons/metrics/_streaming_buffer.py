@@ -25,17 +25,17 @@ from tensorflow_addons.utils.types import AcceptableDTypes
 
 
 class StreamingBuffer(Metric):
-    """`StreamingBuffer` is a base class to be used for metrics that have a too
-    large algorithmic complexity that doesn't allow to compute on the full
-    dataset at once. Instead, the metric computes statistics on chunk of data
-    that can be larger than the batch size. The data is buffered and delivered
-    to the metric for processing once reaching `buffer_size` size.
+    """`StreamingBuffer` is a base class to be used for metrics that have an
+    algorithmic complexity that is too large to compute on the full dataset
+    at once and that cannot be computed iteratively (e.g. mutual information).
+    The class manages a buffer that produces chunks of data that are
+    delivered to a child class implementing the metric computation logics.
 
     Child classes need to implement two abstract methods:
 
       - `_update_state(self, y_true_buffer, y_pred_buffer)` that updates the
-      state of the metric given a batch of `y_true` and `y_pred` values with
-      size `buffer_size`.
+      state of the metric given a batch of `y_true_buffer` and `y_pred_buffer`
+      values with size `buffer_size`.
 
       - `_result(self)` that returns the metric's value.
     """
@@ -70,9 +70,16 @@ class StreamingBuffer(Metric):
 
     @abstractmethod
     def _update_state(self, y_true_buffer, y_pred_buffer):
+        """Must be implemented by child class.
+        Updates the state of the metric given a batch of `y_true_buffer`
+        and `y_pred_buffer` values with size `self.buffer_size`."""
         pass
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        """Fills the buffer with flattened values of `y_true` and `y_pred`,
+        and executes `_update_state(y_true_buffer, y_pred_buffer)` everytime
+        it reaches maximum capacity.
+        """
         flat_y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
         flat_y_pred = tf.cast(tf.reshape(y_pred, [-1]), tf.float32)
 
@@ -115,6 +122,8 @@ class StreamingBuffer(Metric):
 
     @abstractmethod
     def _result(self):
+        """Must be implemented by child class.
+        Returns the metric's value."""
         pass
 
     def result(self):

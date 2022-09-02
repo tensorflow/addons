@@ -22,7 +22,7 @@ from tensorflow_addons.testing.serialization import check_metric_serialization
 
 class TestMutualInformation:
     def generate_mixed_data(self, n, correlation=0.9, beta=0.9):
-        """Generate distribution from experiment I
+        """Generate samples from experiment I distribution
         described in https://arxiv.org/pdf/1709.06212v3.pdf
         """
         np.random.seed(0)
@@ -49,7 +49,7 @@ class TestMutualInformation:
         return data, gt
 
     def generate_discrete_continuous_data(self, n=1024, m=5):
-        """Generate distribution from experiment II
+        """Generate samples from experiment II distribution
         described in https://arxiv.org/pdf/1709.06212v3.pdf
         """
         np.random.seed(0)
