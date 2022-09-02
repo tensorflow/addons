@@ -25,99 +25,115 @@ from tensorflow_addons.utils.types import AcceptableDTypes
 
 
 class StreamingBuffer(Metric):
-  """`StreamingBuffer` is a base class to be used for metrics that have a too
-  large algorithmic complexity that doesn't allow to compute on the full
-  dataset at once. Instead, the metric computes statistics on chunk of data
-  that can be larger than the batch size. The data is buffered and delivered
-  to the metric for processing once reaching `buffer_size` size.
+    """`StreamingBuffer` is a base class to be used for metrics that have a too
+    large algorithmic complexity that doesn't allow to compute on the full
+    dataset at once. Instead, the metric computes statistics on chunk of data
+    that can be larger than the batch size. The data is buffered and delivered
+    to the metric for processing once reaching `buffer_size` size.
 
-  Child classes need to implement two abstract methods:
+    Child classes need to implement two abstract methods:
 
-    - `_update_state(self, y_true_buffer, y_pred_buffer)` that updates the
-    state of the metric given a batch of `y_true` and `y_pred` values with
-    size `buffer_size`.
+      - `_update_state(self, y_true_buffer, y_pred_buffer)` that updates the
+      state of the metric given a batch of `y_true` and `y_pred` values with
+      size `buffer_size`.
 
-    - `_result(self)` that returns the metric's value.
-  """
-  @typechecked
-  def __init__(self, buffer_size: int = 1024, name: Optional[str] = None,
-               dtype: AcceptableDTypes = None):
-    """Creates a `StreamingBuffer` instance."""
-    super().__init__(name=name, dtype=dtype)
+      - `_result(self)` that returns the metric's value.
+    """
 
-    self.max_buffer_size = buffer_size
+    @typechecked
+    def __init__(
+        self,
+        buffer_size: int = 1024,
+        name: Optional[str] = None,
+        dtype: AcceptableDTypes = None,
+    ):
+        """Creates a `StreamingBuffer` instance."""
+        super().__init__(name=name, dtype=dtype)
 
-    self._y_pred_buffer = self.add_weight("y_pred_buffer",
-                                          (self.max_buffer_size,),
-                                          dtype=tf.float32)
-    self._y_true_buffer = self.add_weight("y_true_buffer",
-                                          (self.max_buffer_size,),
-                                          dtype=tf.float32)
-    self._buffer_size = self.add_weight("buffer_size", (), dtype=tf.int32)
+        self.max_buffer_size = buffer_size
 
-  @property
-  def y_pred_buffer(self):
-    return self._y_pred_buffer[: self._buffer_size]
+        self._y_pred_buffer = self.add_weight(
+            "y_pred_buffer", (self.max_buffer_size,), dtype=tf.float32
+        )
+        self._y_true_buffer = self.add_weight(
+            "y_true_buffer", (self.max_buffer_size,), dtype=tf.float32
+        )
+        self._buffer_size = self.add_weight("buffer_size", (), dtype=tf.int32)
 
-  @property
-  def y_true_buffer(self):
-    return self._y_true_buffer[: self._buffer_size]
+    @property
+    def y_pred_buffer(self):
+        return self._y_pred_buffer[: self._buffer_size]
 
-  @abstractmethod
-  def _update_state(self, y_true_buffer, y_pred_buffer):
-    pass
+    @property
+    def y_true_buffer(self):
+        return self._y_true_buffer[: self._buffer_size]
 
-  def update_state(self, y_true, y_pred, sample_weight=None):
-    flat_y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
-    flat_y_pred = tf.cast(tf.reshape(y_pred, [-1]), tf.float32)
+    @abstractmethod
+    def _update_state(self, y_true_buffer, y_pred_buffer):
+        pass
 
-    def insert_data_in_buffer(y_true_data, y_pred_data):
-      write_size = tf.minimum(self.max_buffer_size - self._buffer_size, tf.size(y_true_data))
-      indices = tf.range(write_size) + self._buffer_size
-      labels_buffer = tf.tensor_scatter_nd_update(self._y_true_buffer,
-                                                  tf.expand_dims(indices,
-                                                                  axis=-1),
-                                                   y_true_data[:write_size])
-      preds_buffer = tf.tensor_scatter_nd_update(self._y_pred_buffer,
-                                                 tf.expand_dims(indices,
-                                                                 axis=-1),
-                                                  y_pred_data[:write_size])
-      self._y_true_buffer.assign(labels_buffer)
-      self._y_pred_buffer.assign(preds_buffer)
-      self._buffer_size.assign_add(write_size)
-      return y_true_data[write_size:], y_pred_data[write_size:]
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        flat_y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
+        flat_y_pred = tf.cast(tf.reshape(y_pred, [-1]), tf.float32)
 
-    labels_remainder, preds_remainder = insert_data_in_buffer(flat_y_true, flat_y_pred)
+        def insert_data_in_buffer(y_true_data, y_pred_data):
+            write_size = tf.minimum(
+                self.max_buffer_size - self._buffer_size, tf.size(y_true_data)
+            )
+            indices = tf.range(write_size) + self._buffer_size
+            labels_buffer = tf.tensor_scatter_nd_update(
+                self._y_true_buffer,
+                tf.expand_dims(indices, axis=-1),
+                y_true_data[:write_size],
+            )
+            preds_buffer = tf.tensor_scatter_nd_update(
+                self._y_pred_buffer,
+                tf.expand_dims(indices, axis=-1),
+                y_pred_data[:write_size],
+            )
+            self._y_true_buffer.assign(labels_buffer)
+            self._y_pred_buffer.assign(preds_buffer)
+            self._buffer_size.assign_add(write_size)
+            return y_true_data[write_size:], y_pred_data[write_size:]
 
-    while tf.size(labels_remainder) > 0:
-      set_loop_options(shape_invariants=[(labels_remainder, tf.TensorShape([None])),
-                                         (preds_remainder, tf.TensorShape([None]))])
-      self._update_state(self.y_true_buffer, self.y_pred_buffer)
-      self._buffer_size.assign(0)
-      labels_remainder, preds_remainder = insert_data_in_buffer(
-        labels_remainder, preds_remainder)
+        labels_remainder, preds_remainder = insert_data_in_buffer(
+            flat_y_true, flat_y_pred
+        )
 
-  @abstractmethod
-  def _result(self):
-    pass
+        while tf.size(labels_remainder) > 0:
+            set_loop_options(
+                shape_invariants=[
+                    (labels_remainder, tf.TensorShape([None])),
+                    (preds_remainder, tf.TensorShape([None])),
+                ]
+            )
+            self._update_state(self.y_true_buffer, self.y_pred_buffer)
+            self._buffer_size.assign(0)
+            labels_remainder, preds_remainder = insert_data_in_buffer(
+                labels_remainder, preds_remainder
+            )
 
-  def result(self):
-    self._update_state(self.y_true_buffer, self.y_pred_buffer)
-    return self._result()
+    @abstractmethod
+    def _result(self):
+        pass
 
-  def get_config(self):
-    """Returns the serializable config of the metric."""
+    def result(self):
+        self._update_state(self.y_true_buffer, self.y_pred_buffer)
+        return self._result()
 
-    config = {"buffer_size": self.max_buffer_size}
-    base_config = super().get_config()
-    return {**base_config, **config}
+    def get_config(self):
+        """Returns the serializable config of the metric."""
 
-  def reset_state(self):
-    """Resets all of the metric state variables."""
-    self._buffer_size.assign(0)
+        config = {"buffer_size": self.max_buffer_size}
+        base_config = super().get_config()
+        return {**base_config, **config}
 
-  def reset_states(self):
-    # Backwards compatibility alias of `reset_state`. New classes should
-    # only implement `reset_state`.
-    # Required in Tensorflow < 2.5.0
-    return self.reset_state()
+    def reset_state(self):
+        """Resets all of the metric state variables."""
+        self._buffer_size.assign(0)
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()

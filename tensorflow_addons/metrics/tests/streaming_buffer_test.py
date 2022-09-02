@@ -23,24 +23,25 @@ from tensorflow_addons.testing.serialization import check_metric_serialization
 
 
 class Counter(StreamingBuffer):
-  def __init__(self, buffer_size: int = 1024, name=None, dtype=None):
-    super().__init__(buffer_size, name, dtype)
-    self.pred_count = self.add_weight('pred_count', (), dtype=tf.int32)
-    self.true_count = self.add_weight('true_count', (), dtype=tf.int32)
-    self.update_count = self.add_weight('update_count', (), dtype=tf.int32)
+    def __init__(self, buffer_size: int = 1024, name=None, dtype=None):
+        super().__init__(buffer_size, name, dtype)
+        self.pred_count = self.add_weight("pred_count", (), dtype=tf.int32)
+        self.true_count = self.add_weight("true_count", (), dtype=tf.int32)
+        self.update_count = self.add_weight("update_count", (), dtype=tf.int32)
 
-  def _update_state(self, y_true_buffer, y_pred_buffer):
-    self.true_count.assign_add(tf.reduce_sum(tf.cast(y_true_buffer, tf.int32)))
-    self.pred_count.assign_add(tf.reduce_sum(tf.cast(y_pred_buffer, tf.int32)))
-    self.update_count.assign_add(1)
+    def _update_state(self, y_true_buffer, y_pred_buffer):
+        self.true_count.assign_add(tf.reduce_sum(tf.cast(y_true_buffer, tf.int32)))
+        self.pred_count.assign_add(tf.reduce_sum(tf.cast(y_pred_buffer, tf.int32)))
+        self.update_count.assign_add(1)
 
-  def _result(self):
-    return tf.concat([self.true_count, self.pred_count, self.update_count], axis=0)
+    def _result(self):
+        return tf.concat([self.true_count, self.pred_count, self.update_count], axis=0)
 
-  def reset_state(self):
-    self.true_count.assign(0)
-    self.pred_count.assign(0)
-    self.update_count.assign(0)
+    def reset_state(self):
+        self.true_count.assign(0)
+        self.pred_count.assign(0)
+        self.update_count.assign(0)
+
 
 @pytest.mark.parametrize(
     "buffer_size, dataset_size, batch_size",
@@ -57,14 +58,17 @@ def test_buffer(buffer_size, dataset_size, batch_size):
     metric = Counter(buffer_size=buffer_size)
     data = np.ones((dataset_size, 2))
     x, y = data[:, 0], data[:, 1]
-    dataset = tf.data.Dataset.from_tensor_slices({'x': x, 'y': y}).batch(batch_size, drop_remainder=False)
+    dataset = tf.data.Dataset.from_tensor_slices({"x": x, "y": y}).batch(
+        batch_size, drop_remainder=False
+    )
     for batch in dataset:
-      metric.update_state(batch['x'], batch['y'])
+        metric.update_state(batch["x"], batch["y"])
 
     result = metric.result()
     assert result[0] == result[1]
     assert result[0] == dataset_size
     assert result[2] == np.ceil(dataset_size / buffer_size)
+
 
 def test_serialization():
     labels = np.array([4, 4, 3, 3, 2, 2, 1, 1], dtype=np.int32)
