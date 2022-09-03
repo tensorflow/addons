@@ -61,7 +61,7 @@ if is_gpu_available():
     first_gpu = tf.config.list_physical_devices("GPU")[0]
     virtual_gpus = [
         tf.config.LogicalDeviceConfiguration(
-            memory_limit=100, experimental_device_ordinal=0
+            memory_limit=100, experimental_device_ordinal=x
         )
         for x in range(2)
     ]
