@@ -193,6 +193,7 @@ def device(request):
             requested_device += ":0"
         else:
             raise KeyError("Invalid device: " + requested_device)
+        print("Requested device =>", requested_device)            
         with tf.device(requested_device):
             yield requested_device
 
