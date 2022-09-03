@@ -60,7 +60,10 @@ if is_gpu_available():
     # in distributed strategies.
     first_gpu = tf.config.list_physical_devices("GPU")[0]
     virtual_gpus = [
-        tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
+        tf.config.LogicalDeviceConfiguration(
+            memory_limit=100, experimental_device_ordinal=x
+        )
+        for x in range(2)
     ]
 
     tf.config.set_logical_device_configuration(first_gpu, virtual_gpus)
