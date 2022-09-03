@@ -67,6 +67,9 @@ if is_gpu_available():
     ]
 
     tf.config.set_logical_device_configuration(first_gpu, virtual_gpus)
+    configs = tf.config.get_logical_device_configuration(first_gpu)
+    assert len(configs) == 2
+    print(configs)
 
 
 def finalizer():
