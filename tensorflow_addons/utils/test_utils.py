@@ -59,11 +59,9 @@ if is_gpu_available():
     # Each worker has two virtual devices.
     # When running on gpu, only the first device is used. The other one is used
     # in distributed strategies.
-    
-    # Limit the visibility to the first GPU. 
-    # We could remove this after clarifing if we could or need to use all the GPU available in the CI runner
-    tf.config.set_visible_devices(physical_devices[0], 'GPU')
-    for physical_gpu in tf.config.list_physical_devices("GPU"):
+    physical_gpus = tf.config.list_physical_devices("GPU")
+    tf.config.set_visible_devices(physical_gpus[0], 'GPU')
+    for physical_gpu in physical_gpus:
         virtual_gpus = [
             tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
         ]
