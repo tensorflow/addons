@@ -48,35 +48,23 @@ def is_gpu_available():
 tf.config.threading.set_intra_op_parallelism_threads(1)
 tf.config.threading.set_inter_op_parallelism_threads(1)
 
-# if is_gpu_available():
-#     # We use only the first gpu at the moment. That's enough for most use cases.
-#     # split the first gpu into chunks of 100MB per virtual device.
-#     # It's the user's job to limit the amount of pytest workers depending
-#     # on the available memory.
-#     # In practice, each process takes a bit more memory.
-#     # There must be some kind of overhead but it's not very big (~200MB more)
-#     # Each worker has two virtual devices.
-#     # When running on gpu, only the first device is used. The other one is used
-#     # in distributed strategies.
-#     gpus = tf.config.list_physical_devices("GPU")
-#     assert tf.config.get_logical_device_configuration(gpus[0]) is None
-#     virtual_gpus = [
-#         tf.config.LogicalDeviceConfiguration(
-#             memory_limit=100, experimental_device_ordinal=x
-#         )
-#         for x in range(2)
-#     ]
-#     try:
-#         tf.config.set_logical_device_configuration(gpus[0], virtual_gpus)
-#         logical_gpus = tf.config.list_logical_devices("GPU")
-#         print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-#     except RuntimeError as err:
-#         # Virtual devices must be set before GPUs have been initialized
-#         print(err)
-#
-#     configs = tf.config.get_logical_device_configuration(gpus[0])
-#     assert len(configs) == 2
-#     print(configs)
+if is_gpu_available():
+    # We split each of the physical GPUs to 2 logical GPUs, and use only the
+    # first gpu at the moment. That's enough for most use cases.
+    # split the first gpu into chunks of 100MB per virtual device.
+    # It's the user's job to limit the amount of pytest workers depending
+    # on the available memory.
+    # In practice, each process takes a bit more memory.
+    # There must be some kind of overhead but it's not very big (~200MB more)
+    # Each worker has two virtual devices.
+    # When running on gpu, only the first device is used. The other one is used
+    # in distributed strategies.
+
+    for physical_gpu in tf.config.list_physical_devices("GPU"):
+        virtual_gpus = [
+            tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
+        ]
+        tf.config.set_logical_device_configuration(physical_gpu, virtual_gpus)
 
 
 def finalizer():
