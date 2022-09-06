@@ -136,7 +136,7 @@ jobs:
     needs: [release-wheel, test-with-bazel]
     runs-on: ubuntu-18.04
     env:
-      PY_VERSION: '3.10.rc3'
+      PY_VERSION: '3.9'
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v2
