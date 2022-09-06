@@ -58,15 +58,21 @@ if is_gpu_available():
     # Each worker has two virtual devices.
     # When running on gpu, only the first device is used. The other one is used
     # in distributed strategies.
-    first_gpu = tf.config.list_physical_devices("GPU")[0]
+    gpus = tf.config.list_physical_devices('GPU')
     virtual_gpus = [
         tf.config.LogicalDeviceConfiguration(
             memory_limit=100, experimental_device_ordinal=x
         )
         for x in range(2)
     ]
+    try:
+        tf.config.set_logical_device_configuration(gpus[0], virtual_gpus)
+        logical_gpus = tf.config.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Virtual devices must be set before GPUs have been initialized
+        print(e)
 
-    tf.config.set_logical_device_configuration(first_gpu, virtual_gpus)
     configs = tf.config.get_logical_device_configuration(first_gpu)
     assert len(configs) == 2
     print(configs)
