@@ -187,13 +187,14 @@ def device(request):
         with strategy.scope():
             yield strategy
     elif isinstance(requested_device, str):
-        if requested_device in ["gpu"]:
+        if requested_device == "gpu":
             # we use GPU:0 because the virtual device we created is the
             # only one in the first GPU (so first in the list of virtual devices).
             requested_device += ":0"
+        elif requested_device == "cpu":
+            requested_device = "cpu"
         else:
             raise KeyError("Invalid device: " + requested_device)
-        print("Requested device =>", requested_device)           
         with tf.device(requested_device):
             yield requested_device
 
