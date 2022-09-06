@@ -69,9 +69,9 @@ if is_gpu_available():
         tf.config.set_logical_device_configuration(gpus[0], virtual_gpus)
         logical_gpus = tf.config.list_logical_devices('GPU')
         print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-    except RuntimeError as e:
+    except RuntimeError as err:
         # Virtual devices must be set before GPUs have been initialized
-        print(e)
+        print(err)
 
     configs = tf.config.get_logical_device_configuration(first_gpu)
     assert len(configs) == 2
