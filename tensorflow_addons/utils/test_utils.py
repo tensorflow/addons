@@ -60,7 +60,7 @@ if is_gpu_available():
     # When running on gpu, only the first device is used. The other one is used
     # in distributed strategies.
     physical_gpus = tf.config.list_physical_devices("GPU")
-    tf.config.set_visible_devices(physical_gpus[0], 'GPU')
+    tf.config.set_visible_devices(physical_gpus[0], "GPU")
     for physical_gpu in physical_gpus:
         virtual_gpus = [
             tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
