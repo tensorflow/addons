@@ -59,6 +59,7 @@ if is_gpu_available():
     # When running on gpu, only the first device is used. The other one is used
     # in distributed strategies.
     gpus = tf.config.list_physical_devices("GPU")
+    assert tf.config.get_logical_device_configuration(gpus[0]) is None
     virtual_gpus = [
         tf.config.LogicalDeviceConfiguration(
             memory_limit=100, experimental_device_ordinal=x
