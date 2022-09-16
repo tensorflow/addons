@@ -80,7 +80,7 @@ function main() {
     if [[ x"$(arch)" == x"arm64" ]]; then
       BUILD_CMD="${BUILD_CMD} --plat-name macosx_12_0_arm64"
     else
-      BUILD_CMD="${BUILD_CMD} --plat-name macosx_10_15_x86_64"
+      BUILD_CMD="${BUILD_CMD} --plat-name macosx_12_0_x86_64"
     fi
     PYTHON=python3
   else
