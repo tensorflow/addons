@@ -12,7 +12,7 @@ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(python -c 'import configure; print
 # For dynamic linking, we want the ARM version of TensorFlow.
 # Since we cannot run it on x86 so we need to force pip to install it regardless
 python -m pip install \
-  --platform=macosx_11_0_arm64 \
+  --platform=macosx_12_0_arm64 \
   --no-deps \
   --target=$(python -c 'import site; print(site.getsitepackages()[0])') \
   --upgrade \
@@ -20,8 +20,8 @@ python -m pip install \
 
 bazel build \
   --cpu=darwin_arm64 \
-  --copt -mmacosx-version-min=11.0 \
-  --linkopt -mmacosx-version-min=11.0 \
+  --copt -mmacosx-version-min=12.0 \
+  --linkopt -mmacosx-version-min=12.0 \
   --noshow_progress \
   --noshow_loading_progress \
   --verbose_failures \
