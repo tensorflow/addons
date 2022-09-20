@@ -170,38 +170,48 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     def _apply_normalization(self, reshaped_inputs, input_shape):
 
-        group_shape = tf.keras.backend.int_shape(reshaped_inputs)
-        group_rank = len(group_shape)
-        abs_axis = (self.axis + group_rank) % group_rank
+        reshaped_input_shape = tf.keras.backend.int_shape(reshaped_inputs)
+        reshaped_input_rank = len(reshaped_input_shape)
+        input_rank = len(input_shape)
 
         is_instance_norm = (input_shape[self.axis] // self.groups) == 1
-        if is_instance_norm:
-            transposed_inputs = reshaped_inputs
-            group_reduction_axes = list(range(1, group_rank))
+
+        batch_axis = 0
+        # Axis indexing groups
+        group_axis = (self.axis + input_rank) % input_rank
+        # Axis indexing channels within a group
+        new_channels_axis = None if is_instance_norm else group_axis + 1
+
+        if group_axis != batch_axis + 1 and group_axis != reshaped_input_rank - 1:
+            # Transpose the tensor so that all reduction axes are next to each other
+            if is_instance_norm:
+                permutation = ([batch_axis, group_axis]
+                               + list(range(batch_axis + 1, group_axis))
+                               + list(range(group_axis + 1, reshaped_input_rank)))
+            else:
+                permutation = ([batch_axis, group_axis, new_channels_axis]
+                                + list(range(batch_axis + 1, group_axis))
+                                + list(range(new_channels_axis + 1, reshaped_input_rank)))
+            transposed_inputs = tf.transpose(reshaped_inputs, permutation)
+            group_reduction_axes = list(range(2, reshaped_input_rank))
         else:
-            # Re-order axes, putting all reduction axes at the end.
-            transposed_inputs = tf.transpose(
-                reshaped_inputs,
-                [0, abs_axis]  # batch and group axis
-                + list(range(1, abs_axis))
-                + list(range(abs_axis + 1, group_rank)),
-            )
-            group_reduction_axes = list(range(2, group_rank))
+            transposed_inputs = reshaped_inputs
+            group_reduction_axes = list(range(1, reshaped_input_rank))
+            group_reduction_axes.pop(group_axis - 1)
 
         mean, variance = tf.nn.moments(
             transposed_inputs, group_reduction_axes, keepdims=True
         )
 
-        if not is_instance_norm:
-            # Put axes back in the original order
-            new_shape = (
-                [tf.shape(reshaped_inputs)[0]]  # batch axis
-                + [1] * (abs_axis - 1)
-                + [tf.shape(reshaped_inputs)[abs_axis]]  # group axis
-                + [1] * (group_rank - abs_axis - 1)
-            )
-            mean = tf.reshape(mean, new_shape)
-            variance = tf.reshape(variance, new_shape)
+        # Put axes back in the original order
+        new_shape = (
+            [tf.shape(reshaped_inputs)[batch_axis]]
+            + [1] * (group_axis - (batch_axis + 1))
+            + [tf.shape(reshaped_inputs)[group_axis]]
+            + [1] * (reshaped_input_rank - (group_axis + 1))
+        )
+        mean = tf.reshape(mean, new_shape)
+        variance = tf.reshape(variance, new_shape)
 
         gamma, beta = self._get_reshaped_weights(input_shape)
         normalized_inputs = tf.nn.batch_normalization(
