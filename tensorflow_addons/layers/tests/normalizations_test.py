@@ -106,7 +106,11 @@ def test_picture_input(center, scale):
 
 def _test_random_shape_on_all_axis_except_batch(shape, groups, center, scale):
     inputs = tf.random.normal(shape)
+    # Test positive axis indices
     for axis in range(1, len(shape)):
+        _test_specific_layer(inputs, axis, groups, center, scale)
+    # Test negative axis indices
+    for axis in range(-len(shape) + 1, 0):
         _test_specific_layer(inputs, axis, groups, center, scale)
 
 
@@ -140,9 +144,9 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
 
     group_reduction_axes = list(range(1, len(reshaped_dims)))
     if not is_instance_norm:
-        axis = -2 if axis == -1 else axis - 1
+        axis = axis - 1 if axis < 0 else axis - 1
     else:
-        axis = -1 if axis == -1 else axis - 1
+        axis = axis     if axis < 0 else axis - 1
     group_reduction_axes.pop(axis)
 
     # Calculate mean and variance
