@@ -163,7 +163,7 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
 
     # compare outputs
     output_test = tf.reshape(output_test, input_shape)
-    np.testing.assert_almost_equal(tf.reduce_mean(output_test - outputs), 0, decimal=7)
+    np.testing.assert_almost_equal(output_test, outputs, decimal=6)
 
 
 def _create_and_fit_sequential_model(layer, shape):
