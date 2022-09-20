@@ -175,6 +175,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         input_rank = len(input_shape)
 
         is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        is_layer_norm = self.groups == 1
 
         batch_axis = 0
         # Axis indexing groups
@@ -182,8 +183,12 @@ class GroupNormalization(tf.keras.layers.Layer):
         # Axis indexing channels within a group
         new_channels_axis = None if is_instance_norm else group_axis + 1
 
-        if group_axis != batch_axis + 1 and group_axis != reshaped_input_rank - 1:
-            # Transpose the tensor so that all reduction axes are next to each other
+        if not is_layer_norm and group_axis != batch_axis + 1 and group_axis != reshaped_input_rank - 1:
+            # The group axis (along which no reduction occurs) has length > 1 and lies between two axes along which
+            # reduction occurs. As a result, tf.nn.moments() may perform reductions using different algorithms
+            # depending on whether the batch size is equal to 1 or not, making group normalization results excessively
+            # sensitive to the batch size. To prevent that, transpose the input tensor, moving all reduction axes to
+            # the beginning.
             if is_instance_norm:
                 permutation = ([batch_axis, group_axis]
                                + list(range(batch_axis + 1, group_axis))
