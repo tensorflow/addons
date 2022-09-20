@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 FROM python:3.7 as build_wheel
 
-ARG TF_VERSION=2.9.1
+ARG TF_VERSION=2.10.0
 RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync

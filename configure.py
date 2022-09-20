@@ -23,6 +23,8 @@ import logging
 
 import tensorflow as tf
 
+from packaging.version import Version
+
 _TFA_BAZELRC = ".bazelrc"
 
 
@@ -81,6 +83,13 @@ def get_tf_header_dir():
     return tf_header_dir
 
 
+def get_cpp_version():
+    cpp_version = "c++14"
+    if Version(tf.__version__) >= Version("2.10"):
+        cpp_version = "c++17"
+    return cpp_version
+
+
 def get_tf_shared_lib_dir():
     import tensorflow as tf
 
@@ -127,6 +136,9 @@ def create_build_configuration():
     write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
     write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
+    # This should be replaced with a call to tf.sysconfig if it's added
+    write_action_env("TF_CPLUSPLUS_VER", get_cpp_version())
+
     write("build --spawn_strategy=standalone")
     write("build --strategy=Genrule=standalone")
     write("build  --experimental_repo_remote_exec")
@@ -143,14 +155,14 @@ def create_build_configuration():
         write("build:windows --copt=/experimental:preprocessor")
         write("build:windows --host_copt=/experimental:preprocessor")
         write("build:windows --copt=/arch=AVX")
-        write("build:windows --cxxopt=/std:c++14")
-        write("build:windows --host_cxxopt=/std:c++14")
+        write("build:windows --cxxopt=/std:" + get_cpp_version())
+        write("build:windows --host_cxxopt=/std:" + get_cpp_version())
 
     if is_macos() or is_linux():
         if not is_linux_ppc64le() and not is_linux_arm() and not is_linux_aarch64():
             write("build --copt=-mavx")
-        write("build --cxxopt=-std=c++14")
-        write("build --host_cxxopt=-std=c++14")
+        write("build --cxxopt=-std=" + get_cpp_version())
+        write("build --host_cxxopt=-std=" + get_cpp_version())
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")

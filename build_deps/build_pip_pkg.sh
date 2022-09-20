@@ -78,9 +78,9 @@ function main() {
   BUILD_CMD="setup.py bdist_wheel --platlib-patch"
   if is_macos; then
     if [[ x"$(arch)" == x"arm64" ]]; then
-      BUILD_CMD="${BUILD_CMD} --plat-name macosx_11_0_arm64"
+      BUILD_CMD="${BUILD_CMD} --plat-name macosx_12_0_arm64"
     else
-      BUILD_CMD="${BUILD_CMD} --plat-name macosx_10_15_x86_64"
+      BUILD_CMD="${BUILD_CMD} --plat-name macosx_10_14_x86_64"
     fi
     PYTHON=python3
   else

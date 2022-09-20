@@ -22,10 +22,11 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from packaging.version import Version
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
-if tf.__version__[:3] > "2.8":
+if Version(tf.__version__) >= Version("2.9"):
     from keras.testing_infra.test_utils import layer_test  # noqa: F401
 else:
     from keras.testing_utils import layer_test  # noqa: F401
@@ -48,7 +49,8 @@ tf.config.threading.set_intra_op_parallelism_threads(1)
 tf.config.threading.set_inter_op_parallelism_threads(1)
 
 if is_gpu_available():
-    # We use only the first gpu at the moment. That's enough for most use cases.
+    # We split each of the physical GPUs to 2 logical GPUs, and use only the
+    # first gpu at the moment. That's enough for most use cases.
     # split the first gpu into chunks of 100MB per virtual device.
     # It's the user's job to limit the amount of pytest workers depending
     # on the available memory.
@@ -57,12 +59,13 @@ if is_gpu_available():
     # Each worker has two virtual devices.
     # When running on gpu, only the first device is used. The other one is used
     # in distributed strategies.
-    first_gpu = tf.config.list_physical_devices("GPU")[0]
-    virtual_gpus = [
-        tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
-    ]
-
-    tf.config.set_logical_device_configuration(first_gpu, virtual_gpus)
+    physical_gpus = tf.config.list_physical_devices("GPU")
+    tf.config.set_visible_devices(physical_gpus[0], "GPU")
+    for physical_gpu in physical_gpus:
+        virtual_gpus = [
+            tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
+        ]
+        tf.config.set_logical_device_configuration(physical_gpu, virtual_gpus)
 
 
 def finalizer():
@@ -180,10 +183,12 @@ def device(request):
         with strategy.scope():
             yield strategy
     elif isinstance(requested_device, str):
-        if requested_device in ["cpu", "gpu"]:
+        if requested_device == "gpu":
             # we use GPU:0 because the virtual device we created is the
             # only one in the first GPU (so first in the list of virtual devices).
             requested_device += ":0"
+        elif requested_device == "cpu":
+            requested_device = "cpu"
         else:
             raise KeyError("Invalid device: " + requested_device)
         with tf.device(requested_device):

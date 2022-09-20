@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG PY_VERSION
-FROM tensorflow/build:latest-python$PY_VERSION as base_install
+FROM tensorflow/build:2.10-python$PY_VERSION as base_install
 
 ENV TF_NEED_CUDA="1"
 ARG PY_VERSION
@@ -29,11 +29,12 @@ CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
+ARG SKIP_CUSTOM_OP_TESTS
 
 RUN python configure.py
 
 # Test Before Building
-RUN bash tools/testing/build_and_run_tests.sh
+RUN bash tools/testing/build_and_run_tests.sh $SKIP_CUSTOM_OP_TESTS
 
 # Build
 RUN bazel build \
@@ -55,12 +56,14 @@ RUN ls -al wheelhouse/
 FROM python:$PY_VERSION as test_wheel_in_fresh_environment
 
 ARG TF_VERSION
+ARG SKIP_CUSTOM_OP_TESTS
+
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
 COPY --from=make_wheel /addons/wheelhouse/ /addons/wheelhouse/
 RUN pip install /addons/wheelhouse/*.whl
 
-RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"
+RUN if [[ -z "$SKIP_CUSTOM_OP_TESTS" ]] ; then python -c "import tensorflow_addons as tfa; print(tfa.register_all())" ; else python -c "import tensorflow_addons as tfa; print(tfa.register_all(custom_kernels=False))" ; fi
 
 # -------------------------------------------------------------------
 FROM scratch as output
