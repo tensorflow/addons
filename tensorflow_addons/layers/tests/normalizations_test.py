@@ -114,9 +114,10 @@ def _test_random_shape_on_all_axis_except_batch(shape, groups, center, scale):
 def _test_specific_layer(inputs, axis, groups, center, scale):
 
     input_shape = inputs.shape
+    epsilon = 1e-5
 
     # Get Output from Keras model
-    layer = GroupNormalization(axis=axis, groups=groups, center=center, scale=scale)
+    layer = GroupNormalization(axis=axis, groups=groups, center=center, scale=scale, epsilon=epsilon)
     model = tf.keras.models.Sequential()
     model.add(layer)
     outputs = model.predict(inputs, steps=1)
@@ -157,7 +158,7 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
 
     # Get ouput from Numpy
     zeroed = reshaped_inputs - mean
-    rsqrt = 1 / np.sqrt(variance + 1e-5)
+    rsqrt = 1 / np.sqrt(variance + epsilon)
     output_test = gamma * zeroed * rsqrt + beta
 
     # compare outputs
