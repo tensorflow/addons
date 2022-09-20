@@ -16,8 +16,8 @@ bazel clean
 python configure.py
 
 bazel build \
-  --copt -mmacosx-version-min=10.14 \
-  --linkopt -mmacosx-version-min=10.14 \
+  --copt=-mmacosx-version-min=10.14 \
+  --linkopt=-mmacosx-version-min=10.14 \
   --noshow_progress \
   --noshow_loading_progress \
   --verbose_failures \
