@@ -306,18 +306,33 @@ def test_groupnorm_2d_different_groups():
         )
 
 
-def test_groupnorm_batch_size_independence():
+@pytest.mark.parametrize(["axis", "groups"],
+                         [
+                             (1, 1),
+                             (1, 3),
+                             (1, 24),
+                             (2, 1),
+                             (2, 3),
+                             (2, 24),
+                             (3, 1),
+                             (3, 3),
+                             (3, 24)
+                         ])
+def test_groupnorm_batch_size_independence(axis, groups):
     # Dimensions
     b = 4
     h = 60
     w = 40
-    g = 3
-    c = g * 8
+    c = 24
 
-    input = tf.random.stateless_uniform([b, h, w, c], seed=[1, 2])
+    shape = [b, h, w]
+    shape.insert(axis, c)
+    input = tf.random.stateless_uniform(shape, seed=[1, 2])
 
-    gn = GroupNormalization(groups=g, axis=-1)
-    gn.build([None, None, None, c])
+    gn = GroupNormalization(groups=groups, axis=axis)
+    shape_spec = [None, None, None]
+    shape_spec.insert(axis, c)
+    gn.build(shape_spec)
 
     # Apply group normalization to the whole batch (4 slices) at once
     output_b4 = gn.call(input)
