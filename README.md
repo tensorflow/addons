@@ -81,7 +81,7 @@ what it was tested against.
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
 | tfa-nightly | 2.8, 2.9, 2.10 | 3.7, 3.8, 3.9, 3.10 | 
-| tensorflow-addons-0.17.1 | 2.8, 2.9, 2.10 |3.7, 3.8, 3.9, 3.10 |
+| tensorflow-addons-0.18.0 | 2.8, 2.9, 2.10 |3.7, 3.8, 3.9, 3.10 |
 | tensorflow-addons-0.17.1 | 2.7, 2.8, 2.9 |3.7, 3.8, 3.9, 3.10 |
 | tensorflow-addons-0.16.1 | 2.6, 2.7, 2.8 |3.7, 3.8, 3.9, 3.10 |
 | tensorflow-addons-0.15.0 | 2.5, 2.6, 2.7 |3.7, 3.8, 3.9 |
