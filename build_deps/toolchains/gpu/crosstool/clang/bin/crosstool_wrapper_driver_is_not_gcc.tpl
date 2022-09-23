@@ -205,7 +205,7 @@ def InvokeNvcc(argv, log=False):
       x.replace(".", "") for x in supported_cuda_compute_capabilities])
   for capability in supported_cuda_compute_capabilities[:-1]:
     nvccopts += r'-gencode=arch=compute_%s,\"code=sm_%s\" ' % (
-        capability, capability, capability)
+        capability, capability)
   if supported_cuda_compute_capabilities:
     capability = supported_cuda_compute_capabilities[-1]
     nvccopts += r'-gencode=arch=compute_%s,code=\"sm_%s,compute_%s\" ' % (
