@@ -113,17 +113,19 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
         w = tf.reshape(self.w, [-1, self.w_shape[-1]])
         u = self.u
 
-        with tf.name_scope("spectral_normalize"):
-            for _ in range(self.power_iterations):
-                v = tf.math.l2_normalize(tf.matmul(u, w, transpose_b=True))
-                u = tf.math.l2_normalize(tf.matmul(v, w))
-            u = tf.stop_gradient(u)
-            v = tf.stop_gradient(v)
-            sigma = tf.matmul(tf.matmul(v, w), u, transpose_b=True)
-            self.u.assign(tf.cast(u, self.u.dtype))
-            self.w.assign(
-                tf.cast(tf.reshape(self.w / sigma, self.w_shape), self.w.dtype)
-            )
+        # check zeroes weights
+        if not tf.reduce_all(tf.equal(w, 0.0)):
+            with tf.name_scope("spectral_normalize"):
+                for _ in range(self.power_iterations):
+                    v = tf.math.l2_normalize(tf.matmul(u, w, transpose_b=True))
+                    u = tf.math.l2_normalize(tf.matmul(v, w))
+                u = tf.stop_gradient(u)
+                v = tf.stop_gradient(v)
+                sigma = tf.matmul(tf.matmul(v, w), u, transpose_b=True)
+                self.u.assign(tf.cast(u, self.u.dtype))
+                self.w.assign(
+                    tf.cast(tf.reshape(self.w / sigma, self.w_shape), self.w.dtype)
+                )
 
     def get_config(self):
         config = {"power_iterations": self.power_iterations}
