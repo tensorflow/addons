@@ -76,7 +76,7 @@
 /tensorflow_addons/layers/tests/polynomial_test.py @tanzhenyu
 /tensorflow_addons/layers/sparsemax.py @andreasmadsen
 /tensorflow_addons/layers/tests/sparsemax_test.py @andreasmadsen
-/tensorflow_addons/layers/spectral_normalization.py @charlielito
+/tensorflow_addons/layers/spectral_normalization.py @charlielito @markub3327
 /tensorflow_addons/layers/tests/spectral_normalization_test.py @charlielito
 /tensorflow_addons/layers/spatial_pyramid_pooling.py @Susmit-A
 /tensorflow_addons/layers/tests/spatial_pyramid_pooling_test.py @Susmit-A
