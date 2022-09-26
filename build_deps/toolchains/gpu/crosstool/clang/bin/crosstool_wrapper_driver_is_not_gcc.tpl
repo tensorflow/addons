@@ -167,7 +167,7 @@ def InvokeNvcc(argv, log=False):
   undefines = ''.join([' -U' + define for define in undefines])
   std_options = GetOptionValue(argv, 'std')
   # Supported -std flags as of CUDA 9.0. Only keep last to mimic gcc/clang.
-  nvcc_allowed_std_options = ["c++03", "c++11", "c++14"]
+  nvcc_allowed_std_options = ["c++03", "c++11", "c++14", "c++17"]
   std_options = ''.join([' -std=' + define
       for define in std_options if define in nvcc_allowed_std_options])
 
@@ -205,7 +205,7 @@ def InvokeNvcc(argv, log=False):
       x.replace(".", "") for x in supported_cuda_compute_capabilities])
   for capability in supported_cuda_compute_capabilities[:-1]:
     nvccopts += r'-gencode=arch=compute_%s,\"code=sm_%s\" ' % (
-        capability, capability, capability)
+        capability, capability)
   if supported_cuda_compute_capabilities:
     capability = supported_cuda_compute_capabilities[-1]
     nvccopts += r'-gencode=arch=compute_%s,code=\"sm_%s,compute_%s\" ' % (
