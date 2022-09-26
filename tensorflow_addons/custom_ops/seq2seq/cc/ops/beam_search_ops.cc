@@ -49,7 +49,7 @@ REGISTER_OP("Addons>GatherTree")
                                         &step_ids_prefix));
 
       c->set_output(0, step_ids);
-      return tensorflow::Status::OK();
+      return tensorflow::Status();
     })
     .Doc(R"doc(
 Calculates the full beams from the per-step ids and parent beam ids.

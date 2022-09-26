@@ -85,7 +85,7 @@ REGISTER_OP("Addons>CorrelationCost")
 
       // Note, the output is always NCHW (even when input is NHWC)
       c->set_output(0, c->MakeShape({B, Cout, Hout, Wout}));
-      return Status::OK();
+      return Status();
     })
     .Doc(R"Doc(
 Compute Correlation costs.
@@ -127,7 +127,7 @@ REGISTER_OP("Addons>CorrelationCostGrad")
       TF_RETURN_IF_ERROR(c->Merge(c->input(0), c->input(1), &shp_hnd));
       c->set_output(0, shp_hnd);
       c->set_output(1, shp_hnd);
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(CorrelationCostGrad op.)doc");
 

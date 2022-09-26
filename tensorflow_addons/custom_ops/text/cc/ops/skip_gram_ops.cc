@@ -46,7 +46,7 @@ REGISTER_OP("Addons>SkipGramGenerateCandidates")
       // outputs will be of rank-1, but not their sizes.
       c->set_output(0, c->Vector(c->UnknownDim()));
       c->set_output(1, c->Vector(c->UnknownDim()));
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Generates skip-gram token and label paired Tensors from the input tensor.

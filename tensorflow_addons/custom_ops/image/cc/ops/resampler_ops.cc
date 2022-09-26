@@ -42,7 +42,7 @@ REGISTER_OP("Addons>Resampler")
           c->Concatenate(output, c->Vector(c->Dim(data, -1)), &output));
 
       c->set_output(0, output);
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(Resampler op.)doc");
 
@@ -57,7 +57,7 @@ REGISTER_OP("Addons>ResamplerGrad")
     .SetShapeFn([](InferenceContext* c) {
       c->set_output(0, c->input(0));
       c->set_output(1, c->input(1));
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(Resampler Grad op.)doc");
 

@@ -366,7 +366,7 @@ struct CorrelationCostFunctor<GPUDevice, Dtype> {
             padded_b_t.flat<Dtype>().data(), pad, kernel_size, max_displacement,
             stride_1, stride_2);
 
-    return Status::OK();
+    return Status();
   }
 };
 
@@ -452,7 +452,7 @@ struct CorrelationCostGradFunctor<GPUDevice, Dtype> {
               max_displacement, stride_1, stride_2, is_NCHW);
     }
 
-    return Status::OK();
+    return Status();
   }
 };
 
