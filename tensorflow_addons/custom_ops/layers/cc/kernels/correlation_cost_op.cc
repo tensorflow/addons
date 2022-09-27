@@ -114,7 +114,7 @@ struct CorrelationCostFunctor<CPUDevice, Dtype> {
     auto thread_pool =
         context->device()->tensorflow_cpu_worker_threads()->workers;
     thread_pool->ParallelFor(oN * oH * oW, cost_per_pixel, work);
-    return Status::OK();
+    return Status();
   }
 };
 
@@ -211,7 +211,7 @@ struct CorrelationCostGradFunctor<CPUDevice, Dtype> {
         context->device()->tensorflow_cpu_worker_threads()->workers;
     thread_pool->ParallelFor(iN * oH * oW, cost_per_pixel, work);
 
-    return Status::OK();
+    return Status();
   }
 };
 
