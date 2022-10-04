@@ -71,7 +71,10 @@ class Lookahead(KerasLegacyOptimizer):
         super().__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
-            if KerasLegacyOptimizer == tf.keras.optimizers.legacy.Optimizer:
+            if (
+                hasattr(tf.keras.optimizers, "legacy")
+                and KerasLegacyOptimizer == tf.keras.optimizers.legacy.Optimizer
+            ):
                 optimizer = tf.keras.optimizers.get(
                     optimizer, use_legacy_optimizer=True
                 )
