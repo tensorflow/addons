@@ -41,6 +41,7 @@ def test_api_typed():
     # Files within this list will be exempt from verification.
     exception_list = [
         tfa.rnn.PeepholeLSTMCell,
+        tf.keras.optimizers.Optimizer,
     ]
     if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
         exception_list.append(tf.keras.optimizers.legacy.Optimizer)
