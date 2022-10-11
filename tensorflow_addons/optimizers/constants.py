@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import importlib
 import tensorflow as tf
 
-if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
+if (
+    hasattr(tf.keras.optimizers, "experimental")
+    and tf.keras.optimizers.Optimizer.__module__
+    == tf.keras.optimizers.experimental.Optimizer.__module__
+):
+    # If the default optimizer points to new Keras optimizer, addon optimizers
+    # should use the legacy path.
     KerasLegacyOptimizer = tf.keras.optimizers.legacy.Optimizer
 else:
     KerasLegacyOptimizer = tf.keras.optimizers.Optimizer

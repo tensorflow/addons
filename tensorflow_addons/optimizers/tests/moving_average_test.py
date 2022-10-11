@@ -31,7 +31,10 @@ def test_run():
 
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
 
-    opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        opt = MovingAverage(tf.keras.optimizers.legacy.SGD(lr=2.0), average_decay=0.5)
+    else:
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
 
     opt.apply_gradients(grads_and_vars)
     opt.apply_gradients(grads_and_vars)
@@ -95,7 +98,10 @@ def test_model_weights_update():
     )
     model.build(input_shape=[1, 1])
 
-    opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        opt = MovingAverage(tf.keras.optimizers.legacy.SGD(lr=2.0), average_decay=0.5)
+    else:
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
     _ = opt.apply_gradients(list(zip([grad], model.variables)))
     np.testing.assert_allclose(model.variables[0].read_value(), [[0.8]])
     _ = opt.assign_average_vars(model.variables)
@@ -115,8 +121,10 @@ def test_model_dynamic_lr():
         ]
     )
     model.build(input_shape=[1, 1])
-
-    opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3), average_decay=0.5)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        opt = MovingAverage(tf.keras.optimizers.legacy.SGD(lr=1e-3), average_decay=0.5)
+    else:
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3), average_decay=0.5)
     _ = opt.apply_gradients(list(zip([grad], model.variables)))
     np.testing.assert_allclose(opt.lr.read_value(), 1e-3)
     opt.lr = 1e-4
@@ -129,9 +137,20 @@ def test_optimizer_string():
 
 
 def test_config():
-    sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        sgd_opt = tf.keras.optimizers.legacy.SGD(
+            lr=2.0, nesterov=True, momentum=0.3, decay=0.1
+        )
+    else:
+        sgd_opt = tf.keras.optimizers.SGD(
+            lr=2.0, nesterov=True, momentum=0.3, decay=0.1
+        )
     opt = MovingAverage(
-        sgd_opt, average_decay=0.5, num_updates=None, start_step=5, dynamic_decay=True
+        sgd_opt,
+        average_decay=0.5,
+        num_updates=None,
+        start_step=5,
+        dynamic_decay=True,
     )
     config = opt.get_config()
 
@@ -177,9 +196,20 @@ def test_fit_simple_linear_model():
 
 
 def test_serialization():
-    sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        sgd_opt = tf.keras.optimizers.legacy.SGD(
+            lr=2.0, nesterov=True, momentum=0.3, decay=0.1
+        )
+    else:
+        sgd_opt = tf.keras.optimizers.SGD(
+            lr=2.0, nesterov=True, momentum=0.3, decay=0.1
+        )
     optimizer = MovingAverage(
-        sgd_opt, average_decay=0.5, num_updates=None, start_step=5, dynamic_decay=True
+        sgd_opt,
+        average_decay=0.5,
+        num_updates=None,
+        start_step=5,
+        dynamic_decay=True,
     )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
@@ -215,9 +245,18 @@ def test_dynamic_decay():
     grads0 = tf.constant([0.1, 0.1])
     grads_and_vars = [(grads0, var0)]
 
-    opt = MovingAverage(
-        tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5, dynamic_decay=True
-    )
+    if hasattr(tf.keras.optimizers, "legacy"):
+        opt = MovingAverage(
+            tf.keras.optimizers.legacy.SGD(lr=2.0),
+            average_decay=0.5,
+            dynamic_decay=True,
+        )
+    else:
+        opt = MovingAverage(
+            tf.keras.optimizers.SGD(lr=2.0),
+            average_decay=0.5,
+            dynamic_decay=True,
+        )
 
     opt.apply_gradients(grads_and_vars)
     opt.apply_gradients(grads_and_vars)
@@ -235,7 +274,12 @@ def test_swap_weight_no_shadow_copy(device):
         var = tf.Variable([1.0, 2.0])
         grads = tf.constant([0.1, 0.1])
 
-        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+        if hasattr(tf.keras.optimizers, "legacy"):
+            opt = MovingAverage(
+                tf.keras.optimizers.legacy.SGD(lr=2.0), average_decay=0.5
+            )
+        else:
+            opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
 
     @tf.function
     def apply_gradients():
@@ -267,7 +311,12 @@ def test_swap_weights(device):
         var = tf.Variable([1.0, 2.0])
         grads = tf.constant([0.1, 0.1])
 
-        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+        if hasattr(tf.keras.optimizers, "legacy"):
+            opt = MovingAverage(
+                tf.keras.optimizers.legacy.SGD(lr=2.0), average_decay=0.5
+            )
+        else:
+            opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
 
     @tf.function
     def apply_gradients():
@@ -314,7 +363,9 @@ def test_no_average_slot():
     # They are returned when using model.variables
     # but it's unable to assign average slot to them.
     vectorize_layer = tf.keras.layers.experimental.preprocessing.TextVectorization(
-        max_tokens=max_features, output_mode="int", output_sequence_length=max_len
+        max_tokens=max_features,
+        output_mode="int",
+        output_sequence_length=max_len,
     )
 
     vectorize_layer.adapt(["foo", "bar", "baz"])

@@ -127,7 +127,13 @@ class DecoupledWeightDecayExtension:
         return cls(**config)
 
     def minimize(
-        self, loss, var_list, grad_loss=None, name=None, decay_var_list=None, tape=None
+        self,
+        loss,
+        var_list,
+        grad_loss=None,
+        name=None,
+        decay_var_list=None,
+        tape=None,
     ):
         """Minimize `loss` by updating `var_list`.
 
@@ -354,7 +360,10 @@ def extend_with_decoupled_weight_decay(
 
         @typechecked
         def __init__(
-            self, weight_decay: Union[FloatTensorLike, Callable], *args, **kwargs
+            self,
+            weight_decay: Union[FloatTensorLike, Callable],
+            *args,
+            **kwargs,
         ):
             # super delegation is necessary here
             super().__init__(weight_decay, *args, **kwargs)
@@ -441,8 +450,14 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
         )
 
 
+if hasattr(tf.keras.optimizers, "legacy"):
+    ADAM_CLASS = tf.keras.optimizers.legacy.Adam
+else:
+    ADAM_CLASS = tf.keras.optimizers.Adam
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
+class AdamW(DecoupledWeightDecayExtension, ADAM_CLASS):
     """Optimizer that implements the Adam algorithm with weight decay.
 
     This is an implementation of the AdamW optimizer described in "Decoupled

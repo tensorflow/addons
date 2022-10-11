@@ -201,7 +201,8 @@ class AdaBelief(KerasLegacyOptimizer):
         sma_t = sma_inf - 2.0 * local_step * beta_2_power / (1.0 - beta_2_power)
 
         m_t = m.assign(
-            beta_1_t * m + (1.0 - beta_1_t) * grad, use_locking=self._use_locking
+            beta_1_t * m + (1.0 - beta_1_t) * grad,
+            use_locking=self._use_locking,
         )
         m_corr_t = m_t / (1.0 - beta_1_power)
 

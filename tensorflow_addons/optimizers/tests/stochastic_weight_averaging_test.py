@@ -28,7 +28,10 @@ SWA = stochastic_weight_averaging.SWA
 def test_averaging():
     start_averaging = 0
     average_period = 1
-    sgd = tf.keras.optimizers.SGD(lr=1.0)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        sgd = tf.keras.optimizers.legacy.SGD(lr=1.0)
+    else:
+        sgd = tf.keras.optimizers.SGD(lr=1.0)
     optimizer = SWA(sgd, start_averaging, average_period)
 
     val_0 = [1.0, 1.0]
@@ -81,7 +84,10 @@ def test_assign_batchnorm():
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.Dense(1))
 
-    opt = SWA(tf.keras.optimizers.SGD())
+    if hasattr(tf.keras.optimizers, "legacy"):
+        opt = SWA(tf.keras.optimizers.legacy.SGD())
+    else:
+        opt = SWA(tf.keras.optimizers.SGD())
     model.compile(optimizer=opt, loss="mean_squared_error")
     model.fit(x, y, epochs=1)
 
@@ -118,7 +124,10 @@ def test_fit_simple_linear_model():
 def test_serialization():
     start_averaging = 0
     average_period = 1
-    sgd = tf.keras.optimizers.SGD(lr=1.0)
+    if hasattr(tf.keras.optimizers, "legacy"):
+        sgd = tf.keras.optimizers.legacy.SGD(lr=1.0)
+    else:
+        sgd = tf.keras.optimizers.SGD(lr=1.0)
     optimizer = SWA(sgd, start_averaging, average_period)
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)

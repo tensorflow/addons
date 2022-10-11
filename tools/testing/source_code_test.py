@@ -41,6 +41,7 @@ def test_api_typed():
     # Files within this list will be exempt from verification.
     exception_list = [
         tfa.rnn.PeepholeLSTMCell,
+        tf.keras.optimizers.Optimizer,
     ]
     if importlib.util.find_spec("tensorflow.keras.optimizers.legacy") is not None:
         exception_list.append(tf.keras.optimizers.legacy.Optimizer)
@@ -50,7 +51,10 @@ def test_api_typed():
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
     )
     ensure_api_is_typed(
-        modules_list, exception_list, init_only=True, additional_message=help_message
+        modules_list,
+        exception_list,
+        init_only=True,
+        additional_message=help_message,
     )
 
 
@@ -151,6 +155,7 @@ def test_no_experimental_api():
     # TODO: remove all elements of the list and remove the allowlist
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
+        "tensorflow_addons/optimizers/constants.py",
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
         "tensorflow_addons/layers/max_unpooling_2d.py",
         "tensorflow_addons/image/dense_image_warp.py",
