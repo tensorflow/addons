@@ -21,8 +21,8 @@ import tensorflow as tf
 from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typeguard import typechecked
 
-from keras import backend
-from keras.utils import tf_utils
+from tensorflow.keras import backend
+from tensorflow.python.keras.utils import tf_utils
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
