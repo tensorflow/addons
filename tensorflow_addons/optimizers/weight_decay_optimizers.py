@@ -371,8 +371,16 @@ def extend_with_decoupled_weight_decay(
     return OptimizerWithDecoupledWeightDecay
 
 
+if hasattr(tf.keras.optimizers, "legacy"):
+    ADAM_CLASS = tf.keras.optimizers.legacy.Adam
+    SGD_CLASS = tf.keras.optimizers.legacy.SGD
+else:
+    ADAM_CLASS = tf.keras.optimizers.Adam
+    SGD_CLASS = tf.keras.optimizers.SGD
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
+class SGDW(DecoupledWeightDecayExtension, SGD_CLASS):
     """Optimizer that implements the Momentum algorithm with weight_decay.
 
     This is an implementation of the SGDW optimizer described in "Decoupled
@@ -448,12 +456,6 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
             name=name,
             **kwargs,
         )
-
-
-if hasattr(tf.keras.optimizers, "legacy"):
-    ADAM_CLASS = tf.keras.optimizers.legacy.Adam
-else:
-    ADAM_CLASS = tf.keras.optimizers.Adam
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
