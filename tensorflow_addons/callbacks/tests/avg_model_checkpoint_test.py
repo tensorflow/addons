@@ -13,10 +13,16 @@ BATCH_SIZE = 5
 EPOCHS = 5
 
 
+def get_legacy_sgd(learning_rate):
+    if hasattr(tf.keras.optimizers, "legacy"):
+        return tf.keras.optimizers.legacy.SGD(learning_rate)
+    return tf.keras.optimizers.SGD(learning_rate)
+
+
 def get_data_and_model(optimizer="moving_avg"):
     x = tf.random.normal([TRAIN_SAMPLES, INPUT_DIM])
     y = tf.random.normal([TRAIN_SAMPLES, NUM_CLASSES])
-    moving_avg = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+    moving_avg = MovingAverage(get_legacy_sgd(2.0), average_decay=0.5)
     if optimizer == "moving_avg":
         optimizer = moving_avg
     inputs = keras.layers.Input(INPUT_DIM)
@@ -199,7 +205,7 @@ def test_invalid_save_freq(tmp_path):
 
 def test_loss_scale_optimizer(tmp_path):
     test_model_filepath = str(tmp_path / "test_model.{epoch:02d}.h5")
-    moving_avg = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+    moving_avg = MovingAverage(get_legacy_sgd(2.0), average_decay=0.5)
     optimizer = tf.keras.mixed_precision.LossScaleOptimizer(moving_avg)
     x, y, model = get_data_and_model(optimizer)
     save_freq = "epoch"
