@@ -1,1 +1,1 @@
-tensorflow-cpu~=2.10.0
+tensorflow-cpu~=2.11.0
