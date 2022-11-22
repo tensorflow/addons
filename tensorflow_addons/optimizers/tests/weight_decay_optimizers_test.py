@@ -431,9 +431,7 @@ def test_optimizer_basic(dtype, optimizer):
     "optimizer",
     [
         weight_decay_optimizers.SGDW,
-        weight_decay_optimizers.extend_with_decoupled_weight_decay(
-            tf.keras.optimizers.SGD
-        ),
+        weight_decay_optimizers.extend_with_decoupled_weight_decay(optimizer_class),
     ],
 )
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])

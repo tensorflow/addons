@@ -222,9 +222,12 @@ def test_start_step():
     grads0 = tf.constant([0.1, 0.1])
     grads_and_vars = [(grads0, var0)]
 
-    opt = MovingAverage(
-        tf.keras.optimizers.SGD(lr=1.0), average_decay=0.5, start_step=1
-    )
+    if hasattr(tf.keras.optimizers, "legacy"):
+        sgd_opt = tf.keras.optimizers.legacy.SGD(lr=1.0)
+    else:
+        sgd_opt = tf.keras.optimizers.SGD(lr=1.0)
+
+    opt = MovingAverage(sgd_opt, average_decay=0.5, start_step=1)
 
     opt.apply_gradients(grads_and_vars)
 
