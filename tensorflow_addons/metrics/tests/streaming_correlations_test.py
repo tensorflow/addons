@@ -100,8 +100,12 @@ class TestStreamingCorrelations:
         inputs = tf.keras.layers.Input(shape=(128,))
         outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
         model = tf.keras.models.Model(inputs, outputs)
+        if hasattr(tf.keras.optimizers, "legacy"):
+            optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.1)
+        else:
+            optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
+            optimizer=optimizer,
             loss="binary_crossentropy",
             metrics=[metric],
         )
