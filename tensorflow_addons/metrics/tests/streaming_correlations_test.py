@@ -100,8 +100,12 @@ class TestStreamingCorrelations:
         inputs = tf.keras.layers.Input(shape=(128,))
         outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
         model = tf.keras.models.Model(inputs, outputs)
+        if hasattr(tf.keras.optimizers, "legacy"):
+            optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.1)
+        else:
+            optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
+            optimizer=optimizer,
             loss="binary_crossentropy",
             metrics=[metric],
         )
@@ -128,7 +132,7 @@ class TestStreamingCorrelations:
         tf.function(metric.update_state)(y, preds)
         metric_value = tf.function(metric.result)()
         scipy_value = self.scipy_corr[correlation_type](preds[:, 0], y[:, 0])[0]
-        np.testing.assert_almost_equal(metric_value, metric_history[-1])
+        np.testing.assert_almost_equal(metric_value, metric_history[-1], decimal=5)
         np.testing.assert_almost_equal(metric_value, scipy_value, decimal=2)
 
     @pytest.mark.parametrize("correlation_type", testing_types)
