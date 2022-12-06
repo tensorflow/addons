@@ -101,7 +101,7 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.9.3', '2.10.1', '2.11.0']
+        tf-version: ['2.11.0']
         cpu: ['x86']
         include:
           - os: 'macOS'
