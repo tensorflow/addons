@@ -42,20 +42,20 @@ jobs:
         # https://github.com/bazelbuild/bazel/issues/14232#issuecomment-1011247429
         os: ['macos-12', 'windows-2019', 'ubuntu-18.04']
         py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.8.2', '2.9.1', '2.10.0']
+        tf-version: ['2.9.3', '2.10.1', '2.11.0']
         cpu: ['x86']
         include:
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.10.0'
+            tf-version: '2.11.0'
             py-version: '3.8'
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.10.0'
+            tf-version: '2.11.0'
             py-version: '3.9'
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.10.0'
+            tf-version: '2.11.0'
             py-version: '3.10'
       fail-fast: false
     steps:
@@ -101,20 +101,20 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.10.0']
+        tf-version: ['2.11.0']
         cpu: ['x86']
         include:
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.10.0'
+            tf-version: '2.11.0'
             py-version: '3.8'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.10.0'
+            tf-version: '2.11.0'
             py-version: '3.9'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.10.0'
+            tf-version: '2.11.0'
             py-version: '3.10'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'

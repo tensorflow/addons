@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG PY_VERSION
-FROM tensorflow/build:2.10-python$PY_VERSION as base_install
+FROM tensorflow/build:2.11-python$PY_VERSION as base_install
 
 ENV TF_NEED_CUDA="1"
 ARG PY_VERSION

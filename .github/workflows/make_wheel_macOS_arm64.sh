@@ -3,7 +3,7 @@ set -e -x
 export TF_NEED_CUDA=0
 
 python --version
-python -m pip install --default-timeout=1000 delocate==0.10.2 wheel setuptools tensorflow==$TF_VERSION
+python -m pip install --default-timeout=1000 delocate==0.10.3 wheel setuptools tensorflow==$TF_VERSION
 
 python configure.py
 # Setting DYLD_LIBRARY_PATH to help delocate finding tensorflow after the rpath invalidation

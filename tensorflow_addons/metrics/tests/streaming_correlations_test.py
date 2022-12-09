@@ -132,7 +132,7 @@ class TestStreamingCorrelations:
         tf.function(metric.update_state)(y, preds)
         metric_value = tf.function(metric.result)()
         scipy_value = self.scipy_corr[correlation_type](preds[:, 0], y[:, 0])[0]
-        np.testing.assert_almost_equal(metric_value, metric_history[-1], decimal=5)
+        np.testing.assert_almost_equal(metric_value, metric_history[-1], decimal=6)
         np.testing.assert_almost_equal(metric_value, scipy_value, decimal=2)
 
     @pytest.mark.parametrize("correlation_type", testing_types)
