@@ -147,7 +147,6 @@ class EmbeddingBag(tf.keras.layers.Layer):
                 self.embeddings_constraint
             ),
             "mask_zero": self.mask_zero,
-            "input_length": self.input_length,
             "combiner": self.combiner,
         }
         base_config = super(EmbeddingBag, self).get_config()
