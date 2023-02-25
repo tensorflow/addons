@@ -150,22 +150,16 @@ def cutout(
             ],
             [1, 0],
         )
-
-        def fn(i):
-            padding_dims = [
-                [lower_pads[i], upper_pads[i]],
-                [left_pads[i], right_pads[i]],
-            ]
-            mask = tf.pad(
-                tf.zeros(cutout_shape[i], dtype=tf.bool),
-                padding_dims,
-                constant_values=True,
-            )
-            return mask
-
+        padding_dims = tf.stack(
+            [
+                tf.stack([lower_pads, upper_pads], axis=1),
+                tf.stack([left_pads, right_pads], axis=1),
+            ],
+            axis=1,
+        )
         mask = tf.map_fn(
-            fn,
-            tf.range(tf.shape(cutout_shape)[0]),
+            _generate_masks,
+            [cutout_shape, padding_dims],
             fn_output_signature=tf.TensorSpec(
                 shape=image_static_shape[1:-1], dtype=tf.bool
             ),
@@ -180,3 +174,13 @@ def cutout(
         )
         images.set_shape(image_static_shape)
         return images
+
+
+def _generate_masks(args):
+    cutout_shape, padding_dims = args
+    mask = tf.pad(
+        tf.zeros(cutout_shape, dtype=tf.bool),
+        padding_dims,
+        constant_values=True,
+    )
+    return mask
