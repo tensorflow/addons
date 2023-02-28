@@ -20,7 +20,7 @@ def get_random_booleans():
 def test_check_metric_serialization_true_negative():
     check_metric_serialization(
         TrueNegatives(0.8),
-        np.random.uniform(0, 2, size=(2, 2)).astype(np.bool),
+        np.random.uniform(0, 2, size=(2, 2)).astype(bool),
         np.random.uniform(0, 1, size=(2, 2)).astype(np.float32),
     )
 
