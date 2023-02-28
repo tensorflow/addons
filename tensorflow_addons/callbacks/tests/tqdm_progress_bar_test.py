@@ -9,7 +9,7 @@ import tensorflow_addons as tfa
 
 def get_data_and_model():
     x = np.random.random((12, 1))
-    y = np.random.randint(0, 2, (12, 1), dtype=np.int)
+    y = np.random.randint(0, 2, (12, 1), dtype=np.int32)
 
     inputs = tf.keras.layers.Input(shape=(1,))
     outputs = tf.keras.layers.Dense(1)(inputs)

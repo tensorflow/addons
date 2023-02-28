@@ -141,7 +141,7 @@ def test_ones_small():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_random_scipy():
     np.random.seed(42)
-    images = np.random.randint(0, 2, size=(10, 100, 200)).astype(np.bool)
+    images = np.random.randint(0, 2, size=(10, 100, 200)).astype(bool)
     expected = connected_components_reference_implementation(images)
     if expected is None:
         return
