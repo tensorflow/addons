@@ -1,2 +1,3 @@
 git+https://github.com/tensorflow/docs
 pyyaml
+protobuf>=4.22.0
