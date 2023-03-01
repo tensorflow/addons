@@ -40,8 +40,8 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     prediction. The statistic is also known as
     the phi coefficient.
 
-    MCC = (TP * TN) - (FP * FN) /
-          ((TP + FP) * (TP + FN) * (TN + FP ) * (TN + FN))^(1/2)
+    MCC = (TP * TN - FP * FN) /
+          ((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN))^(1/2)
 
     Args:
         num_classes : Number of unique classes in the dataset.
