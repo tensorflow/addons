@@ -309,6 +309,8 @@ def test_partially_or_fully_unknown_shape(
         control_point_locations + control_point_displacements,
         interpolation_order=interpolation_order,
         num_boundary_points=num_boundary_points,
+        regularization_weight=0.0,
+        name="sparse_image_warp",
     )
     np.testing.assert_equal(output[0].numpy(), expected_output[0].numpy())
     np.testing.assert_equal(output[1].numpy(), expected_output[1].numpy())
