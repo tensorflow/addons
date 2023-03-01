@@ -85,9 +85,9 @@ def test_crf_filtered_inputs(dtype):
                 [False, True, True],
                 [False, True, True],
             ],
-            dtype=np.bool,
+            dtype=bool,
         ),
-        np.array([[False, True, True]], dtype=np.bool),
+        np.array([[False, True, True]], dtype=bool),
     ]
     neg_inf = float("-inf")
     expected_filtered_inputs_list = [
@@ -168,9 +168,9 @@ def test_crf_multi_tag_sequence_score(dtype):
                 [False, True, True],
                 [True, False, True],
             ],
-            dtype=np.bool,
+            dtype=bool,
         ),
-        np.array([[True, True, False]], dtype=np.bool),
+        np.array([[True, True, False]], dtype=bool),
     ]
     for sequence_lengths, inputs, tag_bitmap in zip(
         sequence_lengths_list, inputs_list, tag_bitmap_list
@@ -425,9 +425,9 @@ def test_crf_constrained_decode(dtype):
                 [False, True, True],
                 [False, True, True],
             ],
-            dtype=np.bool,
+            dtype=bool,
         ),
-        np.array([[False, True, True]], dtype=np.bool),
+        np.array([[False, True, True]], dtype=bool),
     ]
     for sequence_lengths, inputs, tag_bitmap in zip(
         sequence_lengths_list, inputs_list, tag_bitmap_list

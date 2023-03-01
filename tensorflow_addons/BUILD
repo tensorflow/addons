@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 config_setting(
     name = "windows",
-    constraint_values = ["@bazel_tools//platforms:windows"],
+    constraint_values = ["@platforms//os:windows"],
 )
 
 py_library(

@@ -145,8 +145,9 @@ def create_build_configuration():
     write("build -c opt")
     write(
         "build --cxxopt="
-        + '"-D_GLIBCXX_USE_CXX11_ABI="'
+        + '"-D_GLIBCXX_USE_CXX11_ABI='
         + str(tf.sysconfig.CXX11_ABI_FLAG)
+        + '"'
     )
 
     if is_windows():
