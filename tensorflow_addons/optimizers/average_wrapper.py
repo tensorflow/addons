@@ -45,9 +45,7 @@ class AveragedOptimizerWrapper(KerasLegacyOptimizer, metaclass=abc.ABCMeta):
 
         if not isinstance(optimizer, KerasLegacyOptimizer):
             raise TypeError(
-                "optimizer is not an object of tf.keras.optimizers.Optimizer "
-                "or tf.keras.optimizers.legacy.Optimizer "
-                "(if you have tf version >= 2.11.0)."
+                "optimizer is not an object of tf.keras.optimizers.legacy.Optimizer "
             )
 
         self._optimizer = optimizer
