@@ -6,8 +6,6 @@ ENV TF_NEED_CUDA="1"
 ARG PY_VERSION
 ARG TF_VERSION
 
-RUN python -m pip install setuptools
-
 # TODO: Remove this if tensorflow/build container removes their keras-nightly install
 # https://github.com/tensorflow/build/issues/78
 RUN python -m pip uninstall -y keras-nightly
