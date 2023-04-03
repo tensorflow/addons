@@ -94,7 +94,8 @@ jobs:
           CPU: ${{ matrix.cpu }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}_${CPU}.sh
-      - uses: actions/upload-artifact@v1
+      - if: matrix.py-version != '3.11' || matrix.tf-version == '2.12.0'
+        uses: actions/upload-artifact@v1
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-${{ matrix.cpu }}-wheel
           path: wheelhouse
