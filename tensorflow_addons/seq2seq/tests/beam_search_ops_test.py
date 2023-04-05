@@ -20,7 +20,6 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from tensorflow_addons import options
 from tensorflow_addons.seq2seq import gather_tree
 
 
