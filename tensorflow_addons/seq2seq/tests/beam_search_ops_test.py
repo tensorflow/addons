@@ -80,7 +80,7 @@ def test_bad_parent_values_on_gpu():
         [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
     )
     max_sequence_lengths = [3]
-    
+
     with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
         _ = gather_tree(
             step_ids=step_ids,
