@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-FROM python:3.7-alpine as flake8-test
+FROM python:3.9-alpine as flake8-test
 
 COPY tools/install_deps/flake8.txt ./
 RUN pip install -r flake8.txt
@@ -9,7 +9,7 @@ RUN flake8
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.7 as black-test
+FROM python:3.9 as black-test
 
 COPY tools/install_deps/black.txt ./
 RUN pip install -r black.txt
@@ -18,7 +18,7 @@ RUN black --check /addons
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.7 as source_code_test
+FROM python:3.9 as source_code_test
 
 COPY tools/install_deps /install_deps
 RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
@@ -34,7 +34,7 @@ RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.7 as valid_build_files
+FROM python:3.9 as valid_build_files
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
@@ -51,7 +51,7 @@ RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.7-alpine as clang-format
+FROM python:3.9-alpine as clang-format
 
 RUN apk update && apk add git
 RUN git clone https://github.com/gabrieldemarmiesse/clang-format-lint-action.git
@@ -99,7 +99,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # test the editable mode
-FROM python:3.7 as test_editable_mode
+FROM python:3.9 as test_editable_mode
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt

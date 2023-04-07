@@ -20,7 +20,6 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from tensorflow_addons import options
 from tensorflow_addons.seq2seq import gather_tree
 
 
@@ -80,26 +79,14 @@ def test_bad_parent_values_on_gpu():
         [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
     )
     max_sequence_lengths = [3]
-    expected_result = _transpose_batch_time(
-        [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
-    )
-    if options.is_custom_kernel_disabled():
-        # The Python version has the same behavior on CPU and GPU.
-        with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
-            _ = gather_tree(
-                step_ids=step_ids,
-                parent_ids=parent_ids,
-                max_sequence_lengths=max_sequence_lengths,
-                end_token=end_token,
-            )
-    else:
-        beams = gather_tree(
+
+    with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
+        _ = gather_tree(
             step_ids=step_ids,
             parent_ids=parent_ids,
             max_sequence_lengths=max_sequence_lengths,
             end_token=end_token,
         )
-        np.testing.assert_equal(expected_result, beams.numpy())
 
 
 @pytest.mark.usefixtures("run_custom_and_py_ops")

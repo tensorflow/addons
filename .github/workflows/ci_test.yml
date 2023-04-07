@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
       - uses: actions/checkout@v2
       - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./

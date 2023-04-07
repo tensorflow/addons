@@ -1,2 +1,2 @@
-git+https://github.com/tensorflow/docs@c1510dc5ad73aa829249822798e6263360b0f62a
+git+https://github.com/tensorflow/docs@99113f26039f6c042df7f2898e05019dbcdf3675
 pyyaml

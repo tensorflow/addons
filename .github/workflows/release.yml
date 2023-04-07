@@ -15,13 +15,13 @@ on:
       - r*
 
 env:
-  MIN_PY_VERSION: '3.7'
-  MAX_PY_VERSION: '3.10'
+  MIN_PY_VERSION: '3.9'
+  MAX_PY_VERSION: '3.11'
 
 jobs:
   test-with-bazel:
     name: Test with bazel
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -40,22 +40,22 @@ jobs:
       matrix:
         # To switch on windows-2022/latest, please verify the bazel version:
         # https://github.com/bazelbuild/bazel/issues/14232#issuecomment-1011247429
-        os: ['macos-12', 'windows-2019', 'ubuntu-18.04']
-        py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.9.3', '2.10.1', '2.11.0']
+        os: ['macos-12', 'windows-2019', 'ubuntu-20.04']
+        py-version: ['3.8', '3.9', '3.10', '3.11']
+        tf-version: ['2.10.1', '2.11.0', '2.12.0']
         cpu: ['x86']
         include:
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.11.0'
+            tf-version: '2.12.0'
             py-version: '3.8'
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.11.0'
+            tf-version: '2.12.0'
             py-version: '3.9'
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.11.0'
+            tf-version: '2.12.0'
             py-version: '3.10'
       fail-fast: false
     steps:
@@ -66,7 +66,7 @@ jobs:
           script: |
             const commit_details = await github.git.getCommit({owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha});
             return commit_details.data.author.date
-      - if: matrix.tf-version != '2.10.0'
+      - if: matrix.tf-version != '2.12.0'
         shell: bash
         run: echo "SKIP_CUSTOM_OP_TESTS=--skip-custom-ops" >> $GITHUB_ENV
       - if: github.event_name == 'push'
@@ -76,11 +76,12 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.py-version }}
-      - if: matrix.os != 'ubuntu-18.04'
+      - if: matrix.os != 'ubuntu-20.04'
         name: Setup Bazel
         # Ubuntu bazel is run inside of the docker image
         run: bash tools/install_deps/install_bazelisk.sh ./
-      - name: Build wheels
+      - if: matrix.py-version != '3.11' || matrix.tf-version == '2.12.0'
+        name: Build wheels
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -89,32 +90,33 @@ jobs:
           CPU: ${{ matrix.cpu }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}_${CPU}.sh
-      - uses: actions/upload-artifact@v1
+      - if: matrix.py-version != '3.11' || matrix.tf-version == '2.12.0'
+        uses: actions/upload-artifact@v1
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-${{ matrix.cpu }}-wheel
           path: wheelhouse
   upload-wheels:
     name: Publish wheels to PyPi
     needs: [release-wheel, test-with-bazel]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.7', '3.8', '3.9', '3.10']
-        tf-version: ['2.11.0']
+        py-version: ['3.8', '3.9', '3.10', '3.11']
+        tf-version: ['2.12.0']
         cpu: ['x86']
         include:
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.11.0'
+            tf-version: '2.12.0'
             py-version: '3.8'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.11.0'
+            tf-version: '2.12.0'
             py-version: '3.9'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.11.0'
+            tf-version: '2.12.0'
             py-version: '3.10'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
@@ -134,7 +136,7 @@ jobs:
   upload-dev-container:
     name: Upload dev container to DockerHub
     needs: [release-wheel, test-with-bazel]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       PY_VERSION: '3.9'
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master')

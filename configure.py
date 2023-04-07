@@ -185,14 +185,14 @@ def configure_cuda():
         "CUDNN_INSTALL_PATH",
         os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
     )
-    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "11.2"))
+    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "11.8"))
     write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "8"))
 
     write("test --config=cuda")
     write("build --config=cuda")
     write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
     write(
-        "build:cuda --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain"
+        "build:cuda --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.8-cudnn8.6-tensorrt8.4_config_cuda//crosstool:toolchain"
     )
 
 

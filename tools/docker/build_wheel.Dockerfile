@@ -1,10 +1,13 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG PY_VERSION
-FROM tensorflow/build:2.11-python$PY_VERSION as base_install
+FROM tensorflow/build:2.12-python$PY_VERSION as base_install
 
 ENV TF_NEED_CUDA="1"
 ARG PY_VERSION
 ARG TF_VERSION
+
+# TODO: Temporary due to build bug https://github.com/pypa/pip/issues/11770
+RUN python -m pip install pip==22.3.1
 
 # TODO: Remove this if tensorflow/build container removes their keras-nightly install
 # https://github.com/tensorflow/build/issues/78
@@ -42,7 +45,7 @@ RUN bazel build \
         --noshow_loading_progress \
         --verbose_failures \
         --test_output=errors \
-        --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.2-cudnn8.1-tensorrt7.2_config_cuda//crosstool:toolchain \
+        --crosstool_top=@ubuntu20.04-gcc9_manylinux2014-cuda11.8-cudnn8.6-tensorrt8.4_config_cuda//crosstool:toolchain \
         build_pip_pkg && \
     # Package Whl
     bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
