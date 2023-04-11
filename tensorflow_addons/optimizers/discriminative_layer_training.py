@@ -21,8 +21,14 @@ import tensorflow as tf
 from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typeguard import typechecked
 
-from keras import backend
-from keras.utils import tf_utils
+try:
+    # New versions of Keras require importing from `keras.src` when
+    # importing internal symbols.
+    from keras.src import backend
+    from keras.src.utils import tf_utils
+except ImportError:
+    from keras import backend
+    from keras.utils import tf_utils
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
