@@ -20,8 +20,14 @@ import importlib
 import numpy as np
 import tensorflow as tf
 
+from packaging.version import Version
+
 # TODO: Remove once https://github.com/tensorflow/tensorflow/issues/44613 is resolved
-if tf.__version__[:3] > "2.5":
+if Version(tf.__version__).release >= Version("2.13").release:
+    # New versions of Keras require importing from `keras.src` when
+    # importing internal symbols.
+    from keras.src.engine import keras_tensor
+elif Version(tf.__version__).release >= Version("2.5").release:
     from keras.engine import keras_tensor
 else:
     from tensorflow.python.keras.engine import keras_tensor

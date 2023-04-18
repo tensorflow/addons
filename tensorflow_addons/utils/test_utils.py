@@ -26,7 +26,11 @@ from packaging.version import Version
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
-if Version(tf.__version__) >= Version("2.9"):
+if Version(tf.__version__).release >= Version("2.13").release:
+    # New versions of Keras require importing from `keras.src` when
+    # importing internal symbols.
+    from keras.src.testing_infra.test_utils import layer_test  # noqa: F401
+elif Version(tf.__version__) >= Version("2.9"):
     from keras.testing_infra.test_utils import layer_test  # noqa: F401
 else:
     from keras.testing_utils import layer_test  # noqa: F401
