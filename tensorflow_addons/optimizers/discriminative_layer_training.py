@@ -18,15 +18,16 @@ from typing import List, Union
 
 import tensorflow as tf
 
+from packaging.version import Version
 from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typeguard import typechecked
 
-try:
+if Version(tf.__version__).release >= Version("2.13").release:
     # New versions of Keras require importing from `keras.src` when
     # importing internal symbols.
     from keras.src import backend
     from keras.src.utils import tf_utils
-except ImportError:
+else:
     from keras import backend
     from keras.utils import tf_utils
 
