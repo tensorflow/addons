@@ -20,7 +20,7 @@ EXCLUSIVE_MAX_TF_VERSION = "2.13.0"
 
 # We follow Semantic Versioning (https://semver.org/)
 _MAJOR_VERSION = "0"
-_MINOR_VERSION = "20"
+_MINOR_VERSION = "21"
 _PATCH_VERSION = "0"
 
 # When building releases, we can update this value on the release branch to
