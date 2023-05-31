@@ -1,6 +1,9 @@
 
-:warning: :warning: :warning:
+<h2 align="center">
+ :warning: :warning: :warning:
+</h2>
 
+<h4 align="center">
 TensorFlow Addons (TFA) has ended development and introduction of new features.
 
 TFA has entered a minimal maintenance and release mode until a planned end of life 
@@ -8,7 +11,7 @@ in May 2024. Please modify downstream libraries to take dependencies from other
 repositories in our TensorFlow community (e.g. Keras, Keras-CV, and Keras-NLP)
 
 For more information see: [https://github.com/tensorflow/addons/issues/2807](https://github.com/tensorflow/addons/issues/2807)
-
+</h4>
 
 -----------------
 
