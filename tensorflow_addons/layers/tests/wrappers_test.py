@@ -70,7 +70,7 @@ def test_with_data_init_is_true():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_non_layer():
     images = tf.random.uniform((2, 4, 3))
-    with pytest.raises(AssertionError):
+    with pytest.raises((ValueError, AssertionError)):
         wrappers.WeightNormalization(images)
 
 
