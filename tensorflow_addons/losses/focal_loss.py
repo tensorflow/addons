@@ -139,4 +139,4 @@ def sigmoid_focal_crossentropy(
         modulating_factor = tf.pow((1.0 - p_t), gamma)
 
     # compute the final loss and return
-    return tf.reduce_sum(alpha_factor * modulating_factor * ce, axis=-1)
+    return alpha_factor * modulating_factor * ce
