@@ -247,7 +247,7 @@ def dense_image_warp(
 
 @tf.function(experimental_implements="addons:DenseImageWarp")
 def dense_image_warp_annotated(
-    image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
+    image: types.TensorLike, flow: types.TensorLike
 ) -> tf.Tensor:
     """Similar to dense_image_warp but annotated with experimental_implements.
 
@@ -260,4 +260,4 @@ def dense_image_warp_annotated(
     However, with the annotation, this function cannot be used with backprop
     under `tf.GradientTape` objects.
     """
-    return dense_image_warp(image, flow, name)
+    return dense_image_warp(image, flow)
