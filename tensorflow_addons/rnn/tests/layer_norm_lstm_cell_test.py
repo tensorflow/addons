@@ -86,7 +86,7 @@ def test_cell_output():
 
 @pytest.mark.skipif(Version(tf.__version__) < Version("2.13"),
                     reason="TF2.13 Serialization method doesn't support legacy method on parent class")
-def test_config_layer_norm():
+def test_config_layer_norm_legacy():
     cell = LayerNormLSTMCell(10, name="layer_norm_lstm_cell_3")
 
     expected_config = {
@@ -130,6 +130,7 @@ def test_config_layer_norm():
     restored_cell = LayerNormLSTMCell.from_config(config)
     restored_config = restored_cell.get_config()
     assert config == restored_config
+
 
 @pytest.mark.skipif(Version(tf.__version__) >= Version("2.13"),
                     reason="TF2.13 Serialization method doesn't support legacy method on parent class")
