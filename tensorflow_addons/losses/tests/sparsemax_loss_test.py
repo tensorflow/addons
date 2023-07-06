@@ -256,6 +256,6 @@ def test_sparsemax_loss_zero(dtype):
 def test_serialization():
     ref_fn = sparsemax_loss
 
-    config = tf.keras.losses.serialize(ref_fn, use_legacy_format=True)
+    config = tf.keras.losses.serialize(ref_fn)
     fn = tf.keras.losses.deserialize(config)
     assert ref_fn.__class__ == fn.__class__
