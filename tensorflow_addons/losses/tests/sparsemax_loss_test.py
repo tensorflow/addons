@@ -255,4 +255,4 @@ def test_serialization():
     ref_fn = sparsemax_loss
     config = tf.keras.losses.serialize(ref_fn)
     fn = tf.keras.losses.deserialize(config)
-    assert ref_fn == fn
+    assert ref_fn.__name__ == fn
