@@ -256,6 +256,10 @@ def test_sparsemax_loss_zero(dtype):
 def test_serialization():
     ref_fn = sparsemax_loss
 
-    config = tf.keras.losses.serialize(ref_fn)
+    # TODO: Remove after 2.13 is oldest version supported due to new serialization
+    if Version(tf.__version__) >= Version("2.13"):
+        config = tf.keras.losses.serialize(ref_fn, use_legacy_format=True)
+    else:
+        config = tf.keras.losses.serialize(ref_fn)
     fn = tf.keras.losses.deserialize(config)
-    assert ref_fn.__class__ == fn.__class__
+    assert ref_fn.__name__ == fn.__name__
