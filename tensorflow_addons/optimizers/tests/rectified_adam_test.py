@@ -206,14 +206,14 @@ def test_scheduler_serialization():
         assert new_optimizer.get_config()["learning_rate"] == {
             "class_name": "ExponentialDecay",
             "config": lr_scheduler.get_config(),
-            'module': 'keras.optimizers.schedules',
-            'registered_name': None
+            "module": "keras.optimizers.schedules",
+            "registered_name": None,
         }
         assert new_optimizer.get_config()["weight_decay"] == {
             "class_name": "InverseTimeDecay",
             "config": wd_scheduler.get_config(),
-            'module': 'keras.optimizers.schedules',
-            'registered_name': None
+            "module": "keras.optimizers.schedules",
+            "registered_name": None,
         }
 
     else:

@@ -290,14 +290,22 @@ def test_serialization():
     old_config = optimizer.get_config()
     new_config = new_optimizer.get_config()
 
-    # TODO: Remove after 2.13 is oldest version supported due to new serialization
+    # TODO: Remove if statement after 2.13 is oldest version supported due to new serialization
     if Version(tf.__version__) >= Version("2.13"):
         # New Serialization method stores the memory addresses of each optimizer which won't match
-        old_config['optimizer_specs'][0].pop('optimizer')
-        old_config['optimizer_specs'][1].pop('optimizer')
+        old_config["optimizer_specs"][0]["optimizer"] = old_config["optimizer_specs"][
+            0
+        ]["optimizer"].__class__
+        old_config["optimizer_specs"][1]["optimizer"] = old_config["optimizer_specs"][
+            1
+        ]["optimizer"].__class__
 
-        new_config['optimizer_specs'][0].pop('optimizer')
-        new_config['optimizer_specs'][1].pop('optimizer')
+        new_config["optimizer_specs"][0]["optimizer"] = new_config["optimizer_specs"][
+            0
+        ]["optimizer"].__class__
+        new_config["optimizer_specs"][1]["optimizer"] = new_config["optimizer_specs"][
+            1
+        ]["optimizer"].__class__
 
     assert new_config == old_config
 
@@ -331,7 +339,7 @@ def test_serialization_after_training(tmpdir):
         old_config["optimizer_specs"], new_config["optimizer_specs"]
     ):
         assert old_optimizer_spec["weights"] == new_optimizer_spec["weights"]
-        # assert (
-        #     old_optimizer_spec["optimizer"].get_config()
-        #     == new_optimizer_spec["optimizer"].get_config()
-        # )
+        assert (
+            old_optimizer_spec["optimizer"].get_config()
+            == new_optimizer_spec["optimizer"].get_config()
+        )
