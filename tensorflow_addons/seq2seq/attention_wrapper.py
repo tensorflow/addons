@@ -368,13 +368,17 @@ class AttentionMechanism(tf.keras.layers.Layer):
         query_layer_config = config.pop("query_layer", None)
         if query_layer_config:
             query_layer = tf.keras.layers.deserialize(
-                query_layer_config, custom_objects=custom_objects
+                query_layer_config,
+                custom_objects=custom_objects,
+                use_legacy_format=True,
             )
             config["query_layer"] = query_layer
         memory_layer_config = config.pop("memory_layer", None)
         if memory_layer_config:
             memory_layer = tf.keras.layers.deserialize(
-                memory_layer_config, custom_objects=custom_objects
+                memory_layer_config,
+                custom_objects=custom_objects,
+                use_legacy_format=True,
             )
             config["memory_layer"] = memory_layer
         return config
@@ -605,7 +609,7 @@ class LuongAttention(AttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = AttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects
+            config, custom_objects=custom_objects, use_legacy_format=True
         )
         return cls(**config)
 
@@ -804,7 +808,7 @@ class BahdanauAttention(AttentionMechanism):
             "normalize": self.normalize,
             "probability_fn": self.probability_fn_name,
             "kernel_initializer": tf.keras.initializers.serialize(
-                self.kernel_initializer)
+                self.kernel_initializer, use_legacy_format=True)
         }
         # yapf: enable
 
@@ -814,7 +818,8 @@ class BahdanauAttention(AttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = AttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects
+            config,
+            custom_objects=custom_objects,
         )
         return cls(**config)
 
@@ -1186,7 +1191,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             "score_bias_init": self.score_bias_init,
             "mode": self.mode,
             "kernel_initializer": tf.keras.initializers.serialize(
-                self.kernel_initializer),
+                self.kernel_initializer, use_legacy_format=True),
         }
         # yapf: enable
 
