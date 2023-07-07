@@ -609,7 +609,7 @@ class LuongAttention(AttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = AttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects, use_legacy_format=True
+            config, custom_objects=custom_objects
         )
         return cls(**config)
 
