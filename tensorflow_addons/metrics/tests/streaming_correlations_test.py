@@ -123,7 +123,7 @@ class TestStreamingCorrelations:
 
         # the training should increase the correlation metric
         metric_history = history.history["val_" + metric.name]
-        #assert np.all(metric_history > initial_correlation)
+        # assert np.all(metric_history > initial_correlation)
 
         preds = model(x)
         metric.reset_state()
