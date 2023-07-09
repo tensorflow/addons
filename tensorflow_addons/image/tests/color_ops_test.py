@@ -81,7 +81,7 @@ def test_sharpness_dtype_shape(dtype, shape):
     assert sharp.dtype == image.dtype
 
 
-@pytest.mark.parametrize("factor", [0, 0.25, 0.5, 0.75, 1])
+@pytest.mark.parametrize("factor", sorted([0, 0.25, 0.5, 0.75, 1]))
 def test_sharpness_with_PIL(factor):
     np.random.seed(0)
     image = np.random.randint(low=0, high=255, size=(10, 5, 5, 3), dtype=np.uint8)
