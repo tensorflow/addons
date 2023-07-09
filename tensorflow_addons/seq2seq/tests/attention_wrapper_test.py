@@ -15,6 +15,7 @@
 """Tests for tfa.seq2seq.attention_wrapper."""
 
 import collections
+from packaging.version import Version
 
 import pytest
 import numpy as np
@@ -130,7 +131,9 @@ def test_save_load_layer(attention_cls):
     model.compile("rmsprop", "mse")
     y_ref = model.predict_on_batch([x_test, dummy_data.query, dummy_data.state])
 
-    model.use_legacy_config = True
+    if Version(tf.__version__) >= Version("2.13"):
+        model.use_legacy_config = True
+
     config = model.get_config()
     weights = model.get_weights()
     loaded_model = tf.keras.Model.from_config(

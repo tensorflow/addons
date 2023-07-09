@@ -17,6 +17,7 @@
 import collections
 import functools
 import math
+from packaging.version import Version
 
 import numpy as np
 
@@ -33,6 +34,12 @@ from tensorflow_addons.utils.types import (
 
 from typeguard import typechecked
 from typing import Optional, Callable, Union, List
+
+
+if Version(tf.__version__) < Version("2.13"):
+    SERIALIZATION_ARGS = {}
+else:
+    SERIALIZATION_ARGS = {"use_legacy_format": True}
 
 
 class AttentionMechanism(tf.keras.layers.Layer):
@@ -370,7 +377,7 @@ class AttentionMechanism(tf.keras.layers.Layer):
             query_layer = tf.keras.layers.deserialize(
                 query_layer_config,
                 custom_objects=custom_objects,
-                use_legacy_format=True,
+                **SERIALIZATION_ARGS,
             )
             config["query_layer"] = query_layer
         memory_layer_config = config.pop("memory_layer", None)
@@ -378,7 +385,7 @@ class AttentionMechanism(tf.keras.layers.Layer):
             memory_layer = tf.keras.layers.deserialize(
                 memory_layer_config,
                 custom_objects=custom_objects,
-                use_legacy_format=True,
+                **SERIALIZATION_ARGS,
             )
             config["memory_layer"] = memory_layer
         return config
@@ -808,7 +815,9 @@ class BahdanauAttention(AttentionMechanism):
             "normalize": self.normalize,
             "probability_fn": self.probability_fn_name,
             "kernel_initializer": tf.keras.initializers.serialize(
-                self.kernel_initializer, use_legacy_format=True)
+                self.kernel_initializer,
+                **SERIALIZATION_ARGS,
+            )
         }
         # yapf: enable
 
@@ -1181,7 +1190,6 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         return alignments, next_state
 
     def get_config(self):
-
         # yapf: disable
         config = {
             "units": self.units,
@@ -1191,7 +1199,9 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             "score_bias_init": self.score_bias_init,
             "mode": self.mode,
             "kernel_initializer": tf.keras.initializers.serialize(
-                self.kernel_initializer, use_legacy_format=True),
+                self.kernel_initializer,
+                **SERIALIZATION_ARGS,
+            ),
         }
         # yapf: enable
 
