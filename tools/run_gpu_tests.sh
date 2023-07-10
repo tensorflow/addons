@@ -9,4 +9,4 @@ docker build \
        --build-arg TF_VERSION=2.13.0 \
        --build-arg PY_VERSION=3.9 \
        -t tfa_gpu_tests ./
-docker run --rm -t --gpus=all tfa_gpu_tests
+docker run --rm -t --gpus=all --shm-size=256m tfa_gpu_tests
