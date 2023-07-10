@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG PY_VERSION
-FROM tensorflow/build:2.12-python$PY_VERSION as base_install
+FROM tensorflow/build:2.13-python$PY_VERSION as base_install
 
 ENV TF_NEED_CUDA="1"
 ARG PY_VERSION
@@ -13,7 +13,7 @@ RUN python -m pip install pip==22.3.1
 # https://github.com/tensorflow/build/issues/78
 RUN python -m pip uninstall -y keras-nightly
 
-RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
+RUN python -m pip install --default-timeout=1000 tf-nightly
 
 COPY tools/install_deps/ /install_deps
 RUN python -m pip install -r /install_deps/pytest.txt
