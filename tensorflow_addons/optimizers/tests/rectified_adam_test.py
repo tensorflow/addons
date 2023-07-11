@@ -16,6 +16,7 @@
 
 import numpy as np
 import pytest
+from packaging.version import Version
 
 import tensorflow as tf
 from tensorflow_addons.optimizers import RectifiedAdam, Lookahead
@@ -200,15 +201,31 @@ def test_scheduler_serialization():
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
 
-    assert new_optimizer.get_config()["learning_rate"] == {
-        "class_name": "ExponentialDecay",
-        "config": lr_scheduler.get_config(),
-    }
+    # TODO: Remove after 2.13 is oldest version supported due to new serialization
+    if Version(tf.__version__) >= Version("2.13"):
+        assert new_optimizer.get_config()["learning_rate"] == {
+            "class_name": "ExponentialDecay",
+            "config": lr_scheduler.get_config(),
+            "module": "keras.optimizers.schedules",
+            "registered_name": None,
+        }
+        assert new_optimizer.get_config()["weight_decay"] == {
+            "class_name": "InverseTimeDecay",
+            "config": wd_scheduler.get_config(),
+            "module": "keras.optimizers.schedules",
+            "registered_name": None,
+        }
 
-    assert new_optimizer.get_config()["weight_decay"] == {
-        "class_name": "InverseTimeDecay",
-        "config": wd_scheduler.get_config(),
-    }
+    else:
+        assert new_optimizer.get_config()["learning_rate"] == {
+            "class_name": "ExponentialDecay",
+            "config": lr_scheduler.get_config(),
+        }
+
+        assert new_optimizer.get_config()["weight_decay"] == {
+            "class_name": "InverseTimeDecay",
+            "config": wd_scheduler.get_config(),
+        }
 
 
 def test_checkpoint_serialization(tmpdir):

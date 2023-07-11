@@ -1,4 +1,5 @@
 import random
+from packaging.version import Version
 
 import numpy as np
 import pytest
@@ -28,12 +29,20 @@ def train_small_model():
     model.fit(x, y, epochs=1)
 
 
+@pytest.mark.skipif(
+    Version(tf.__version__) >= Version("2.13"),
+    reason="TF2.13 breakage: https://github.com/tensorflow/addons/pull/2835#issuecomment-1629772331",
+)
 @pytest.mark.with_device([tf.distribute.MirroredStrategy])
 def test_distributed_strategy(device):
     assert isinstance(device, tf.distribute.Strategy)
     train_small_model()
 
 
+@pytest.mark.skipif(
+    Version(tf.__version__) >= Version("2.13"),
+    reason="TF2.13 breakage: https://github.com/tensorflow/addons/pull/2835#issuecomment-1629772331",
+)
 @pytest.mark.with_device(["no_device"])
 @pytest.mark.needs_gpu
 def test_custom_device_placement():

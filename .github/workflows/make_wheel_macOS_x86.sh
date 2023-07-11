@@ -28,5 +28,5 @@ bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
 
 # Setting DYLD_LIBRARY_PATH to help delocate finding tensorflow after the rpath invalidation
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(python -c 'import configure; print(configure.get_tf_shared_lib_dir())')
-delocate-wheel -w wheelhouse -v artifacts/*.whl
+delocate-wheel -w wheelhouse -v --ignore-missing-dependencies artifacts/*.whl
 

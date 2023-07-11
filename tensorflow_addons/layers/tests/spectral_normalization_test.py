@@ -158,7 +158,7 @@ def test_apply_layer():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_no_layer():
     images = tf.random.uniform((2, 4, 43))
-    with pytest.raises(AssertionError):
+    with pytest.raises((AssertionError, ValueError)):
         spectral_normalization.SpectralNormalization(images)
 
 

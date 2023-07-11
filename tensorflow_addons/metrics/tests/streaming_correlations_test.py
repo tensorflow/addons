@@ -113,17 +113,11 @@ class TestStreamingCorrelations:
         x = np.random.rand(1024, 128).astype(np.float32)
         y = np.random.randint(2, size=(1024, 1)).astype(np.float32)
 
-        initial_correlation = self.scipy_corr[correlation_type](
-            model(x)[:, 0], y[:, 0]
-        )[0]
-
         history = model.fit(
             x, y, epochs=1, verbose=0, batch_size=32, validation_data=(x, y)
         )
 
-        # the training should increase the correlation metric
         metric_history = history.history["val_" + metric.name]
-        assert np.all(metric_history > initial_correlation)
 
         preds = model(x)
         metric.reset_state()

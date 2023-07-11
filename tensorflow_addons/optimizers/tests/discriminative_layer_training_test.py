@@ -15,6 +15,7 @@
 """Tests for Discriminative Layer Training Optimizer for TensorFlow."""
 
 from math import ceil
+from packaging.version import Version
 
 import pytest
 import numpy as np
@@ -285,7 +286,28 @@ def test_serialization():
     config = tf.keras.optimizers.serialize(optimizer)
 
     new_optimizer = tf.keras.optimizers.deserialize(config)
-    assert new_optimizer.get_config() == optimizer.get_config()
+
+    old_config = optimizer.get_config()
+    new_config = new_optimizer.get_config()
+
+    # TODO: Remove if statement after 2.13 is oldest version supported due to new serialization
+    if Version(tf.__version__) >= Version("2.13"):
+        # New Serialization method stores the memory addresses of each optimizer which won't match
+        old_config["optimizer_specs"][0]["optimizer"] = old_config["optimizer_specs"][
+            0
+        ]["optimizer"].__class__
+        old_config["optimizer_specs"][1]["optimizer"] = old_config["optimizer_specs"][
+            1
+        ]["optimizer"].__class__
+
+        new_config["optimizer_specs"][0]["optimizer"] = new_config["optimizer_specs"][
+            0
+        ]["optimizer"].__class__
+        new_config["optimizer_specs"][1]["optimizer"] = new_config["optimizer_specs"][
+            1
+        ]["optimizer"].__class__
+
+    assert new_config == old_config
 
 
 def test_serialization_after_training(tmpdir):

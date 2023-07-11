@@ -17,6 +17,7 @@
 import numpy as np
 import pytest
 import tensorflow as tf
+from packaging.version import Version
 
 from tensorflow_addons.optimizers import MovingAverage
 
@@ -270,6 +271,10 @@ def test_dynamic_decay():
     np.testing.assert_allclose(ema_var0.read_value(), [0.64, 1.64])
 
 
+@pytest.mark.skipif(
+    Version(tf.__version__) >= Version("2.13"),
+    reason="TF2.13 breakage: https://github.com/tensorflow/addons/pull/2835#issuecomment-1629772331",
+)
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device([tf.distribute.MirroredStrategy])
 def test_swap_weight_no_shadow_copy(device):
@@ -307,6 +312,10 @@ def test_swap_weight_no_shadow_copy(device):
     np.testing.assert_allclose(ema_var.read_value(), [0.9, 1.9])
 
 
+@pytest.mark.skipif(
+    Version(tf.__version__) >= Version("2.13"),
+    reason="TF2.13 breakage: https://github.com/tensorflow/addons/pull/2835#issuecomment-1629772331",
+)
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device([tf.distribute.MirroredStrategy])
 def test_swap_weights(device):

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for LayerNormLSTM Cell."""
 
+import pytest
+from packaging.version import Version
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -81,6 +84,75 @@ def test_cell_output():
     np.testing.assert_allclose(output_states_v[1], expected_c, 1e-5)
 
 
+@pytest.mark.skipif(
+    Version(tf.__version__) < Version("2.13"),
+    reason="TF2.13 Serialization method doesn't support legacy method on parent class",
+)
+def test_config_layer_norm_legacy():
+    cell = LayerNormLSTMCell(10, name="layer_norm_lstm_cell_3")
+
+    expected_config = {
+        "dtype": "float32",
+        "name": "layer_norm_lstm_cell_3",
+        "trainable": True,
+        "units": 10,
+        "activation": "tanh",
+        "recurrent_activation": "sigmoid",
+        "use_bias": True,
+        "kernel_initializer": {
+            "class_name": "GlorotUniform",
+            "config": {"seed": None},
+            "module": "keras.initializers",
+            "registered_name": None,
+        },
+        "recurrent_initializer": {
+            "class_name": "Orthogonal",
+            "config": {"seed": None, "gain": 1.0},
+            "module": "keras.initializers",
+            "registered_name": None,
+        },
+        "bias_initializer": {
+            "class_name": "Zeros",
+            "config": {},
+            "module": "keras.initializers",
+            "registered_name": None,
+        },
+        "unit_forget_bias": True,
+        "kernel_regularizer": None,
+        "recurrent_regularizer": None,
+        "bias_regularizer": None,
+        "kernel_constraint": None,
+        "recurrent_constraint": None,
+        "bias_constraint": None,
+        "dropout": 0.0,
+        "recurrent_dropout": 0.0,
+        "implementation": 2,
+        "norm_gamma_initializer": {
+            "class_name": "Ones",
+            "config": {},
+            "module": "keras.initializers",
+            "registered_name": None,
+        },
+        "norm_beta_initializer": {
+            "class_name": "Zeros",
+            "config": {},
+            "module": "keras.initializers",
+            "registered_name": None,
+        },
+        "norm_epsilon": 1e-3,
+    }
+    config = cell.get_config()
+    assert config == expected_config
+
+    restored_cell = LayerNormLSTMCell.from_config(config)
+    restored_config = restored_cell.get_config()
+    assert config == restored_config
+
+
+@pytest.mark.skipif(
+    Version(tf.__version__) >= Version("2.13"),
+    reason="TF2.13 Serialization method doesn't support legacy method on parent class",
+)
 def test_config_layer_norm():
     cell = LayerNormLSTMCell(10, name="layer_norm_lstm_cell_3")
 
