@@ -45,7 +45,7 @@ jobs:
         tf-version: ['2.11.1', '2.12.0', '2.13.0']
         cpu: ['x86']
         include:
-          - os: 'macOS'
+          - os: 'macos-12'
             cpu: 'arm64'
             tf-version: '2.13.0'
             py-version: '3.8'
