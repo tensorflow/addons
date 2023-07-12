@@ -97,7 +97,8 @@ what it was tested against.
 #### Python Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.10, 2.11, 2.12 |3.8, 3.9, 3.10, 3.11 |
+| tfa-nightly | 2.11, 2.12, 2.13 |3.8, 3.9, 3.10, 3.11 |
+| tensorflow-addons-0.21.0 | 2.11, 2.12, 2.13 |3.8, 3.9, 3.10, 3.11 |
 | tensorflow-addons-0.20.0 | 2.10, 2.11, 2.12 |3.8, 3.9, 3.10, 3.11 |
 | tensorflow-addons-0.19.0 | 2.9, 2.10, 2.11 |3.7, 3.8, 3.9, 3.10 |
 | tensorflow-addons-0.18.0 | 2.8, 2.9, 2.10 |3.7, 3.8, 3.9, 3.10 |
@@ -132,7 +133,8 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 #### C++ Custom Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
-| tfa-nightly | 2.12  | GCC 9.3.1 | 8.6 | 11.8 |
+| tfa-nightly | 2.13  | GCC 9.3.1 | 8.6 | 11.8 |
+| tensorflow-addons-0.21.0 | 2.13  | GCC 9.3.1 | 8.6 | 11.8 |
 | tensorflow-addons-0.20.0 | 2.12  | GCC 9.3.1 | 8.6 | 11.8 |
 | tensorflow-addons-0.19.0 | 2.11  | GCC 9.3.1 | 8.1 | 11.2 |
 | tensorflow-addons-0.18.0 | 2.10  | GCC 9.3.1 | 8.1 | 11.2 |
