@@ -4,19 +4,15 @@ about: Use this template for raising a feature request
 
 ---
 
-**Describe the feature and the current behavior/state.**
+:exclamation: :exclamation: :exclamation:
 
-**Relevant information**
-- Are you willing to contribute it (yes/no):
-*If you wish to contribute, then read the requirements for new contributions in [`CONTRIBUTING.md`](https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#requirements-for-new-contributions-to-the-repository)*
-- Are you willing to maintain it going forward? (yes/no):
-- Is there a relevant academic paper? (if so, where):
-- Does the relavent academic paper exceed 50 citations? (yes/no):
-- Is there already an implementation in another framework? (if so, where):
-- Was it part of tf.contrib? (if so, where):
+TensorFlow Addons is transitioning to a minimal maintenance and release mode. New features will not be added to this repository. For more information, please see our public messaging on this decision:
+[TensorFlow Addons Wind Down](https://github.com/tensorflow/addons/issues/2807)
 
-**Which API type would this fall under (layer, metric, optimizer, etc.)**
+Please consider sending feature requests / contributions to other repositories in the TF community with a similar charters to TFA:
+[Keras](https://github.com/keras-team/keras)
+[Keras-CV](https://github.com/keras-team/keras-cv)
+[Keras-NLP](https://github.com/keras-team/keras-nlp)
 
-**Who will benefit with this feature?**
 
-**Any other info.**
+:exclamation: :exclamation: :exclamation:
