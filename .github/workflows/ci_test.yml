@@ -10,6 +10,9 @@ on:
       - master
       - r*
 
+permissions:
+  contents: read
+
 jobs:
   flake8-test:
     name: Flake8
