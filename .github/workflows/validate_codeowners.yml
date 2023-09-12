@@ -15,6 +15,9 @@ on:
 # Otherwise, it's useless, it just check the codeowners file from the latest commit in master
 
 
+permissions:
+  contents: read
+
 jobs:
   validate-codeowners:
     name: Check that the CODEOWNERS is valid

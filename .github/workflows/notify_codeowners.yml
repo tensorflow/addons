@@ -5,6 +5,9 @@ on:
     types: [opened]
 
 
+permissions:
+  contents: read
+
 jobs:
   notify-codeowners:
     name: Notify codeowners
