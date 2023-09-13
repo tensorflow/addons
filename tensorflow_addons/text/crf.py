@@ -582,7 +582,7 @@ def crf_decode(
         best_score = tf.reduce_max(last_score, axis=1)
         return decode_tags, best_score
 
-    if potentials.shape[1] is not None:
+    if potentials.shape[1].value is not None:
         # shape is statically know, so we just execute
         # the appropriate code path
         if potentials.shape[1] == 1:
