@@ -70,7 +70,7 @@ pip_parse(
     name = "pypi",
     annotations = NUMPY_ANNOTATIONS,
     python_interpreter_target = interpreter,
-    requirements = "//:requirements_lock_" + HERMETIC_PYTHON_VERSION.replace(".", "_") + ".txt",
+    requirements = "//:requirements.txt",
 )
 load("@pypi//:requirements.bzl", "install_deps")
 
