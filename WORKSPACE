@@ -15,7 +15,7 @@ http_archive(
     ],
 )
 # TODO: please double check what it is really required or not in this section
-################################################################
+# ###############################################################
 http_archive(
     name = "bazel_skylib",
     sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
@@ -49,7 +49,31 @@ python_register_toolchains(
 )
 
 load("@python//:defs.bzl", "interpreter")
-################################################################
+
+NUMPY_ANNOTATIONS = {
+    "numpy": package_annotation(
+        additive_build_content = """\
+filegroup(
+    name = "includes",
+    srcs = glob(["site-packages/numpy/core/include/**/*.h"]),
+)
+cc_library(
+    name = "numpy_headers",
+    hdrs = [":includes"],
+    strip_include_prefix="site-packages/numpy/core/include/",
+)
+""",
+    ),
+}
+
+pip_parse(
+    name = "pypi",
+    annotations = NUMPY_ANNOTATIONS,
+    python_interpreter_target = interpreter,
+    requirements = "//:requirements_lock_" + HERMETIC_PYTHON_VERSION.replace(".", "_") + ".txt",
+)
+
+# ###############################################################
 
 load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
 
