@@ -16,14 +16,13 @@ http_archive(
 )
 # TODO: please double check what it is really required or not in this section
 ################################################################
-http_archive(
-    name = "rules_python",
-    sha256 = "84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841",
-    strip_prefix = "rules_python-0.23.1",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.23.1/rules_python-0.23.1.tar.gz",
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+load(
+    "@org_tensorflow//tensorflow/tools/toolchains/python:python_repo.bzl",
+    "python_repository",
 )
 
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+python_repository(name = "python_version_repo")
 
 load("@python_version_repo//:py_version.bzl", "HERMETIC_PYTHON_VERSION")
 
@@ -34,7 +33,6 @@ python_register_toolchains(
 )
 
 load("@python//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "package_annotation", "pip_parse")
 ################################################################
 
 load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
