@@ -18,7 +18,7 @@ http_archive(
 ################################################################
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 load(
-    "@org_tensorflow//tensorflow:python_repo.bzl'",
+    "@org_tensorflow//tensorflow:python_repo.bzl",
     "python_repository",
 )
 
