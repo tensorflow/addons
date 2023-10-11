@@ -49,7 +49,7 @@ python_register_toolchains(
 )
 
 load("@python//:defs.bzl", "interpreter")
-
+load("@rules_python//python:pip.bzl", "package_annotation", "pip_parse")
 NUMPY_ANNOTATIONS = {
     "numpy": package_annotation(
         additive_build_content = """\
