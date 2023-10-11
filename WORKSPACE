@@ -72,6 +72,9 @@ pip_parse(
     python_interpreter_target = interpreter,
     requirements = "//:requirements_lock_" + HERMETIC_PYTHON_VERSION.replace(".", "_") + ".txt",
 )
+load("@pypi//:requirements.bzl", "install_deps")
+
+install_deps()
 
 # ###############################################################
 
