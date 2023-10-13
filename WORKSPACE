@@ -14,6 +14,7 @@ http_archive(
         "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.14.0.tar.gz",
     ],
 )
+
 # TODO: please double check what it is really required or not in this section
 # ###############################################################
 http_archive(
@@ -31,8 +32,11 @@ http_archive(
     strip_prefix = "rules_python-0.26.0",
     url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
 )
+
 load("@rules_python//python:repositories.bzl", "py_repositories")
+
 py_repositories()
+
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 load(
     "@org_tensorflow//tensorflow/tools/toolchains/python:python_repo.bzl",
@@ -74,6 +78,7 @@ pip_parse(
     python_interpreter_target = interpreter,
     requirements = "//:requirements.txt",
 )
+
 load("@pypi//:requirements.bzl", "install_deps")
 
 install_deps()
