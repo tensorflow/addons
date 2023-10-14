@@ -63,7 +63,6 @@ pip_parse(
     requirements = "//:tools/install_deps/pytest.txt",
 )
 
-
 load("@pypi//:requirements.bzl", "install_deps")
 
 install_deps()

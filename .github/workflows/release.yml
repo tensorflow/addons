@@ -22,19 +22,6 @@ env:
   MAX_PY_VERSION: '3.11'
 
 jobs:
-  test-with-bazel:
-    name: Test with bazel
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          TF_PYTHON_VERSION: ${{ env.MIN_PY_VERSION }}
-      - name: Build wheels
-        run: |
-          bash tools/install_deps/install_bazelisk.sh ./
-          python configure.py
-          bazel test -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
     name: Test and build release wheels
     runs-on: ${{ matrix.os }}
@@ -42,7 +29,7 @@ jobs:
       matrix:
         # To switch on windows-2022/latest, please verify the bazel version:
         # https://github.com/bazelbuild/bazel/issues/14232#issuecomment-1011247429
-        os: ['macos-12', 'windows-2019', 'ubuntu-20.04']
+        os: ['macos-12', 'windows-2019', 'ubuntu-22.04']
         py-version: ['3.9', '3.10', '3.11']
         tf-version: ['2.12.1', '2.13.0', '2.14.0']
         cpu: ['x86']
@@ -85,6 +72,7 @@ jobs:
       - name: Build wheels
         env:
           OS: ${{ runner.os }}
+          TF_PYTHON_VERSION: ${{ matrix.py-version }}
           PY_VERSION: ${{ matrix.py-version }}
           TF_VERSION: ${{ matrix.tf-version }}
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
@@ -97,7 +85,7 @@ jobs:
           path: wheelhouse
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, test-with-bazel]
+    needs: [release-wheel]
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -135,7 +123,7 @@ jobs:
           password: ${{ secrets.pypi_token }}
   upload-dev-container:
     name: Upload dev container to DockerHub
-    needs: [release-wheel, test-with-bazel]
+    needs: [release-wheel]
     runs-on: ubuntu-20.04
     env:
       PY_VERSION: '3.9'
