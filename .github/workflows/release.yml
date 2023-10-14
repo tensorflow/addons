@@ -29,10 +29,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ env.MIN_PY_VERSION }}
+          TF_PYTHON_VERSION: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
         run: |
-          pip install --default-timeout=1000 -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
           bash tools/install_deps/install_bazelisk.sh ./
           python configure.py
           bazel test -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...

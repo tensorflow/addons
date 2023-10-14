@@ -15,17 +15,6 @@ http_archive(
     ],
 )
 
-# TODO: please double check what it is really required or not in this section
-# ###############################################################
-http_archive(
-    name = "bazel_skylib",
-    sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
-    urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-    ],
-)
-
 http_archive(
     name = "rules_python",
     sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
@@ -56,28 +45,24 @@ python_register_toolchains(
 load("@python//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "package_annotation", "pip_parse")
 
-NUMPY_ANNOTATIONS = {
-    "numpy": package_annotation(
-        additive_build_content = """\
-filegroup(
-    name = "includes",
-    srcs = glob(["site-packages/numpy/core/include/**/*.h"]),
-)
-cc_library(
-    name = "numpy_headers",
-    hdrs = [":includes"],
-    strip_include_prefix="site-packages/numpy/core/include/",
-)
-""",
-    ),
-}
-
 pip_parse(
     name = "pypi",
-    annotations = NUMPY_ANNOTATIONS,
     python_interpreter_target = interpreter,
     requirements = "//:requirements.txt",
 )
+
+pip_parse(
+    name = "pypi",
+    python_interpreter_target = interpreter,
+    requirements = "//:tools/install_deps/tensorflow-cpu.txt",
+)
+
+pip_parse(
+    name = "pypi",
+    python_interpreter_target = interpreter,
+    requirements = "//:tools/install_deps/pytest.txt",
+)
+
 
 load("@pypi//:requirements.bzl", "install_deps")
 
