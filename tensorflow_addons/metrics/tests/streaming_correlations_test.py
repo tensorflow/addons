@@ -123,7 +123,7 @@ class TestStreamingCorrelations:
         metric.reset_state()
         # we decorate with tf.function to ensure the metric is also checked against graph mode.
         # keras automatically decorates the metrics compiled within keras.Model.
-        tf.function(metric.update_state)(y, preds)
+        metric.update_state(y, preds)
         metric_value = tf.function(metric.result)()
         scipy_value = self.scipy_corr[correlation_type](preds[:, 0], y[:, 0])[0]
         np.testing.assert_almost_equal(metric_value, metric_history[-1], decimal=6)

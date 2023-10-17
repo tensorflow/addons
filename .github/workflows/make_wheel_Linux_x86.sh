@@ -2,8 +2,12 @@ set -e -x
 
 df -h
 docker info
+
 # to get more disk space
-rm -rf /usr/share/dotnet &
+rm -rf "$AGENT_TOOLSDIRECTORY" &
+rm -rf /opt/ghc &
+rm -rf "/usr/local/share/boost" &
+rm -rf /usr/share/dotnet
 
 # Tests are ran as part of make_wheel target
 DOCKER_BUILDKIT=1 docker build \

@@ -10,7 +10,7 @@ case "$(uname -s)" in
 esac
 
 mkdir -p "${output_dir}"
-curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.3.0/${name}"
+curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/${name}"
 
 mv "${name}" "${output_dir}/bazel"
 chmod u+x "${output_dir}/bazel"
