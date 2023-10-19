@@ -31,7 +31,7 @@ For more information see: [https://github.com/tensorflow/addons/issues/2807](htt
 
 | Build      | Status |
 | ---             | ---    |
-| **Ubuntu/macOS/Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/addons-release/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
+| **Ubuntu/macOS/Windows**   | [![Status](https://github.com/tensorflow/addons/actions/workflows/release.yml/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
 | **Ubuntu GPU custom ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
