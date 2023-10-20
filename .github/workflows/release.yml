@@ -37,7 +37,7 @@ jobs:
           pip install --default-timeout=1000 -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
           bash tools/install_deps/install_bazelisk.sh ./
           python configure.py
-          bazel test -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
+          bazel test --action_env PYENV_VERSION=3.9  -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
     name: Test and build release wheels
     runs-on: ${{ matrix.os }}
