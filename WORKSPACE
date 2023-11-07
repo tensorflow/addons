@@ -8,11 +8,14 @@ tf_configure(
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "c030cb1905bff1d2446615992aad8d8d85cbe90c4fb625cee458c63bf466bc8e",
-    strip_prefix = "tensorflow-2.12.0",
+    sha256 = "ce357fd0728f0d1b0831d1653f475591662ec5bca736a94ff789e6b1944df19f",
+    strip_prefix = "tensorflow-2.14.0",
     urls = [
-        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.12.0.tar.gz",
+        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.14.0.tar.gz",
     ],
+    patches = [
+        "//tools:tf.patch",
+    ]
 )
 
 load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
