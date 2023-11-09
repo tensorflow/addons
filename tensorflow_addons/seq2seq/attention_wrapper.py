@@ -23,6 +23,7 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons.rnn.abstract_rnn_cell import AbstractRNNCell
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import (
     AcceptableDTypes,
@@ -1577,7 +1578,7 @@ def _compute_attention(
     return attention, alignments, next_attention_state
 
 
-class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
+class AttentionWrapper(AbstractRNNCell):
     """Wraps another RNN cell with attention.
 
     Example:

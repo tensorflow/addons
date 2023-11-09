@@ -7,17 +7,15 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "text",
     srcs = glob(["*.py"]),
-    data = select({
-        "//tensorflow_addons:windows": [
-            "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
-            "//tensorflow_addons/testing",
-            "//tensorflow_addons/utils",
-        ],
+    data = [
+        "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
+        "//tensorflow_addons/rnn",
+        "//tensorflow_addons/testing",
+        "//tensorflow_addons/utils",
+    ] + select({
+        "//tensorflow_addons:windows": [],
         "//conditions:default": [
             "//tensorflow_addons/custom_ops/text:_parse_time_op.so",
-            "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
-            "//tensorflow_addons/testing",
-            "//tensorflow_addons/utils",
         ],
     }),
 )

@@ -10,6 +10,7 @@ py_library(
         "//tensorflow_addons/custom_ops/seq2seq:_beam_search_ops.so",
     ],
     deps = [
+        "//tensorflow_addons/rnn",
         "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],

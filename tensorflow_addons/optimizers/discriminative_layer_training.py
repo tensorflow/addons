@@ -22,9 +22,20 @@ from packaging.version import Version
 from tensorflow_addons.optimizers import KerasLegacyOptimizer
 from typeguard import typechecked
 
-if Version(tf.__version__).release >= Version("2.13").release:
-    # New versions of Keras require importing from `keras.src` when
-    # importing internal symbols.
+if Version(tf.__version__).release >= Version("2.16").release:
+    # Determine if loading keras 2 or 3.
+    if (
+        hasattr(tf.keras, "version")
+        and Version(tf.keras.version()).release >= Version("3.0").release
+    ):
+        # New versions of Keras require importing from `keras.src` when
+        # importing internal symbols.
+        from keras.src import backend
+        from keras.src.utils import tf_utils
+    else:
+        from tf_keras.src import backend
+        from tf_keras.src.utils import tf_utils
+elif Version(tf.__version__).release >= Version("2.13").release:
     from keras.src import backend
     from keras.src.utils import tf_utils
 else:
