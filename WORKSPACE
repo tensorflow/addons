@@ -14,7 +14,7 @@ http_archive(
         "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.14.0.tar.gz",
     ],
     patches = [
-        "//tools:tf.patch",
+        "//build_deps/tf_dependency:tf.patch",
     ]
 )
 
