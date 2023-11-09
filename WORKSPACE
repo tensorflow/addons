@@ -8,14 +8,14 @@ tf_configure(
 
 http_archive(
     name = "org_tensorflow",
+    patches = [
+        "//build_deps/tf_dependency:tf.patch",
+    ],
     sha256 = "ce357fd0728f0d1b0831d1653f475591662ec5bca736a94ff789e6b1944df19f",
     strip_prefix = "tensorflow-2.14.0",
     urls = [
         "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.14.0.tar.gz",
     ],
-    patches = [
-        "//build_deps/tf_dependency:tf.patch",
-    ]
 )
 
 load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
