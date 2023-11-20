@@ -6,7 +6,7 @@ export DOCKER_BUILDKIT=1
 docker build \
        -f tools/docker/build_wheel.Dockerfile \
        --target tfa_gpu_tests \
-       --build-arg TF_VERSION=2.14.0 \
+       --build-arg TF_VERSION=2.15.0 \
        --build-arg PY_VERSION=3.9 \
        -t tfa_gpu_tests ./
 docker run --rm -t --gpus=all --shm-size=512m tfa_gpu_tests
