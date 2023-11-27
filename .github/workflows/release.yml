@@ -43,7 +43,9 @@ jobs:
       matrix:
         # To switch on windows-2022/latest, please verify the bazel version:
         # https://github.com/bazelbuild/bazel/issues/14232#issuecomment-1011247429
-        os: ['macos-12', 'windows-2019', 'ubuntu-20.04']
+        os: ['macos-12', 'ubuntu-20.04']
+        # Removing windows builds due to broken upstream package https://github.com/tensorflow/tensorflow/issues/61830
+        # os: ['macos-12', 'windows-2019', 'ubuntu-20.04']
         py-version: ['3.9', '3.10', '3.11']
         tf-version: ['2.13.1', '2.14.0', '2.15.0']
         cpu: ['x86']
@@ -102,7 +104,9 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        os: ['macOS', 'Windows', 'Linux']
+        os: ['macOS', 'Linux']
+        # Removing windows builds due to broken upstream package https://github.com/tensorflow/tensorflow/issues/61830
+        # os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.9', '3.10', '3.11']
         tf-version: ['2.15.0']
         cpu: ['x86']
