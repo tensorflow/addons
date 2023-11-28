@@ -31,7 +31,7 @@ For more information see: [https://github.com/tensorflow/addons/issues/2807](htt
 
 | Build      | Status |
 | ---             | ---    |
-| **Ubuntu/macOS/Windows**   | [![Status](https://github.com/tensorflow/addons/actions/workflows/release.yml/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
+| **Ubuntu/macOS**   | [![Status](https://github.com/tensorflow/addons/actions/workflows/release.yml/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
 | **Ubuntu GPU custom ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
@@ -64,7 +64,8 @@ owners for all submodules.
 
 ## Installation
 #### Stable Builds
-TensorFlow Addons is available on PyPI for Linux, macOS, and Windows. To install the latest version, 
+TensorFlow Addons is available on PyPI for Linux & macOS (Windows support was dropped 
+due to [inconsistent TF2.15 whl packaging](https://github.com/tensorflow/tensorflow/issues/61830)). To install the latest version, 
 run the following:
 ```
 pip install tensorflow-addons
@@ -192,7 +193,7 @@ cd addons
 export TF_NEED_CUDA="1"
 
 # Set these if the below defaults are different on your system
-export TF_CUDA_VERSION="11"
+export TF_CUDA_VERSION="12"
 export TF_CUDNN_VERSION="8"
 export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"

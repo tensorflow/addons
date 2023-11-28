@@ -43,22 +43,24 @@ jobs:
       matrix:
         # To switch on windows-2022/latest, please verify the bazel version:
         # https://github.com/bazelbuild/bazel/issues/14232#issuecomment-1011247429
-        os: ['macos-12', 'windows-2019', 'ubuntu-20.04']
+        os: ['macos-12', 'ubuntu-20.04']
+        # Removing windows builds due to broken upstream package https://github.com/tensorflow/tensorflow/issues/61830
+        # os: ['macos-12', 'windows-2019', 'ubuntu-20.04']
         py-version: ['3.9', '3.10', '3.11']
-        tf-version: ['2.12.1', '2.13.0', '2.14.0']
+        tf-version: ['2.13.1', '2.14.0', '2.15.0']
         cpu: ['x86']
         include:
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.14.0'
+            tf-version: '2.15.0'
             py-version: '3.9'
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.14.0'
+            tf-version: '2.15.0'
             py-version: '3.10'
           - os: 'macos-12'
             cpu: 'arm64'
-            tf-version: '2.14.0'
+            tf-version: '2.15.0'
             py-version: '3.11'
       fail-fast: false
     steps:
@@ -69,7 +71,7 @@ jobs:
           script: |
             const commit_details = await github.git.getCommit({owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha});
             return commit_details.data.author.date
-      - if: matrix.tf-version != '2.14.0'
+      - if: matrix.tf-version != '2.15.0'
         shell: bash
         run: echo "SKIP_CUSTOM_OP_TESTS=--skip-custom-ops" >> $GITHUB_ENV
       - if: github.event_name == 'push'
@@ -102,22 +104,24 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        os: ['macOS', 'Windows', 'Linux']
+        os: ['macOS', 'Linux']
+        # Removing windows builds due to broken upstream package https://github.com/tensorflow/tensorflow/issues/61830
+        # os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.9', '3.10', '3.11']
-        tf-version: ['2.14.0']
+        tf-version: ['2.15.0']
         cpu: ['x86']
         include:
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.14.0'
+            tf-version: '2.15.0'
             py-version: '3.9'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.14.0'
+            tf-version: '2.15.0'
             py-version: '3.10'
           - os: 'macOS'
             cpu: 'arm64'
-            tf-version: '2.14.0'
+            tf-version: '2.15.0'
             py-version: '3.11'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
