@@ -143,6 +143,9 @@ class TQDMProgressBar(Callback):
     def _clean_up_progbar(self, hook, logs):
         if hook == "train_overall":
             if self.show_overall_progress:
+                self.overall_progress_tqdm.update(
+                    self.num_epochs - self.overall_progress_tqdm.n
+                )
                 self.overall_progress_tqdm.close()
         else:
             if hook == "test":
