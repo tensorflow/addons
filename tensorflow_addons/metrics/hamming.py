@@ -72,7 +72,7 @@ def hamming_loss_fn(
         threshold: Elements of `y_pred` greater than threshold are
             converted to be 1, and the rest 0. If threshold is
             None, the argmax is converted to 1, and the rest 0.
-        mode: multi-class or multi-label.
+        mode: 'multiclass' or 'multilabel'.
 
     Returns:
         hamming loss: float.
