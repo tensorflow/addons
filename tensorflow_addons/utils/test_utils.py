@@ -22,18 +22,10 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from packaging.version import Version
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
-if Version(tf.__version__).release >= Version("2.13").release:
-    # New versions of Keras require importing from `keras.src` when
-    # importing internal symbols.
-    from keras.src.testing_infra.test_utils import layer_test  # noqa: F401
-elif Version(tf.__version__) >= Version("2.9"):
-    from keras.testing_infra.test_utils import layer_test  # noqa: F401
-else:
-    from keras.testing_utils import layer_test  # noqa: F401
+from tensorflow_addons.utils.tf_test_utils import layer_test  # noqa
 
 NUMBER_OF_WORKERS = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
 WORKER_ID = int(os.environ.get("PYTEST_XDIST_WORKER", "gw0")[2])

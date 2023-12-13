@@ -22,15 +22,22 @@ import tensorflow as tf
 
 from packaging.version import Version
 
-# TODO: Remove once https://github.com/tensorflow/tensorflow/issues/44613 is resolved
-if Version(tf.__version__).release >= Version("2.13").release:
-    # New versions of Keras require importing from `keras.src` when
-    # importing internal symbols.
-    from keras.src.engine import keras_tensor
+# Find KerasTensor.
+if Version(tf.__version__).release >= Version("2.16").release:
+    # Determine if loading keras 2 or 3.
+    if (
+        hasattr(tf.keras, "version")
+        and Version(tf.keras.version()).release >= Version("3.0").release
+    ):
+        from keras import KerasTensor
+    else:
+        from tf_keras.src.engine.keras_tensor import KerasTensor
+elif Version(tf.__version__).release >= Version("2.13").release:
+    from keras.src.engine.keras_tensor import KerasTensor
 elif Version(tf.__version__).release >= Version("2.5").release:
-    from keras.engine import keras_tensor
+    from keras.engine.keras_tensor import KerasTensor
 else:
-    from tensorflow.python.keras.engine import keras_tensor
+    from tensorflow.python.keras.engine.keras_tensor import KerasTensor
 
 
 Number = Union[
@@ -68,7 +75,7 @@ TensorLike = Union[
     tf.Tensor,
     tf.SparseTensor,
     tf.Variable,
-    keras_tensor.KerasTensor,
+    KerasTensor,
 ]
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
 AcceptableDTypes = Union[tf.DType, np.dtype, type, int, str, None]

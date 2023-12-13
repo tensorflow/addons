@@ -15,9 +15,9 @@
 """Implements ESN Cell."""
 
 import tensorflow as tf
-import tensorflow.keras as keras
 from typeguard import typechecked
 
+from tensorflow_addons.rnn.abstract_rnn_cell import AbstractRNNCell
 from tensorflow_addons.utils.types import (
     Activation,
     Initializer,
@@ -25,7 +25,7 @@ from tensorflow_addons.utils.types import (
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ESNCell(keras.layers.AbstractRNNCell):
+class ESNCell(AbstractRNNCell):
     """Echo State recurrent Network (ESN) cell.
     This implements the recurrent cell from the paper:
         H. Jaeger

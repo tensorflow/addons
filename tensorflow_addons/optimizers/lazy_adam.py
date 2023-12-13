@@ -149,3 +149,6 @@ class LazyAdam(adam_optimizer_class):
         }
 
         return resource_scatter_op(**resource_update_kwargs)
+
+    def get_config(self):
+        return super().get_config()

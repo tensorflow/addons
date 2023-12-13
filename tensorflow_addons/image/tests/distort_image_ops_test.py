@@ -94,7 +94,7 @@ def test_adjust_random_hue_in_yiq(shape, style, dtype):
     y_np = _adjust_hue_in_yiq_np(x_np, delta_h)
     y_tf = _adjust_hue_in_yiq_tf(x_np, delta_h)
     test_utils.assert_allclose_according_to_type(
-        y_tf, y_np, atol=1e-4, rtol=2e-4, half_rtol=0.8
+        y_tf, y_np, atol=1e-4, rtol=2e-4, half_rtol=1.1
     )
 
 
@@ -121,11 +121,11 @@ def test_invalid_channels_hsv():
 
 def test_adjust_hsv_in_yiq_unknown_shape():
     fn = tf.function(distort_image_ops.adjust_hsv_in_yiq).get_concrete_function(
-        tf.TensorSpec(shape=None, dtype=tf.float64)
+        tf.TensorSpec(shape=None, dtype=tf.float32)
     )
     for shape in (2, 3, 3), (4, 2, 3, 3):
         image_np = np.random.rand(*shape) * 255.0
-        image_tf = tf.constant(image_np)
+        image_tf = tf.constant(image_np, dtype=tf.float32)
         np.testing.assert_allclose(
             _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4
         )

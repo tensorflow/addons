@@ -17,6 +17,7 @@ import warnings
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.rnn.abstract_rnn_cell import AbstractRNNCell
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 from typing import Optional, Tuple
@@ -403,7 +404,7 @@ def viterbi_decode(score: TensorLike, transition_params: TensorLike) -> tf.Tenso
     return viterbi, viterbi_score
 
 
-class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
+class CrfDecodeForwardRnnCell(AbstractRNNCell):
     """Computes the forward decoding in a linear-chain CRF."""
 
     @typechecked

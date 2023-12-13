@@ -15,9 +15,9 @@
 """Implements NAS Cell."""
 
 import tensorflow as tf
-import tensorflow.keras as keras
 from typeguard import typechecked
 
+from tensorflow_addons.rnn.abstract_rnn_cell import AbstractRNNCell
 from tensorflow_addons.utils.types import (
     FloatTensorLike,
     TensorLike,
@@ -27,7 +27,7 @@ from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class NASCell(keras.layers.AbstractRNNCell):
+class NASCell(AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 
     This implements the recurrent cell from the paper:
