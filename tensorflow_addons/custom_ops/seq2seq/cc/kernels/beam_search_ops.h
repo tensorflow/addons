@@ -18,7 +18,12 @@ limitations under the License.
 
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow/core/public/version.h"
+#if TF_MAJOR_VERSION == 2 && TF_MINOR_VERSION >= 16
+#include "unsupported/Eigen/CXX11/Tensor"
+#else
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+#endif
 
 namespace tensorflow {
 class OpKernelContext;
