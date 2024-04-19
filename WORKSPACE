@@ -11,10 +11,10 @@ http_archive(
     patches = [
         "//build_deps/tf_dependency:tf.patch",
     ],
-    sha256 = "9cec5acb0ecf2d47b16891f8bc5bc6fbfdffe1700bdadc0d9ebe27ea34f0c220",
-    strip_prefix = "tensorflow-2.15.0",
+    sha256 = "c729e56efc945c6df08efe5c9f5b8b89329c7c91b8f40ad2bb3e13900bd4876d",
+    strip_prefix = "tensorflow-2.16.1",
     urls = [
-        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.15.0.tar.gz",
+        "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.16.1.tar.gz",
     ],
 )
 
