@@ -50,6 +50,8 @@ jobs:
         tf-version: ['2.14.1', '2.15.1', '2.16.1']
         cpu: ['x86']
         include:
+          - py-version: '3.12'
+            tf-version: '2.16.1'
           - os: 'macos-12'
             cpu: 'arm64'
             tf-version: '2.16.1'
@@ -115,6 +117,8 @@ jobs:
         tf-version: ['2.16.1']
         cpu: ['x86']
         include:
+          - py-version: '3.12'
+            tf-version: '2.16.1'
           - os: 'macOS'
             cpu: 'arm64'
             tf-version: '2.16.1'
