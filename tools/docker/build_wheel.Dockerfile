@@ -7,7 +7,7 @@ ARG PY_VERSION
 ARG TF_VERSION
 
 # TODO: Temporary due to build bug https://github.com/pypa/pip/issues/11770
-RUN python -m pip install --upgrade pip==22.3.1 setuptools
+RUN python -m pip install --upgrade setuptools
 
 # TODO: Remove this if tensorflow/build container removes their keras-nightly install
 # https://github.com/tensorflow/build/issues/78
