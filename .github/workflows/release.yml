@@ -49,9 +49,6 @@ jobs:
         py-version: ['3.9', '3.10', '3.11', '3.12']
         tf-version: ['2.14.1', '2.15.1', '2.16.1']
         cpu: ['x86']
-        include:
-          - py-version: '3.12'
-            tf-version: '2.16.1'
         exclude:
          - py-version: '3.12'
            tf-version: '2.14.1'
@@ -105,9 +102,6 @@ jobs:
         py-version: ['3.9', '3.10', '3.11', '3.12']
         tf-version: ['2.16.1']
         cpu: ['x86']
-        include:
-          - py-version: '3.12'
-            tf-version: '2.16.1'
         exclude:
          - py-version: '3.12'
            tf-version: '2.14.1'
