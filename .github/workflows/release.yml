@@ -52,6 +52,11 @@ jobs:
         include:
           - py-version: '3.12'
             tf-version: '2.16.1'
+        exclude:
+         - py-version: '3.12'
+           tf-version: '2.14.1'
+         - py-version: '3.12'
+           tf-version: '2.15.1'
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -103,6 +108,11 @@ jobs:
         include:
           - py-version: '3.12'
             tf-version: '2.16.1'
+        exclude:
+         - py-version: '3.12'
+           tf-version: '2.14.1'
+         - py-version: '3.12'
+           tf-version: '2.15.1'
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
