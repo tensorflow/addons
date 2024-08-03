@@ -23,8 +23,14 @@ limitations under the License.
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
+#include "tensorflow/core/public/version.h"
+#if TF_MAJOR_VERSION == 2 && TF_MINOR_VERSION >= 16
+#include "Eigen/Core"
+#include "unsupported/Eigen/CXX11/Tensor"
+#else
 #include "third_party/eigen3/Eigen/Core"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+#endif
 
 namespace tensorflow {
 namespace addons {
