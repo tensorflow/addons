@@ -43,7 +43,7 @@ import os
 import subprocess
 import re
 import sys
-import pipes
+import shlex as pipes
 
 # Template values set by cuda_autoconf.
 CPU_COMPILER = ('%{cpu_compiler}')
