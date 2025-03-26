@@ -24,7 +24,7 @@ env:
 jobs:
   test-with-bazel:
     name: Test with bazel
-    runs-on: ubuntu-20.04
+    runs-on: 'ubuntu-24.04'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -101,7 +101,7 @@ jobs:
   upload-wheels:
     name: Publish wheels to PyPi
     needs: [release-wheel, test-with-bazel]
-    runs-on: ubuntu-20.04
+    runs-on: 'ubuntu-24.04'
     strategy:
       matrix:
         os: ['macOS', 'Linux']
@@ -141,7 +141,7 @@ jobs:
   upload-dev-container:
     name: Upload dev container to DockerHub
     needs: [release-wheel, test-with-bazel]
-    runs-on: ubuntu-20.04
+    runs-on: 'ubuntu-24.04'
     env:
       PY_VERSION: '3.9'
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
